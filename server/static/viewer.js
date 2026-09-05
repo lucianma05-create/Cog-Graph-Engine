@@ -253,41 +253,38 @@ function barRow(key, value, lo, hi, hue) {
   return row;
 }
 
+function msgEl(kind, who, text, isCurrent) {
+  const m = document.createElement("div");
+  m.className = "msg " + kind + (isCurrent ? " current" : "");
+  const w = document.createElement("span"); w.className = "who"; w.textContent = who;
+  m.appendChild(w); m.appendChild(document.createTextNode(text));
+  return m;
+}
+
 function renderSidebar(i) {
   const snap = snapshot(i);
 
+  // 完整对话历史：前缀 + 全部轮次（当前轮高亮），最新轮自动滚到底部
   const dialog = $("dialogBox");
   dialog.textContent = "";
-  if (i === 0) {
-    // show the unintervened prefix: the evidence G0 was built from
-    const prefix = state.seed.pre_context && state.seed.pre_context.length
-      ? state.seed.pre_context : [{ role: "user", text: state.seed.u0 }];
-    const label = document.createElement("div");
-    label.className = "note";
-    label.textContent = "无干预前缀（G0 的证据来源，模拟从这里继续）：";
-    dialog.appendChild(label);
-    const userRole = { emotional_support: "seeker", persuasion_donation: "persuadee",
-                       price_negotiation: "buyer" }[state.task] || "user";
-    for (const u of prefix) {
-      const m = document.createElement("div");
-      m.className = "msg " + (u.role === userRole ? "user" : "agent");
-      const who = document.createElement("span"); who.className = "who"; who.textContent = u.role;
-      m.appendChild(who); m.appendChild(document.createTextNode(u.text));
-      dialog.appendChild(m);
-    }
-  } else {
-    const t = snap.turn;
-    const modeName = { manual: "手动", auto: "LLM 自动", auto_editable: "LLM 自定义" }[t.mode] || t.mode;
-    const a = document.createElement("div"); a.className = "msg agent";
-    const whoA = document.createElement("span"); whoA.className = "who"; whoA.textContent = "agent 回复";
-    const badge = document.createElement("span"); badge.className = "modebadge"; badge.textContent = modeName;
-    whoA.appendChild(badge);
-    a.appendChild(whoA); a.appendChild(document.createTextNode(t.agent_reply));
-    const u = document.createElement("div"); u.className = "msg user";
-    const whoU = document.createElement("span"); whoU.className = "who"; whoU.textContent = "模拟用户回复";
-    u.appendChild(whoU); u.appendChild(document.createTextNode(t.user_utterance));
-    dialog.append(a, u);
+  const prefix = state.seed.pre_context && state.seed.pre_context.length
+    ? state.seed.pre_context : [{ role: "user", text: state.seed.u0 }];
+  const userRole = { emotional_support: "seeker", persuasion_donation: "persuadee",
+                     price_negotiation: "buyer" }[state.task] || "user";
+  const label = document.createElement("div");
+  label.className = "note";
+  label.textContent = "无干预前缀（G0 的证据来源）：";
+  dialog.appendChild(label);
+  for (const u of prefix) {
+    dialog.appendChild(msgEl(u.role === userRole ? "user" : "agent", u.role, u.text, false));
   }
+  for (const t of state.turns) {
+    const cur = t.turn_index === currentIdx;
+    const modeName = { manual: "手动", auto: "LLM 自动", auto_editable: "LLM 自定义" }[t.mode] || t.mode;
+    dialog.appendChild(msgEl("agent", `agent 回复 · ${modeName}`, t.agent_reply, cur));
+    dialog.appendChild(msgEl("user", "模拟用户回复", t.user_utterance, cur));
+  }
+  if (currentIdx === state.turns.length) dialog.scrollTop = dialog.scrollHeight;
 
   const st = $("stateBox");
   st.textContent = "";
@@ -330,6 +327,28 @@ function renderSidebar(i) {
   for (const n of t.notes || []) {
     const d = document.createElement("div"); d.className = "note"; d.textContent = "· " + n;
     ops.appendChild(d);
+  }
+}
+
+function renderStyle() {
+  const box = $("styleBox");
+  box.textContent = "";
+  const style = state.seed.cognitive_style;
+  if (!style) {
+    const d = document.createElement("div"); d.className = "empty";
+    d.textContent = "（该种子未配置认知风格）";
+    box.appendChild(d);
+    return;
+  }
+  const p = document.createElement("div");
+  p.style.whiteSpace = "pre-wrap";
+  p.textContent = style;
+  box.appendChild(p);
+  if (state.seed.cognitive_profile) {
+    const pr = document.createElement("div");
+    pr.className = "note";
+    pr.textContent = "引擎守卫：" + JSON.stringify(state.seed.cognitive_profile);
+    box.appendChild(pr);
   }
 }
 
@@ -395,6 +414,7 @@ function render() {
   renderSidebar(currentIdx);
   renderGraph(currentIdx);
   renderNodeDetail(selectedNodeId);  // refresh detail after snapshot changes
+  renderStyle();
   renderTrajectory();
   // completion flag
   const done = state.done && state.done.done;
@@ -404,7 +424,8 @@ function render() {
     banner.textContent = `✓ 模拟器已判定会话结束：${state.done.done_reason || "（无说明）"}。无需继续交互，可重置会话重新开始。`;
   }
   $("sendBtn").disabled = !!done;
-  document.querySelectorAll('input[name="mode"]').forEach(r => (r.disabled = !!done || r.disabled));
+  // 仅由 done 状态控制禁用；此前 `!!done || r.disabled` 会在 done→重置后把单选钮永久锁死
+  document.querySelectorAll('input[name="mode"]').forEach(r => (r.disabled = !!done));
   $("reportLink").classList.toggle("hidden", false);
   $("reportLink").href = `/api/report?seed=${encodeURIComponent(state.seed_id)}`;
   const persona = state.seed.persona;

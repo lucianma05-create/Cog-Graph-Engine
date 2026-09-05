@@ -57,6 +57,10 @@ def state_payload(seed: Seed, log: dict, sim=None) -> dict:
             "u0": seed.u0,
             "pre_context": [u.model_dump() for u in seed.pre_context],
             "reference_transcript": [u.model_dump() for u in seed.reference_transcript],
+            # simulator-only character; the viewer is the simulator owner's
+            # window — the agent LLM never receives this payload
+            "cognitive_style": seed.cognitive_style,
+            "cognitive_profile": seed.cognitive_profile,
         },
         "initial": _lean_initial(log["initial"]),
         "turns": [_lean_turn(t) for t in log["turns"]],
