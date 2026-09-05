@@ -17,8 +17,8 @@ VALID_TURN = {
     "edge_updates": [
         {"op": "add", "edge": {"from": "B1", "to": "I2", "relation": "facilitates"}},
     ],
-    "appraisal": {"goal_congruence": 0.6, "controllability": 0.3, "certainty": 0.7, "goal_conflict": 0.2},
-    "emotion": {"category": "hope", "valence": 0.4, "arousal": 0.3, "intensity": 0.6,
+    "appraisal": {"goal_congruence": 0.6, "controllability": 0.3, "goal_conflict": 0.2},
+    "emotion": {"category": "hope", "valence": 0.4, "arousal": 0.3,
                 "appraisal_target": "#agent_reply"},
     "user_utterance": "That actually helps.",
     "done": False,

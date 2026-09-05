@@ -105,7 +105,7 @@ def main() -> None:
             print(f"*** 模拟器判定完成：{turn.get('done_reason') or '（无说明）'} ***")
         print(f"appraisal:    {turn['appraisal']}")
         print(f"emotion:      {turn['emotion']['category']} v={turn['emotion']['valence']} "
-              f"a={turn['emotion']['arousal']} i={turn['emotion']['intensity']}")
+              f"a={turn['emotion']['arousal']}")
         print(f"graph:        {len(turn['graph_after']['nodes'])} active nodes, "
               f"{len(turn['graph_after']['edges'])} edges | deltas={turn['deltas']}")
         for o in turn["ops_applied"]:

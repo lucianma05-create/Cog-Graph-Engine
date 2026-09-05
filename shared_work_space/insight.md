@@ -176,6 +176,8 @@ $$
 }
 $$
 
+表示约定：$z_t$ 的内容一律以用户的**第一人称命题**书写（"我的工作压力很大"、"我想保住这份收入"、"我准备报价 80 元"）——图上维护的是"用户自己心中的想法"，而不是"模拟器对用户的第三人称描述"。这一表示方式不影响其认识论定位：$z_t$ 仍是模拟器基于交互证据维护的后验估计，只是以用户心智自身的语言表达，使"话语由状态驱动"的因果链可以直接阅读与审计。
+
 ---
 
 ## 4. BDI-E 图状用户认知状态
@@ -234,6 +236,8 @@ $$
 \rightarrow
 \text{Intention}
 $$
+
+节点内容统一以第一人称书写：Belief 写作用户持有的命题本身（或"I think/believe …"），Desire 写作"I want / I want to avoid …"，Intention 写作"I will / I am ready to …"。图上的边刻画的是用户自身的实践推理结构（慎思、手段-目的推理），而不是观察者对用户认知的元判断。
 
 ---
 
@@ -308,6 +312,8 @@ $$
 
 表示某一 Belief 会抑制某个目标或需求。
 
+三个正向方向对应三种不同的实践推理机制：$B\xrightarrow{}D$ 刻画信念对目标合意性的评价（desirability appraisal），$D\xrightarrow{}I$ 刻画慎思（欲望的强度驱动行动承诺，deliberation），$B\xrightarrow{}I$ 刻画手段评估（信念直接作用于行动本身的可行性、代价或手段质量，means evaluation）。$I\xrightarrow{}B$ 在任何情况下都不合法：意向不产生信念——从意向反推信念属于一厢情愿的推断（Bratman 不对称论题）；意向对信念只存在一致性约束（不能一边打算做某事、一边相信它不可能），不存在生成性影响。
+
 Intention 与 Desire 之间使用：
 
 $$
@@ -343,14 +349,13 @@ A_{t+1}
 E_{t+1}
 $$
 
-Appraisal 使用连续属性表示，例如：
+Appraisal 使用连续属性表示：
 
 $$
 A_t=
 (
 goal\_congruence,
 controllability,
-certainty,
 goal\_conflict
 )
 $$
@@ -360,8 +365,9 @@ Emotion 包含：
 * category；
 * valence；
 * arousal；
-* intensity；
 * appraisal target。
+
+字段保持最小集（如无必要勿增实体）：`certainty` 由 Belief strength 承载（样本中恒定、模型未使用，已删除）；`intensity` 与 `arousal` 高度共变（环形模型 valence × arousal 已足够表达感受强度，已删除）。
 
 因此，$G_t$ 主要描述慢变化认知状态，而 $A_t,E_t$ 描述快速变化的事件评价和情绪反应。
 
@@ -416,6 +422,8 @@ $$
 * edge `remove`
 
 这一设计避免 LLM 每轮重新构图导致的 ID 漂移、历史遗忘和状态不一致，同时让每轮状态变化可追踪、可审计。
+
+被拒绝的更新不会静默丢失：updater 拒绝的操作（非法边方向、噪声强度、重复 ID 等）连同原因会被回注到下一轮提示中，使模型心目中的图与真实图保持一致，避免话语与最终状态脱节。
 
 ---
 

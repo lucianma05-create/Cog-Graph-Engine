@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from engine.schema import Edge, EdgeUpdate, InitOutput, Node, NodeDraft, NodeUpdate, NODE_ID_RE, Relation
+from engine.schema import Edge, EdgeUpdate, InitOutput, Node, NodeDraft, NodeUpdate, NODE_ID_RE
 from engine.strength import normalize5, strength_of
 
 # Significance threshold: strength jitters below this magnitude are rejected as
@@ -108,6 +108,33 @@ def _relation_legal(relation: str, src: Node, tgt: Node) -> bool:
     return False
 
 
+def _commitment_blocks(node_id: str, nodes: dict[str, Node],
+                       edges: dict[tuple[str, str, str], Edge],
+                       deactivated: set[str], killed_this_turn: set[str],
+                       means_for_removed: set[tuple[str, str]],
+                       replacement_pairs: set[tuple[str, str]]) -> tuple[bool, str]:
+    """Bratman commitment persistence, enforced deterministically: an intention
+    that still serves an active desire (live means_for edge) may not be dropped
+    unless the desire dies this same turn, the purpose link is severed this same
+    turn, a NEW intention serving the SAME desire is adopted this turn, or the
+    interaction concludes (done). Returns (blocked, reason)."""
+    if _type_value(nodes[node_id]) != "intention":
+        return False, ""
+    for (frm, to, rel) in edges:
+        if rel != "means_for" or frm != node_id:
+            continue
+        if (frm, to) in means_for_removed:
+            continue  # purpose link severed by an edge op this turn
+        if to in deactivated or to in killed_this_turn:
+            continue  # the desire is gone or dies this same turn
+        if any(x for (x, y) in replacement_pairs if y == to):
+            continue  # a new intention adopted this turn serves this desire
+        return True, (f"commitment guard: {node_id} still serves active desire {to} "
+                      f"(means_for) — deactivate the desire first, replace the "
+                      f"intention, or conclude the interaction")
+    return False, ""
+
+
 def _edge_key(frm: str, to: str, relation: str) -> tuple[str, str, str]:
     if relation == "conflicts_with":  # undirected: canonical order
         frm, to = (to, frm) if frm > to else (frm, to)
@@ -160,6 +187,8 @@ def apply_updates(
     graph: CognitiveGraph,
     node_updates: list[NodeUpdate],
     edge_updates: list[EdgeUpdate],
+    done: bool = False,
+    commitment: str = "persistent",
 ) -> ApplyResult:
     nodes = dict(graph.nodes)
     edges = dict(graph.edges)
@@ -169,8 +198,27 @@ def apply_updates(
     applied: list[dict] = []
     rejected: list[dict] = []
     notes: list[str] = []
+    commit_on = commitment == "persistent" and not done
+
+    # --- batch pre-scan for the commitment guard: deaths and severed links ---
+    killed_this_turn: set[str] = set()
+    for op in node_updates:
+        if op.op == "deactivate" and op.node_id:
+            killed_this_turn.add(op.node_id)
+        elif op.op == "update" and op.level_probs is not None:
+            if _valid_probs(op.level_probs) is None:
+                probs, _ = normalize5(op.level_probs)
+                if strength_of(probs) <= 1e-9:
+                    killed_this_turn.add(op.node_id or "")
+    means_for_removed: set[tuple[str, str]] = set()
+    means_for_added: set[tuple[str, str]] = set()
+    for op in edge_updates:
+        e = op.edge
+        if e.relation.value == "means_for":
+            (means_for_added if op.op == "add" else means_for_removed).add((e.frm, e.to))
 
     # --- node ops: all adds first (so same-turn edges can reference them) ---
+    applied_intents: set[str] = set()
     for op in node_updates:
         if op.op != "add":
             continue
@@ -201,12 +249,19 @@ def apply_updates(
             notes.append(f"{final_id}: {note}")
         nodes[final_id] = _draft_to_node(draft.model_copy(update={"id": final_id}), probs)
         dist[final_id] = probs
+        if type_val == "intention":
+            applied_intents.add(final_id)
         applied.append({
             "op": "add", "node_id": final_id,
             "node": {"id": final_id, "type": type_val,
                      "content": draft.content.strip(), "strength": nodes[final_id].strength},
             "auto": False,
         })
+
+    # replacement = a NEW intention adopted this turn WITH a proposed means_for
+    # link to the same desire (only these unblock the commitment guard)
+    replacement_pairs = {(frm, to) for (frm, to) in means_for_added
+                         if frm in applied_intents}
 
     # --- node ops: update / deactivate, in LLM order ---
     for op in node_updates:
@@ -222,6 +277,14 @@ def apply_updates(
                 rejected.append({"op": {"op": "deactivate", "node_id": node_id},
                                  "reason": "already deactivated"})
                 continue
+            if commit_on and node_id in nodes:
+                blocked, why = _commitment_blocks(node_id, nodes, edges, deactivated,
+                                                  killed_this_turn, means_for_removed,
+                                                  replacement_pairs)
+                if blocked:
+                    rejected.append({"op": {"op": "deactivate", "node_id": node_id},
+                                     "reason": why})
+                    continue
             _deactivate_node(node_id, nodes, edges, dist, deactivated, deltas, applied, auto=False)
             continue
 
@@ -245,28 +308,34 @@ def apply_updates(
 
         if probs is not None and new_strength <= 1e-9:
             # mass at level 0 => node effectively gone
+            if commit_on:
+                blocked, why = _commitment_blocks(node_id, nodes, edges, deactivated,
+                                                  killed_this_turn, means_for_removed,
+                                                  replacement_pairs)
+                if blocked:
+                    rejected.append({"op": {"op": "update", "node_id": node_id},
+                                     "reason": why})
+                    continue
             _deactivate_node(node_id, nodes, edges, dist, deactivated, deltas, applied,
                              auto=True, reason="update drove strength to 0")
             continue
 
         # noise guard: strength jitters below the significance threshold.
-        # Pure jitters (no real content change) are REJECTED; a genuine content
-        # edit is applied but its strength move is frozen at the old value.
-        # Re-sending the same content is not a bypass. Reactivation bypasses it.
+        # Pure jitters (no real content change) are REJECTED. A genuine content
+        # edit is evidence of a real cognitive change — its sub-threshold
+        # strength move is APPLIED (facts-driven small moves, 2026-09-05 user
+        # decision). Re-sending the same content is not a bypass. Reactivation
+        # bypasses the guard entirely.
         node = nodes[node_id]
         content_actually_changes = new_content is not None and new_content != node.content
         if probs is not None and not was_deactivated:
             raw_delta = round(new_strength - old_strength, 3)
-            if raw_delta != 0 and abs(raw_delta) < MIN_ABS_DELTA:
-                if not content_actually_changes:
-                    rejected.append({
-                        "op": {"op": "update", "node_id": node_id},
-                        "reason": f"below significance threshold (|Δ|={abs(raw_delta):.2f} < {MIN_ABS_DELTA})",
-                    })
-                    continue
-                notes.append(f"{node_id}: strength Δ{raw_delta} below threshold "
-                             f"({MIN_ABS_DELTA}) — frozen at {old_strength}")
-                new_strength = old_strength
+            if raw_delta != 0 and abs(raw_delta) < MIN_ABS_DELTA and not content_actually_changes:
+                rejected.append({
+                    "op": {"op": "update", "node_id": node_id},
+                    "reason": f"below significance threshold (|Δ|={abs(raw_delta):.2f} < {MIN_ABS_DELTA})",
+                })
+                continue
 
         if probs is not None:
             nodes[node_id] = node.model_copy(update={"strength": new_strength})
@@ -310,6 +379,15 @@ def apply_updates(
                             "auto": False})
         else:  # remove
             if key not in edges:
+                if key[0] in killed_this_turn or key[1] in killed_this_turn:
+                    # structural no-op: THIS turn's deactivation cascade already
+                    # removed the edge — accepting keeps same-turn proposals
+                    # idempotent. Edges touching historically-deactivated nodes
+                    # fall through to the rejection below (they are phantom
+                    # removes and must feed back to the LLM).
+                    notes.append(f"edge {key[0]}-{key[2]}->{key[1]} already gone "
+                                 f"(deactivation cascade)")
+                    continue
                 rejected.append({"op": {"op": "remove", "edge": e.as_json()}, "reason": "edge not found"})
                 continue
             edges.pop(key)

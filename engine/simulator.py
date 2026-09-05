@@ -15,14 +15,15 @@ from pathlib import Path
 from engine import llm, prompts, report
 from engine.schema import Appraisal, Edge, Emotion, Node, Seed
 from engine.strength import clamp
-from engine.updater import CognitiveGraph, apply_updates, build_initial_graph
+from engine.updater import (MIN_ABS_DELTA, CognitiveGraph, apply_updates,
+                            build_initial_graph)
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 NEUTRAL_APPRAISAL = {"goal_congruence": 0.0, "controllability": 0.5,
-                     "certainty": 0.5, "goal_conflict": 0.0}
+                     "goal_conflict": 0.0}
 NEUTRAL_EMOTION = {"category": "neutral", "valence": 0.0, "arousal": 0.2,
-                   "intensity": 0.1, "appraisal_target": "#session_start"}
+                   "appraisal_target": "#session_start"}
 
 
 def _now() -> str:
@@ -30,6 +31,16 @@ def _now() -> str:
 
 
 _PRICE_RE = re.compile(r"\$\s?(\d+(?:\.\d+)?)")
+
+# Concession language in the user's own offer: a nominal price rise qualified
+# by asking the seller to add something is not a real rise (the concession has
+# value). "include" alone is kept in the set because the user's "if you
+# include X" is the canonical phrasing.
+_CONCESSION_RE = re.compile(
+    r"(throw\s+in|toss\s+in|include|including|bundle|free\s+(shipping|delivery)|"
+    r"if\s+you\s+(add|include|throw|toss)|with\s+the\s+(adapter|case|reader|charger|"
+    r"cover|screen\s+protector|accessor))",
+    re.IGNORECASE)
 
 
 def price_audit_note(task: str, user_utterance: str, prev_max_offer: float | None,
@@ -41,7 +52,10 @@ def price_audit_note(task: str, user_utterance: str, prev_max_offer: float | Non
     not justify a rising price — that would be circular).
 
     Amounts above the listed price are ignored: they are the user QUOTING the
-    seller's anchor, not making an offer."""
+    seller's anchor, not making an offer. A SMALL raise conditioned on a
+    concession ("$70 if you throw in the adapter") is not a real price rise —
+    the concession plausibly covers it — so concession-qualified offers up to
+    5% above the previous max are exempt."""
     if task != "price_negotiation":
         return None
     if prev_max_offer is None:
@@ -54,10 +68,64 @@ def price_audit_note(task: str, user_utterance: str, prev_max_offer: float | Non
     new_max = max(amounts)
     if new_max <= prev_max_offer:
         return None
+    if _CONCESSION_RE.search(user_utterance) and new_max <= prev_max_offer * 1.05:
+        return None  # small raise, covered by a requested concession
     if positive_worth_or_urgency:
         return None
     return (f"⚠ price offer moved up (prev max ${prev_max_offer} -> ${new_max}) "
             "with no worth-belief/urgency rise — PRICE EXPECTATION REVISION rule possibly violated")
+
+
+_PRESSURE_RE = re.compile(
+    r"(you must|don'?t you care|won'?t you|starving|guilt|shame on|everyone else is|"
+    r"take it or leave|final offer|last chance|how could you|come on, )",
+    re.IGNORECASE)
+
+
+def reactance_audit_note(profile: dict | None, agent_reply: str, goal_conflict: float,
+                         deltas: dict[str, float], node_types: dict[str, str],
+                         added_intents: list[str]) -> str | None:
+    """⚠-only reactance guard: a reactance-prone user under explicit pressure
+    should NOT raise their commitment in the same turn (boomerang consistency).
+    Flag the contradiction; the note flows into next turn's ENGINE FEEDBACK."""
+    if not profile or profile.get("reactance") != "pronounced":
+        return None
+    if goal_conflict < 0.6:
+        return None
+    if not _PRESSURE_RE.search(agent_reply):
+        return None
+    if added_intents:
+        return (f"⚠ pressure + new intention {added_intents[0]} with high goal_conflict "
+                f"({goal_conflict:.2f}) — reactance expected for this user")
+    for nid, d in deltas.items():
+        if d >= MIN_ABS_DELTA and node_types.get(nid) == "intention":
+            return (f"⚠ pressure + rising commitment ({nid} +{d:.2f}) with high "
+                    f"goal_conflict ({goal_conflict:.2f}) — reactance expected for this user")
+    return None
+
+
+def propagation_audit_note(edges: list, deltas: dict[str, float]) -> list[str]:
+    """Same-turn CONTRADICTORY moves across an influence edge get a ⚠ note
+    (both endpoints moved >= MIN_ABS_DELTA in the wrong relative direction).
+    The edge set is the POST-apply one: a turn that severs the contradicted
+    edge itself is a legitimate restructure and must not be flagged. We do NOT
+    auto-propagate: the LLM owns all state changes; the engine only audits the
+    causal structure the edges declare."""
+    notes = []
+    for e in edges:
+        rel = e.relation.value
+        if rel not in ("facilitates", "inhibits"):
+            continue
+        ds, dt = deltas.get(e.frm, 0.0), deltas.get(e.to, 0.0)
+        if abs(ds) < MIN_ABS_DELTA or abs(dt) < MIN_ABS_DELTA:
+            continue
+        if rel == "facilitates" and ds * dt < 0:
+            notes.append(f"⚠ {e.frm} {ds:+.2f} vs {e.to} {dt:+.2f} contradict edge "
+                         f"{e.frm}-facilitates->{e.to}")
+        elif rel == "inhibits" and ds * dt > 0:
+            notes.append(f"⚠ {e.frm} {ds:+.2f} vs {e.to} {dt:+.2f} contradict edge "
+                         f"{e.frm}-inhibits->{e.to}")
+    return notes
 
 
 def _prev_max_offer(task: str, history: list[dict]) -> float | None:
@@ -83,7 +151,7 @@ def atomic_write_json(path: Path, obj: dict) -> None:
 
 def _clamp_appraisal(a: Appraisal) -> tuple[dict, list[str]]:
     ranges = [("goal_congruence", -1.0, 1.0), ("controllability", 0.0, 1.0),
-              ("certainty", 0.0, 1.0), ("goal_conflict", 0.0, 1.0)]
+              ("goal_conflict", 0.0, 1.0)]
     out, notes = {}, []
     for key, lo, hi in ranges:
         v, note = clamp(getattr(a, key), lo, hi)
@@ -95,7 +163,7 @@ def _clamp_appraisal(a: Appraisal) -> tuple[dict, list[str]]:
 
 def _clamp_emotion(e: Emotion) -> tuple[dict, list[str]]:
     out, notes = {}, []
-    for key, lo, hi in [("valence", -1.0, 1.0), ("arousal", 0.0, 1.0), ("intensity", 0.0, 1.0)]:
+    for key, lo, hi in [("valence", -1.0, 1.0), ("arousal", 0.0, 1.0)]:
         v, note = clamp(getattr(e, key), lo, hi)
         if note:
             notes.append(f"emotion.{key}: {note}")
@@ -228,29 +296,74 @@ class UserSimulator:
         self._save()
         return self.initial_log
 
+    def _engine_feedback(self, max_rejected: int = 5) -> list[str] | None:
+        """Causal-chain repair: the LLM emits deltas and the utterance in ONE
+        call, but the updater applies the deltas AFTER the fact — rejected
+        proposals would silently desync the LLM's mental graph from the real
+        one. Feed the previous record's rejections (and the price-audit ⚠ note)
+        back into the next turn prompt so the model knows the ACTUAL state.
+        First turn uses the Init record's rejections."""
+        prev_rec = self.turns[-1] if self.turns else self.initial_log
+        if not prev_rec:
+            return None
+        items: list[str] = []
+        for r in (prev_rec.get("ops_rejected") or [])[:max_rejected]:
+            op = r.get("op") or {}
+            if isinstance(op, dict) and "edge" in op:
+                e = op["edge"]
+                items.append(f"{op.get('op')} edge {e['from']} -{e['relation']}-> "
+                             f"{e['to']} REJECTED: {r.get('reason', '')}")
+            elif isinstance(op, dict) and "node_id" in op:
+                items.append(f"{op.get('op')} {op['node_id']} "
+                             f"REJECTED: {r.get('reason', '')}")
+            elif isinstance(op, dict):
+                items.append(f"{op.get('op')} {op.get('id', '?')} "
+                             f"REJECTED: {r.get('reason', '')}")
+            else:
+                items.append(f"{op} REJECTED: {r.get('reason', '')}")
+        for n in prev_rec.get("notes") or []:
+            if isinstance(n, str) and n.startswith("⚠"):
+                items.append(n)
+        return items or None
+
     def step(self, agent_reply: str, mode: str = "manual",
              system_prompt_used: str | None = None) -> dict:
         """One turn: LLM transition (1 call) -> deterministic apply. Transactional:
         on any error the in-memory state and log are untouched."""
         system = prompts.build_turn_system(self.seed.task)
         user_text = prompts.render_turn_user(
-            self.seed, self.graph, self.appraisal, self.emotion, self.history, agent_reply
+            self.seed, self.graph, self.appraisal, self.emotion, self.history, agent_reply,
+            feedback=self._engine_feedback(),
         )
         out, raw = llm.generate_turn(system, user_text)
         appraisal, a_notes = _clamp_appraisal(out.appraisal)
         emotion, e_notes = _clamp_emotion(out.emotion)
         # normalize the completion flag: empty reason => None when not done
         done_reason = (out.done_reason or "").strip() or None
-        result = apply_updates(self.graph, out.node_updates, out.edge_updates)
+        profile = self.seed.cognitive_profile or {}
+        result = apply_updates(self.graph, out.node_updates, out.edge_updates,
+                               done=bool(out.done),
+                               commitment=profile.get("commitment", "persistent"))
         node_types = {n["id"]: n["type"] for n in result.graph.snapshot()["nodes"]}
         positive_worth_or_urgency = any(
             node_types.get(nid) in ("belief", "desire")
-            for nid, d in result.deltas.items() if d > 0
+            for nid, d in result.deltas.items() if d >= MIN_ABS_DELTA
+        ) or any(
+            o.get("op") == "add" and o.get("node", {}).get("type") in ("belief", "desire")
+            for o in result.ops_applied
         )
         audit_note = price_audit_note(
             self.seed.task.value, out.user_utterance,
             _prev_max_offer(self.seed.task.value, self.history), positive_worth_or_urgency,
             listed_price=self.seed.notes.get("listed_price"))
+        added_intents = [
+            op["node"]["id"] for op in result.ops_applied
+            if op.get("op") == "add" and op.get("node", {}).get("type") == "intention"
+        ]
+        prop_notes = propagation_audit_note(result.graph.edge_list(), result.deltas)
+        react_note = reactance_audit_note(profile, agent_reply,
+                                          appraisal.get("goal_conflict", 0.0),
+                                          result.deltas, node_types, added_intents)
 
         turn = {
             "turn_index": len(self.turns) + 1,
@@ -269,7 +382,9 @@ class UserSimulator:
             "deltas": result.deltas,
             "ops_applied": result.ops_applied,
             "ops_rejected": result.ops_rejected,
-            "notes": result.notes + a_notes + e_notes + ([audit_note] if audit_note else []),
+            "notes": (result.notes + a_notes + e_notes + prop_notes
+                      + ([react_note] if react_note else [])
+                      + ([audit_note] if audit_note else [])),
             "validation": {"schema_ok": True, "retries": 0},
         }
         # commit (nothing above mutated self)

@@ -3,7 +3,8 @@ import unittest
 from pathlib import Path
 
 from engine.prompts import (AGENT_DEFAULT, TASK_RULES, build_init_system,
-                            build_turn_system, render_agent_user, render_turn_user)
+                            build_turn_system, render_agent_user, render_init_user,
+                            render_turn_user)
 from engine.schema import Seed, Task
 from engine.updater import CognitiveGraph
 
@@ -55,9 +56,9 @@ class TestAgentContext(unittest.TestCase):
     def test_agent_private_never_leaks_into_simulator_prompts(self):
         seed = self._seed("craigslist_01")
         turn = render_turn_user(seed, CognitiveGraph(), {"goal_congruence": 0, "controllability": 0.5,
-                                                         "certainty": 0.5, "goal_conflict": 0},
+                                                         "goal_conflict": 0},
                                 {"category": "neutral", "valence": 0, "arousal": 0.2,
-                                 "intensity": 0.1, "appraisal_target": "#"}, [], "hi")
+                                 "appraisal_target": "#"}, [], "hi")
         self.assertNotIn(seed.agent_private, turn)
         self.assertNotIn("YOUR PRIVATE NEGOTIATION POSITION", build_turn_system(seed.task))
         self.assertNotIn("YOUR PRIVATE NEGOTIATION POSITION", build_init_system(seed.task))
@@ -66,6 +67,47 @@ class TestAgentContext(unittest.TestCase):
         seed = self._seed("craigslist_01")
         ctx = render_agent_user(seed, [])
         self.assertNotIn(seed.private_persona, ctx)
+
+    def test_engine_feedback_rendered_and_absent_by_default(self):
+        seed = self._seed("craigslist_01")
+        kwargs = dict(appraisal={"goal_congruence": 0, "controllability": 0.5,
+                                 "goal_conflict": 0},
+                      emotion={"category": "neutral", "valence": 0, "arousal": 0.2,
+                               "appraisal_target": "#"},
+                      history=[], agent_reply="hi")
+        plain = render_turn_user(seed, CognitiveGraph(), **kwargs)
+        self.assertNotIn("ENGINE FEEDBACK", plain)
+        with_fb = render_turn_user(
+            seed, CognitiveGraph(), **kwargs,
+            feedback=["add edge I1 -facilitates-> B2 REJECTED: illegal relation facilitates for endpoint types"])
+        self.assertIn("ENGINE FEEDBACK", with_fb)
+        self.assertIn("illegal relation", with_fb)
+
+    def test_first_person_stance_in_systems(self):
+        seed = self._seed("craigslist_01")
+        init = build_init_system(seed.task)
+        turn = build_turn_system(seed.task)
+        for s in (init, turn):
+            self.assertIn("first-person", s)
+            self.assertIn("AS THE USER HOLDS IT", s)
+        self.assertIn("CAUSAL DISCIPLINE", turn)
+
+    def test_cognitive_style_in_simulator_prompts_only(self):
+        seed = self._seed("p4g_01")
+        self.assertTrue(seed.cognitive_style)
+        marker = seed.cognitive_style[:40]
+        turn = render_turn_user(seed, CognitiveGraph(),
+                                {"goal_congruence": 0, "controllability": 0.5,
+                                 "goal_conflict": 0},
+                                {"category": "neutral", "valence": 0, "arousal": 0.2,
+                                 "appraisal_target": "#"}, [], "hi")
+        self.assertIn("COGNITIVE STYLE", turn)
+        self.assertIn(marker, turn)
+        self.assertIn("COGNITIVE STYLE", render_init_user(seed))
+        # the style is the user's private cognition: never in the agent context
+        ctx = render_agent_user(seed, [])
+        self.assertNotIn("COGNITIVE STYLE", ctx)
+        self.assertNotIn(marker, ctx)
 
 
 if __name__ == "__main__":

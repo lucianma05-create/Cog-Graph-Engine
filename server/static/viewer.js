@@ -294,7 +294,6 @@ function renderSidebar(i) {
   st.appendChild(barRow("goal_congruence", snap.appraisal.goal_congruence, -1, 1,
     snap.appraisal.goal_congruence >= 0 ? "#3c7a2e" : "#c0392b"));
   st.appendChild(barRow("controllability", snap.appraisal.controllability, 0, 1, "#2e6da4"));
-  st.appendChild(barRow("certainty", snap.appraisal.certainty, 0, 1, "#2e6da4"));
   st.appendChild(barRow("goal_conflict", snap.appraisal.goal_conflict, 0, 1, "#b03a2e"));
   const em = document.createElement("div"); em.style.marginTop = "6px";
   em.textContent = `情绪: ${snap.emotion.category}　目标: ${snap.emotion.appraisal_target}`;
@@ -302,7 +301,6 @@ function renderSidebar(i) {
   st.appendChild(barRow("valence", snap.emotion.valence, -1, 1,
     snap.emotion.valence >= 0 ? "#3c7a2e" : "#c0392b"));
   st.appendChild(barRow("arousal", snap.emotion.arousal, 0, 1, "#7d5ba6"));
-  st.appendChild(barRow("intensity", snap.emotion.intensity, 0, 1, "#e07b00"));
 
   const ops = $("opsBox");
   ops.textContent = "";

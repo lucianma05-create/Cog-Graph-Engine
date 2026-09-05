@@ -68,17 +68,18 @@ class TestUpdaterBasics(unittest.TestCase):
         self.assertEqual(len(r2.ops_rejected), 0)
         self.assertAlmostEqual(r2.deltas["B1"], 0.6, places=3)
 
-    def test_jitter_frozen_when_content_changes(self):
-        """A content edit is applied, but a sub-threshold strength move is
-        frozen at the old value (re-sending the same content is no bypass)."""
+    def test_jitter_applied_when_content_changes(self):
+        """A content edit is evidence of a real cognitive change: its
+        sub-threshold strength move is APPLIED (facts-driven small moves).
+        Re-sending the same content is no bypass."""
         g = graph_with_b1d1i1()
         r = apply_updates(g, [up("B1", content="charity now seems less trustworthy",
                                  level_probs=[0, 0, 0.02, 0.8, 0.18])], [])  # 3.0 -> 3.16
         self.assertEqual(len(r.ops_rejected), 0)
         self.assertEqual(r.graph.nodes["B1"].content, "charity now seems less trustworthy")
-        self.assertAlmostEqual(r.graph.nodes["B1"].strength, 3.0, places=3)  # frozen
-        self.assertNotIn("B1", r.deltas)
-        self.assertTrue(any("frozen" in n for n in r.notes))
+        self.assertAlmostEqual(r.graph.nodes["B1"].strength, 3.16, places=3)  # applied
+        self.assertAlmostEqual(r.deltas["B1"], 0.16, places=3)
+        self.assertFalse(any("frozen" in n for n in r.notes))
         # same content re-sent with a jitter: no content change => rejected
         r2 = apply_updates(g, [up("B1", content="charity is trustworthy",
                                   level_probs=[0, 0, 0.02, 0.8, 0.18])], [])
@@ -252,3 +253,73 @@ class TestUpdaterValidation(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCommitmentGuard(unittest.TestCase):
+    def test_deactivate_intention_with_live_means_for_rejected(self):
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", op="deactivate")], [])
+        self.assertEqual(len(r.ops_rejected), 1)
+        self.assertIn("commitment guard", r.ops_rejected[0]["reason"])
+        self.assertNotIn("I1", r.graph.deactivated)
+
+    def test_update_to_zero_also_guarded(self):
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", level_probs=[1, 0, 0, 0, 0])], [])
+        self.assertEqual(len(r.ops_rejected), 1)
+        self.assertIn("commitment guard", r.ops_rejected[0]["reason"])
+        self.assertNotIn("I1", r.graph.deactivated)
+
+    def test_desire_dying_same_turn_unblocks(self):
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", op="deactivate"),
+                              up("D1", level_probs=[1, 0, 0, 0, 0])], [])
+        self.assertEqual(len(r.ops_rejected), 0)
+        self.assertIn("I1", r.graph.deactivated)
+
+    def test_means_for_edge_removed_same_turn_unblocks(self):
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", op="deactivate")],
+                          [eup("remove", "I1", "D1", "means_for")])
+        self.assertEqual(len(r.ops_rejected), 0)
+        self.assertIn("I1", r.graph.deactivated)
+
+    def test_replacement_intention_unblocks(self):
+        """A NEW intention adopted this turn WITH a means_for link to the SAME
+        desire is a true replacement (the blanket exemption was removed in
+        review: an unrelated or unlinked add must NOT unblock)."""
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", op="deactivate"),
+                              up(op="add", node=draft("I2", "intention", "donate $5",
+                                                      [0.2, 0.3, 0.3, 0.2, 0]))],
+                          [eup("add", "I2", "D1", "means_for")])
+        self.assertEqual(len(r.ops_rejected), 0)
+        self.assertIn("I1", r.graph.deactivated)
+
+    def test_unlinked_intention_add_does_not_unblock(self):
+        """Regression (code review): adding an unrelated intention must not
+        exempt dropping a means_for-served intention."""
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", op="deactivate"),
+                              up(op="add", node=draft("I2", "intention", "buy milk",
+                                                      [0.2, 0.3, 0.3, 0.2, 0]))], [])
+        self.assertEqual(len(r.ops_rejected), 1)
+        self.assertIn("commitment guard", r.ops_rejected[0]["reason"])
+        self.assertNotIn("I1", r.graph.deactivated)
+
+    def test_done_unblocks(self):
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", op="deactivate")], [], done=True)
+        self.assertEqual(len(r.ops_rejected), 0)
+        self.assertIn("I1", r.graph.deactivated)
+
+    def test_flexible_commitment_disables_guard(self):
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("I1", op="deactivate")], [], commitment="flexible")
+        self.assertEqual(len(r.ops_rejected), 0)
+        self.assertIn("I1", r.graph.deactivated)
+
+    def test_belief_deactivation_never_blocked(self):
+        g = graph_with_b1d1i1()
+        r = apply_updates(g, [up("B1", op="deactivate")], [])
+        self.assertEqual(len(r.ops_rejected), 0)

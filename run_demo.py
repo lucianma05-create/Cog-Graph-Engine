@@ -2,7 +2,7 @@
 """Start the BDI user-simulator demo: viewer + API on localhost.
 
 Usage:
-  python run_demo.py                       # first seed, port 8642
+  python run_demo.py                       # first seed, port 8644
   python run_demo.py --seed p4g_01         # specific seed
   python run_demo.py --port 9000 --host 0.0.0.0
 """
@@ -23,7 +23,7 @@ from server.session_store import SessionStore
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--seed", default=None, help="seed_id (default: first available)")
-    ap.add_argument("--port", type=int, default=8642)
+    ap.add_argument("--port", type=int, default=8644)
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--reinit", action="store_true",
                     help="discard the persisted seed graph and regenerate G0")

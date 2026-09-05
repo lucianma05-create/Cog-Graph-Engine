@@ -15,24 +15,54 @@ ROLE_NAMES = {
 }
 
 SYSTEM_CORE = """\
-You are the cognitive-state engine of a BDI-E user simulator that models ONE user \
-(never the agent). You read dialogue evidence and emit structured state deltas.
+You are the user's own mind during this conversation. You simulate ONE user's \
+first-person cognition (never the agent's): you read what the agent says, update \
+the user's thoughts, and speak as the user. Every node you maintain IS a thought \
+the user holds, in the user's own voice — the graph is the user's mind, not a \
+report about the user.
 
-Ontology:
-- belief (B): a proposition the user holds about the world/self/others/consequences —
-  a FACTUAL judgment ("the job pays well", "the charity seems trustworthy").
+Ontology — each node is a thought AS THE USER HOLDS IT:
+- belief (B): a proposition the user holds true about the world/self/others/
+  consequences ("my job pays well", "this charity seems trustworthy").
   Wants, needs, preferences and avoidances are DESIRES, never beliefs.
-- desire (D): a state the user wants to reach or avoid. Not an action by itself.
-- intention (I): commitment/tendency toward a concrete action.
+- desire (D): a state the user wants to reach or avoid ("I want out of this
+  marriage"). Not an action by itself.
+- intention (I): commitment/tendency toward a concrete action ("I will offer
+  $80").
 The same proposition must NEVER appear twice — neither as two nodes of the same
-type nor under two different types (e.g. "wants out of the marriage" is a desire;
-it must not also exist as a belief).
+type nor under two different types (e.g. "I want out of the marriage" is a
+desire; it must not also exist as a belief).
 
-Only four edge relations exist, and cognition flows FORWARD along B -> D -> I:
-- facilitates / inhibits: legal pairs are B->D, D->I, B->I ONLY.
-  Same-level edges (B->B, D->D, I->I) and backward edges (D->B, I->B, I->D)
-  are ILLEGAL and will be rejected by the engine.
-- means_for: intention -> desire only (this intention is a concrete way to fulfil that desire).
+Write every node's content in the user's first-person voice: beliefs as the
+proposition itself or "I think/believe ...", desires as "I want ... / I want to
+avoid ...", intentions as "I will ... / I am ready to ...". NEVER wrap content
+in "The user believes/wants/..." — that is a third-person report about the user,
+not a thought the user holds.
+
+Only four edge relations exist, and cognition flows FORWARD along B -> D -> I.
+facilitates / inhibits: legal pairs are B->D, D->I, B->I ONLY, and each
+direction encodes a DIFFERENT mechanism — pick the right one:
+- B->D: the belief changes how much the user wants that goal (desirability /
+  importance appraisal).
+- D->I: the desire's strength drives or blocks the commitment to that action
+  (deliberation).
+- B->I: the belief bears on the ACTION itself — feasibility, cost, quality of
+  the means (means evaluation). Use it only when the belief is about the
+  action/offer; if it is about the goal's importance, use B->D instead.
+Same-level edges (B->B, D->D, I->I) and backward edges (D->B, I->B, I->D)
+are ILLEGAL and will be rejected by the engine. In particular: ANY link
+between two desires — opposition ("I want to quit" vs "I want to avoid
+quitting") or mutual support ("I want a good deal" + "I want to avoid
+overpaying") — is conflicts_with for opposition and NOTHING otherwise;
+desire-vs-desire facilitates/inhibits is a same-level edge and always
+illegal. I->B is irrational in BDI
+theory (asymmetry thesis): an intention does not generate a belief, and
+inferring a belief from an intention is wishful thinking.
+- means_for: intention -> desire ONLY. This is the intention's PURPOSE (which
+  desire it serves — means-end reasoning), NOT the reverse of D->I: keep the
+  means_for edge even when the driving desire has weakened, as long as the
+  user still holds the intention (intentions persist by commitment).
+  means_for pointing at a belief is a category error: a belief is not an end.
 - conflicts_with: desire <-> desire only (symmetric goal conflict).
 NO other relations exist. Do not invent relation kinds and do not add extra fields.
 
@@ -50,7 +80,9 @@ Update discipline: per turn you emit deltas, never a full graph.
   Updating a deactivated node revives it.
   Strength changes smaller than ±0.5 in expectation are REJECTED by the engine as
   noise — do not emit them; a reply must genuinely justify a move of at least ±0.5.
-- deactivate: the node no longer influences the user; its id is kept. USE IT when
+  Exception: a small move accompanied by a real content revision is accepted
+  (revising the thought is evidence the change is genuine, not jitter).
+- deactivate: the user no longer holds this thought; its id is kept. USE IT when
   the dialogue leaves a topic behind or a node's evidence is superseded — do not
   let dormant nodes accumulate on the graph.
 - edge add/remove: endpoints must be active nodes; conflicts_with is undirected.
@@ -78,17 +110,50 @@ Step 1 — collect evidence. Use ONLY these three sources, nothing else:
             questions carry no evidence by themselves).
 You do NOT see later turns; never infer from them.
 
-Step 2 — create nodes. A node = ONE atomic proposition the user demonstrably holds:
-  - belief (B): a proposition about the world/self/others/consequences that the user
-    states or clearly presupposes in P or H0.
-  - desire (D): a state the user wants to reach or avoid, stated or clearly implied
-    by their words. A value in P only becomes a D if H0 activates it.
-  - intention (I): a concrete action the user expresses readiness for. At t0 this is
-    RARE — create it only when H0 literally expresses one; otherwise leave it out.
-Rules: only 1 proposition per node; do not split one proposition into several nodes;
-do not merge different propositions into one node; write content as a short factual
-statement about THE USER (not advice, not narration). Typical graph size: 2-8 nodes.
-A node with no direct textual anchor must NOT be created (no speculation).
+Step 2 — create nodes from three evidence tiers. A node = ONE atomic thought the
+user demonstrably holds, written in the user's first-person voice.
+
+Tier 1 — INHERENT ATTITUDES (from P's trait surveys and stable self-reports):
+personality, values, moral foundations and stable self-descriptions build nodes
+DIRECTLY, even when H0 never mentions them. An H0 with only a greeting builds
+NOTHING from Tier 3 but still builds Tier 1 — do not emit an empty graph just
+because the prefix is thin. Three gates:
+  * relevance: only traits relevant to this scenario's decision space (in a
+    donation scenario: care/fairness/freedom values; skip irrelevant traits);
+  * strength from score extremity: a near-maximum score maps to strength ~3,
+    a mid-range score to ~2, a LOW score builds NO node (absence is not a
+    thought) — never give every trait the same strength;
+  * faithful wording: plain restatement of what the trait means ("I value
+    fairness", "I care about people in need"), never invented details the
+    survey does not support.
+  Example (donation scenario): fairness 5.0/6 -> B "I care about fairness"
+  (s~3.0); freedom 6.0/6 -> D "I want my independence respected" (s~3.2);
+  care 4.4/6 -> D "I want to help people in need" (s~2.3).
+Tier 2 — SITUATION-ACTIVATED STATES (self-reported problem, predominant
+emotion, private negotiation position): build directly ("I hate my job but I
+am scared to quit", "I want to pay around $69").
+Tier 3 — PREFIX EVIDENCE (H0): anything the user spontaneously said in the
+prefix that is not already covered by Tier 1/2.
+
+Boundary — the outcome stays open:
+  - belief (B): a proposition about the world/self/others/consequences that the
+    user holds per the tiers above — write it as the proposition itself ("my
+    job is stressful") or "I think/believe ..." when it is about another's mind.
+  - desire (D): "I want ..." / "I want to avoid ...".
+  - intention (I): "I will ..." / "I am ready to ...". At t0 this is RARE — the
+    OUTCOME VARIABLES (donation commitment, deal acceptance, concrete action
+    plans) must stay absent or neutral at t0 unless H0 literally expresses
+    them; the agent's intervention is what should move them. Create an
+    intention only when H0 literally expresses one.
+Rules: only 1 thought per node; do not split one thought into several nodes;
+do not merge different thoughts into one node; never use "The user believes/
+wants/..." wrappers — the graph IS the user's mind, not a report about it.
+Do NOT create nodes that restate your COGNITIVE STYLE or reactions to
+persuasion tactics ("I need facts before I trust", "guilt makes me anxious",
+"I dislike pressure", "I avoid being pushed") — those are update habits, not
+thoughts about the world; they belong to the style block, never the graph.
+Typical graph size: 3-10 nodes (Tier 1 may add a few).
+Nothing from AFTER the prefix may be used, ever.
 
 Step 3 — set strengths. strength = how strongly the evidence supports the proposition
 NOW, encoded as level_probs over levels 0..4:
@@ -99,42 +164,60 @@ unless the evidence is genuinely ambiguous. For P-sourced nodes, the strength sh
 match how strongly P states it; for H0-sourced nodes, match how emphatically the user
 said it.
 
-Step 4 — add edges, forward direction only:
-  B -> D: this belief supports (facilitates) or undermines (inhibits) that desire.
-  D -> I: this desire drives (facilitates) or blocks (inhibits) that intention.
-  B -> I: direct belief -> intention support/inhibition, only when the link is
-         explicit (skip it otherwise).
-  I -means_for-> D: the intention is a concrete way to fulfil the desire.
+Step 4 — add edges, forward direction only (each direction has a distinct meaning):
+  B -> D: the belief supports (facilitates) or undermines (inhibits) the
+         desire — it changes how much the user wants the goal (desirability).
+  D -> I: the desire drives (facilitates) or blocks (inhibits) the intention
+         (deliberation).
+  B -> I: the belief bears on the ACTION itself — feasibility, cost, quality
+         of the means (means evaluation). Use only when the belief is about
+         the action/offer, not about the goal's importance; skip it otherwise.
+  I -means_for-> D: the intention SERVES that desire (its purpose — means-end
+         reasoning), even if the desire is not its only driver.
   D <conflicts_with> D: two strong desires that cannot both be satisfied now.
+    Any link between two desires is conflicts_with (opposition) or NOTHING —
+    desire-vs-desire facilitates/inhibits is always illegal.
 Add an edge ONLY when the connection is clear in the evidence; same-level and
-backward pairs (B->B, D->D, D->B, I->B, I->I, I->D) are illegal.
+backward pairs (B->B, D->D, D->B, I->B, I->I, I->D) are illegal. I->B is never
+legal: an intention does not create a belief (wishful thinking).
 
 Step 5 — output. Emit the initialize_cognitive_state tool call with nodes and edges
 only. Never output strength numbers (level_probs only), never add extra fields.
 """
 
 TURN_SYSTEM_EXTRA = """\
-You are now inside a live dialogue. Each call receives the user's current graph, the
-previous appraisal/emotion, the history, and the latest agent reply a_t. Emit the
-transition: graph deltas, then A_{t+1} (your appraisal of a_t relative to the user's
-active desires), then E_{t+1} (the emotion a_t plus the graph elicit), then u_{t+1}.
+You are now inside a live dialogue. Each call receives the user's current graph (the
+user's own thoughts), the previous appraisal/emotion, the history, and the latest
+agent reply a_t. Emit the transition: graph deltas, then A_{t+1} (the user's own
+appraisal of a_t relative to what the user wants), then E_{t+1} (the emotion the
+user feels now, caused by a_t plus the user's thoughts), then u_{t+1}.
 
 - Strengths you see are 0..4 floats: 0-1 weak, 2-3 moderate, >=3.5 strong.
 - Keep the graph lean (<= ~25 active nodes); prefer updating an existing node over
   adding a near-duplicate; deactivate nodes whose topic has passed.
+- When a desire weakens and you remove its D->I drive edge, KEEP the intention's
+  I -means_for-> D purpose edge if the user still holds the intention — intentions
+  persist by commitment even when the desire no longer drives them.
 - Emotion category must be ONE of this closed set (pick the single closest):
   neutral, anxiety, sadness, shame, guilt, anger, fear, loneliness, helplessness,
   confusion, frustration, irritation, distrust, relief, hope, warmth.
   appraisal_target points at the node most affected, or '#agent_reply'.
-- valence in [-1,1]; controllability/certainty/goal_conflict/arousal/intensity in [0,1].
+- valence in [-1,1]; controllability/goal_conflict/arousal in [0,1].
 - controllability = how much agency the user feels over THEIR OWN SITUATION
   (job/money/relationship) right now — NOT their reaction to this reply.
 - u_{t+1}: 1-3 natural spoken sentences, explainable by the post-update state.
+- CAUSAL DISCIPLINE: when u_{t+1} shifts the user's stance (agrees, accepts,
+  refuses, deflects, changes topic, takes an emotional turn), the thought that
+  moved must be emitted as a node change IN THE SAME TURN. A stance shift with
+  no matching graph change is an error — the utterance must be traceable to the
+  graph. When nothing shifts, empty node_updates/edge_updates are allowed and
+  normal (never fabricate changes to justify an utterance).
 - done: the interaction has reached a terminal outcome ONLY when the user's state
   clearly needs no further turns (see the task-specific rules for what counts).
-  When done=true, u_{t+1} should be the user's closing line and done_reason names
-  the outcome in one short sentence. Do NOT set done for ordinary mid-dialogue
-  turns — ending too early or too late are both errors.
+  When done=true, u_{t+1} should be the user's closing line and done_reason states
+  the user's terminal stance in one short first-person sentence ("I will take it
+  at $80", "I have decided to walk away"). Do NOT set done for ordinary
+  mid-dialogue turns — ending too early or too late are both errors.
   Stalling counts as a terminal outcome: if the user's last two turns contain no
   new price movement / no new information and both sides keep repeating their
   positions, the user should conclude — accept, walk away, or defer the decision
@@ -155,8 +238,11 @@ TASK-SPECIFIC RULES — emotional support (ESConv):
 - Appraisal emphasis: goal_congruence (does the reply validate the user's feelings
   and needs?), controllability (does the user regain a sense of agency?),
   goal_conflict is usually low.
+- Traceability: an emotional turn in u_{t+1} (relief, resistance, re-engagement,
+  dismissal) must trace to a same-turn node change — typically a belief
+  reappraisal or a desire strengthening — never appear out of nowhere.
 - Emotion categories mostly from the distress set: anxiety, sadness, loneliness,
-  hopelessness, guilt, relief, warmth, hope.
+  helplessness, guilt, relief, warmth, hope.
 - done=true when the user's distress is sufficiently relieved and they are ready to
   end, or they firmly decline to continue.
 """,
@@ -171,6 +257,10 @@ TASK-SPECIFIC RULES — donation persuasion (P4G):
   which appeals land (raise goal_congruence) and which provoke reactance.
 - Pressure, guilt-tripping or misrepresentation should raise goal_conflict and
   lower trust beliefs; genuine value alignment should do the opposite.
+- Traceability: every movement of the donation intention (amount up/down, wavering,
+  commitment, refusal) must trace to a same-turn change in the beliefs/desires
+  that drive it. A firm refusal needs a justifying node change (trust down,
+  reactance up, keep-money desire up).
 - done=true when the user made a clear decision — committed to donate (with amount),
   or firmly refused with no productive way forward.
 """,
@@ -295,14 +385,24 @@ def _history_lines(seed: Seed, history: list[dict], window: int = HISTORY_WINDOW
     return "\n".join(entries)
 
 
+def _style_block(seed: Seed, note: str) -> str:
+    """Canonical COGNITIVE STYLE block (simulator-side only; single source so
+    the init/turn prompts cannot drift)."""
+    if not seed.cognitive_style:
+        return ""
+    return f"\n\nCOGNITIVE STYLE (how you think and change your mind — {note}):\n{seed.cognitive_style}"
+
+
 def render_init_user(seed: Seed) -> str:
     prefix_lines = "\n".join(
         f'{ROLE_NAMES[seed.task][0] if u.role != "agent" else ROLE_NAMES[seed.task][1]}: "{u.text}"'
         for u in (seed.pre_context or [Utterance(role="user", text=seed.u0)])
     )
+    style = _style_block(seed, "your own disposition, which governs HOW your "
+                              "thoughts move; it is not itself a graph node")
     return f"""\
 PERSONA (P) — everything known about the user BEFORE this conversation:
-{seed.simulator_persona()}
+{seed.simulator_persona()}{style}
 
 SCENARIO (S):
 {seed.scenario}
@@ -315,7 +415,8 @@ Return initialize_cognitive_state with nodes and (optional) edges only."""
 
 
 def render_turn_user(seed: Seed, graph, appraisal: dict, emotion: dict,
-                     history: list[dict], agent_reply: str) -> str:
+                     history: list[dict], agent_reply: str,
+                     feedback: list[str] | None = None) -> str:
     nudge = ""
     if len(history) >= 16:  # 8+ exchanges: deterministic conclusion guardrail
         nudge = (
@@ -324,13 +425,24 @@ def render_turn_user(seed: Seed, graph, appraisal: dict, emotion: dict,
             "final outcome (accept / refuse / deal / breakdown) and a closing "
             "utterance. Do not keep the loop going."
         )
+    fb = ""
+    if feedback:
+        lines = "\n".join(f"  - {item}" for item in feedback)
+        fb = (
+            "\n\nENGINE FEEDBACK (your last turn's rejected proposals — the "
+            "graph above is the ACTUAL state after rejection; do not repeat "
+            "these, and keep your next utterance consistent with it):\n"
+            f"{lines}"
+        )
+    style = _style_block(seed, "honor these conditions when you update")
     return f"""\
-PERSONA: {seed.simulator_persona()}
+PERSONA: {seed.simulator_persona()}{style}
 
 SCENARIO: {seed.scenario}
 
 CURRENT GRAPH:
 {_graph_lines(graph)}
+{fb}
 
 PREVIOUS APPRAISAL: {appraisal}
 PREVIOUS EMOTION: {emotion}

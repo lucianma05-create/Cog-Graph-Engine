@@ -86,9 +86,10 @@ class Node(BaseModel):
 class Appraisal(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    # Minimal appraisal set (2026-09-05): certainty dropped — belief strength
+    # already carries the confidence signal and the model never used it.
     goal_congruence: float
     controllability: float
-    certainty: float
     goal_conflict: float
 
 
@@ -104,10 +105,12 @@ EMOTION_CATEGORIES = (
 class Emotion(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    # Minimal emotion set (2026-09-05): intensity dropped — the circumplex
+    # model (valence x arousal) already carries felt strength; intensity was
+    # near-duplicate of arousal.
     category: str = Field(min_length=1)
     valence: float
     arousal: float
-    intensity: float
     appraisal_target: str = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -204,19 +207,19 @@ class Seed(BaseModel):
     #   G0 = Init(P, S, pre_context). The simulation continues from here.
     reference_transcript: list[Utterance] = Field(default_factory=list)
     notes: dict[str, Any] = Field(default_factory=dict)
+    cognitive_style: Optional[str] = None
+    # ^ first-person CONDITIONED update habits ("I update X only when Y"),
+    #   simulator-only (never shown to the agent LLM). Reviewed by hand per seed.
+    cognitive_profile: Optional[dict[str, str]] = None
+    # ^ engine-only guard switches, e.g. {"commitment": "persistent"|"flexible",
+    #   "reactance": "normal"|"pronounced"}. The LLM never sees these values;
+    #   it only sees the NL block above.
 
     def simulator_persona(self) -> str:
         """Persona block for the simulator (Init + turn transitions)."""
         if self.private_persona:
             return f"{self.persona}\n\nPRIVATE (known only to the user): {self.private_persona}"
         return self.persona
-
-
-class GraphState(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    nodes: list[Node] = Field(default_factory=list)
-    edges: list[Edge] = Field(default_factory=list)
 
 
 class StepRequest(BaseModel):
@@ -250,7 +253,7 @@ _NODE_PROPS = {
            "description": "Fresh node id; prefix letter must match type (B/D/I). Never reuse a retired id."},
     "type": {"type": "string", "enum": ["belief", "desire", "intention"]},
     "content": {"type": "string", "minLength": 1,
-                "description": "Short proposition-like statement of the state."},
+                "description": "The thought AS THE USER HOLDS IT, in the user's first-person voice: beliefs as the proposition itself or 'I think/believe ...', desires as 'I want ... / I want to avoid ...', intentions as 'I will ... / I am ready to ...'. Never 'The user believes/wants/...' wrappers."},
     "level_probs": {"type": "array", "items": {"type": "number"},
                     "minItems": 5, "maxItems": 5, "description": _LEVEL_PROBS_DESC},
 }
@@ -260,7 +263,7 @@ _EDGE_PROPS = {
     "to": {"type": "string", "description": "Target node id."},
     "relation": {"type": "string",
                  "enum": ["facilitates", "inhibits", "means_for", "conflicts_with"],
-                 "description": "Cognition flows forward B->D->I. facilitates/inhibits: B->D, D->I, B->I ONLY (same-level and backward pairs are illegal); means_for: intention->desire only; conflicts_with: desire<->desire only."},
+                 "description": "Cognition flows forward B->D->I. facilitates/inhibits: B->D (desirability), D->I (deliberation), B->I (means evaluation) ONLY — same-level and backward pairs are illegal, I->B is wishful thinking; means_for: intention->desire only (the intention's purpose — keep it while the intention persists); conflicts_with: desire<->desire only."},
 }
 
 SIMULATE_USER_TURN_SCHEMA = {
@@ -316,10 +319,9 @@ SIMULATE_USER_TURN_SCHEMA = {
                 "goal_congruence": {"type": "number", "description": "[-1,1]; >0 helps the user's active desires."},
                 "controllability": {"type": "number",
                                     "description": "[0,1]; how much agency the user feels over THEIR OWN SITUATION (job/money/relationship) — not their reaction to this reply."},
-                "certainty": {"type": "number", "description": "[0,1]"},
                 "goal_conflict": {"type": "number", "description": "[0,1]"},
             },
-            "required": ["goal_congruence", "controllability", "certainty", "goal_conflict"],
+            "required": ["goal_congruence", "controllability", "goal_conflict"],
             "additionalProperties": False,
         },
         "emotion": {
@@ -330,11 +332,10 @@ SIMULATE_USER_TURN_SCHEMA = {
                              "description": "Closed label set; pick the single closest one."},
                 "valence": {"type": "number", "description": "[-1,1]"},
                 "arousal": {"type": "number", "description": "[0,1]"},
-                "intensity": {"type": "number", "description": "[0,1]"},
                 "appraisal_target": {"type": "string", "minLength": 1,
                                      "description": "Node id most affected, or '#agent_reply', or a short phrase."},
             },
-            "required": ["category", "valence", "arousal", "intensity", "appraisal_target"],
+            "required": ["category", "valence", "arousal", "appraisal_target"],
             "additionalProperties": False,
         },
         "user_utterance": {
@@ -348,7 +349,7 @@ SIMULATE_USER_TURN_SCHEMA = {
         },
         "done_reason": {
             "type": "string",
-            "description": "When done=true: one short sentence naming the terminal outcome. Omit or leave empty when done=false.",
+            "description": "When done=true: the user's terminal stance in one short first-person sentence ('I will take it at $80', 'I have decided to walk away'). Omit or leave empty when done=false.",
         },
     },
     "required": ["node_updates", "edge_updates", "appraisal", "emotion", "user_utterance", "done"],
