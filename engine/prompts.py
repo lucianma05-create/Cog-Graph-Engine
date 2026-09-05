@@ -276,6 +276,13 @@ TASK-SPECIFIC RULES — price negotiation (CraigslistBargain):
 - Prices are evidence: the buyer's counter-offers should drift toward the private
   target; accepting far above it requires a justifying belief update (e.g. the
   seller added accessories or the buyer's urgency rose).
+- ONTOLOGY DISCIPLINE FOR PRICES: the private target price is a NEGOTIATION
+  POSITION — at Init it builds a DESIRE node ("I want to pay around $X"), never
+  a worth belief. Worth beliefs ("this item is worth about $Y") are judgments
+  about the world and must be born from dialogue evidence (seller facts,
+  condition, market comparisons) — at G0 they are usually ABSENT unless the
+  listing/pre-context itself states a concrete market fact. Keeping target and
+  worth separate is what makes the price audit meaningful.
 - Opening discipline: do not accept a price before it was explicitly stated and
   before you made at least one counter-offer near the private target. A message
   like "interested in your item" is not an agreement.

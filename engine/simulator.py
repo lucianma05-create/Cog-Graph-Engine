@@ -273,6 +273,16 @@ class UserSimulator:
         system = prompts.build_init_system(self.seed.task)
         user_text = prompts.render_init_user(self.seed)
         out, raw = llm.generate_init(system, user_text)
+        if not out.nodes and (self.seed.persona or "").strip():
+            # An EMPTY G0 against a non-trivial persona is a degenerate model
+            # output (e.g. an empty tool call), not a judgment — retry once
+            # with an explicit reminder before caching anything.
+            user_text = user_text + (
+                "\n\nNOTE: your previous call returned an EMPTY graph, but this seed "
+                "carries real pre-dialogue evidence (persona problem statement and/or "
+                "trait surveys). Build the Tier 1/2/3 nodes from it; an empty graph is "
+                "only acceptable when there is truly no evidence at all.")
+            out, raw = llm.generate_init(system, user_text)
         result = build_initial_graph(out)
         self.graph = result.graph
         self.initial_log = {

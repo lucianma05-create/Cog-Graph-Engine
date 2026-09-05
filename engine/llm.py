@@ -24,6 +24,10 @@ _ENV_FILE = Path(__file__).parent.parent / ".env"
 
 
 def _load_dotenv(path: Path) -> None:
+    """Project .env is THE documented config file and WINS over inherited
+    shell env (a stale shell export of ANTHROPIC_MODEL shadowed .env in
+    practice — 2026-09-05). Keys missing in .env fall back to the process
+    environment."""
     if not path.is_file():
         return
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -32,7 +36,7 @@ def _load_dotenv(path: Path) -> None:
             continue
         key, _, value = line.partition("=")
         key, value = key.strip(), value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
+        if key:
             os.environ[key] = value
 
 
@@ -43,6 +47,9 @@ MODEL = (
     or os.environ.get("ANTHROPIC_DEFAULT_SONNET_MODEL")
     or "claude-sonnet-4-6"
 )
+# G0 construction is one-shot and cached forever -> strongest model.
+# Per-turn transitions + agent replies are the high-frequency path -> MODEL.
+INIT_MODEL = os.environ.get("ANTHROPIC_INIT_MODEL") or MODEL
 
 MAX_TOKENS_STRUCT = 4000
 MAX_TOKENS_TEXT = 600
@@ -102,6 +109,7 @@ def call_structured(
     system: str,
     user_text: str,
     temperature: float | None = None,
+    model: str | None = None,
 ) -> tuple[BaseModel, dict[str, Any]]:
     """One structured call with a single validation retry.
 
@@ -111,7 +119,8 @@ def call_structured(
     errors: list[str] = []
     for attempt in range(2):
         try:
-            raw = _forced_tool_call(tool_name, system, user_text, temperature=temperature)
+            raw = _forced_tool_call(tool_name, system, user_text,
+                                    temperature=temperature, model=model)
             return model_cls.model_validate(raw), raw
         except ValidationError as e:
             errors.append(str(e)[:600])
@@ -128,10 +137,11 @@ def generate_turn(system: str, user_text: str) -> tuple[TurnOutput, dict[str, An
 
 
 def generate_init(system: str, user_text: str) -> tuple[InitOutput, dict[str, Any]]:
-    """G0 construction is a deterministic task: temperature 0 (plus the engine
-    persists the first result per seed so the seed graph is stable)."""
+    """G0 construction is a deterministic task: temperature 0 + the strongest
+    model (ANTHROPIC_INIT_MODEL), plus the engine persists the first result per
+    seed so the seed graph is stable."""
     out, raw = call_structured("initialize_cognitive_state", InitOutput, system, user_text,
-                               temperature=0.0)
+                               temperature=0.0, model=INIT_MODEL)
     return out, raw  # type: ignore[return-value]
 
 

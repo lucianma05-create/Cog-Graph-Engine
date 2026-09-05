@@ -80,10 +80,11 @@ tests/      单元测试（84 个，无需 LLM）+ 冒烟测试
 ```ini
 ANTHROPIC_BASE_URL=...
 ANTHROPIC_AUTH_TOKEN=...
-ANTHROPIC_MODEL=...
+ANTHROPIC_MODEL=...          # 高频路径：turn 状态更新 + agent 回复
+ANTHROPIC_INIT_MODEL=...     # G0 种子图（一次性、持久化缓存，建议用最强模型）
 ```
 
-未写入 `.env` 的键会回退到进程环境变量；模型缺省 fallback 为 `claude-sonnet-4-6`。
+模型分层：种子图 G0 用 `ANTHROPIC_INIT_MODEL`（默认回退 `ANTHROPIC_MODEL`），每轮状态更新与 agent 回复用 `ANTHROPIC_MODEL`。**`.env` 的键优先于 shell 环境变量**；未写入 `.env` 的键回退到进程环境变量，两者都缺省时 fallback 为 `claude-sonnet-4-6`。空 G0 守卫：非空 persona 下 Init 返回空图会带提醒自动重试一次。
 
 ## 说明
 
