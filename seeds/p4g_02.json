@@ -1,0 +1,112 @@
+{
+ "seed_id": "p4g_02",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.2 (1-5), conscientious ~3.4 (1-5), extrovert ~2.4 (1-5), agreeable ~3.4 (1-5), neurotic ~2.4 (1-5). Moral foundations (1-6 scale): care 4.4, fairness 5.0, loyalty 3.666666667, authority 3.6, purity 2.333333333, freedom 6.0. Demographics: age 33.0, sex Male, education Less than four-year college, political ideology Conservative.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to a children-focused charity. The persuadee starts out neutral — not committed to donating.",
+ "u0": "Hi there. I have been seeing those St Judes commercials lately.",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Hello. There?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Hi there. I have been seeing those St Judes commercials lately."
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Hello. There?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Hi there. I have been seeing those St Judes commercials lately."
+  },
+  {
+   "role": "persuader",
+   "text": "That's nice. Have you ever donated to any charity?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Yes I have I have never given money though because I'm broke lol. I give blood regularly. What about yourself?"
+  },
+  {
+   "role": "persuader",
+   "text": "I regularly donate some money or things to children's charity"
+  },
+  {
+   "role": "persuadee",
+   "text": "That's awesome! I hate seeing kids going through that stuff. Its terrible."
+  },
+  {
+   "role": "persuader",
+   "text": "Yes. But we have to help them to support their lives"
+  },
+  {
+   "role": "persuadee",
+   "text": "Very true! Ever since I had my daughter It really saddens me to see kids hurting. The charity does such great work though. We have a children's hospital where I live and there is a guy that dresses up like batman for the kids.."
+  },
+  {
+   "role": "persuader",
+   "text": "Haha. So the kids will enjoy seeing him.  And i too see some people who helps the children and children's charity everyday"
+  },
+  {
+   "role": "persuadee",
+   "text": "He has the full get up. Bat mobile and everything. Do you have kids?"
+  },
+  {
+   "role": "persuader",
+   "text": "I have two sons. They are married. What is your daughter doing.?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Oh nice I always wanted a son. My daughter is in the living room reading. She is six."
+  },
+  {
+   "role": "persuader",
+   "text": "That's nice. You always make her to help some children and children's charity."
+  },
+  {
+   "role": "persuadee",
+   "text": "Do you have any grand kids?"
+  },
+  {
+   "role": "persuader",
+   "text": "Yes. I have. They have helping tendency."
+  },
+  {
+   "role": "persuadee",
+   "text": "How do they help you?"
+  },
+  {
+   "role": "persuader",
+   "text": "They help for children's charity."
+  },
+  {
+   "role": "persuadee",
+   "text": "Oh that's amazing! I need to get mine to do more things like that. What do they do to help? Maybe I can get mine to do the same."
+  },
+  {
+   "role": "persuader",
+   "text": "You try to help someone through website. But be aware, there might be some fraudulent"
+  },
+  {
+   "role": "persuadee",
+   "text": "I am sure there are some frauds out there. Well that's good that they help. My daughter is in girl scouts and they called the bingo numbers for a nursing home."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180825-071757_571_live",
+  "split": "train",
+  "n_messages": 20,
+  "contentful_turn_count": 4,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 1,
+  "outcome_committed": false,
+  "outcome_amount": null,
+  "prefix_end_index": 2
+ }
+}

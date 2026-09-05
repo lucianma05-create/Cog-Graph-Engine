@@ -1,0 +1,10 @@
+# secrets
+.env
+
+# runtime artifacts
+sessions/
+seeds/raw/
+__pycache__/
+*.pyc
+nohup.out
+*.tmp

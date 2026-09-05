@@ -1,0 +1,402 @@
+"""Pydantic models and Anthropic tool input-schemas.
+
+Schema authority: shared_work_space/insight.md — nodes carry only
+{id, type, content, strength}; LLMs emit 5-bin level_probs and the engine
+derives strength. All models use extra="forbid" so any drift (e.g. the
+rejected 0904 fields confidence/observability/importance/goal_impact,
+or based_on/elicits edges) fails validation loudly.
+"""
+
+from __future__ import annotations
+
+import re
+from enum import Enum
+from typing import Any, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+NODE_ID_RE = re.compile(r"^(B|D|I)[1-9]\d*$")
+
+
+class NodeType(str, Enum):
+    belief = "belief"
+    desire = "desire"
+    intention = "intention"
+
+
+class Relation(str, Enum):
+    facilitates = "facilitates"
+    inhibits = "inhibits"
+    means_for = "means_for"
+    conflicts_with = "conflicts_with"
+
+
+class Task(str, Enum):
+    emotional_support = "emotional_support"
+    persuasion_donation = "persuasion_donation"
+    price_negotiation = "price_negotiation"
+
+
+class Edge(BaseModel):
+    # Field is named `frm` because `from` is a Python keyword; it is serialized
+    # back to "from" via alias, matching the insight.md / JSON contract.
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    frm: str = Field(alias="from")
+    to: str
+    relation: Relation
+
+    @property
+    def key(self) -> tuple[str, str, str]:
+        return (self.frm, self.to, self.relation.value)
+
+    def as_json(self) -> dict[str, str]:
+        return {"from": self.frm, "to": self.to, "relation": self.relation.value}
+
+
+class NodeDraft(BaseModel):
+    """LLM-emitted node: strength is NOT here — only level_probs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(pattern=r"^(B|D|I)[1-9]\d*$")
+    type: NodeType
+    content: str = Field(min_length=1)
+    level_probs: list[float] = Field(min_length=5, max_length=5)
+
+    @model_validator(mode="after")
+    def _check_consistency(self) -> "NodeDraft":
+        self.content = self.content.strip()
+        if self.id[0] != self.type.value[0].upper():
+            raise ValueError("node id prefix must match type (B/D/I)")
+        return self
+
+
+class Node(BaseModel):
+    """Engine-stored node in the persistent graph."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(pattern=r"^(B|D|I)[1-9]\d*$")
+    type: NodeType
+    content: str = Field(min_length=1)
+    strength: float = Field(ge=0.0, le=4.0)
+
+
+class Appraisal(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    goal_congruence: float
+    controllability: float
+    certainty: float
+    goal_conflict: float
+
+
+# Closed emotion label set: CogWM's 12 categories + neutral/irritation/distrust/
+# warmth (observed in live runs). Closed set => trajectories are comparable.
+EMOTION_CATEGORIES = (
+    "neutral", "anxiety", "sadness", "shame", "guilt", "anger", "fear",
+    "loneliness", "helplessness", "confusion", "frustration", "irritation",
+    "distrust", "relief", "hope", "warmth",
+)
+
+
+class Emotion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    category: str = Field(min_length=1)
+    valence: float
+    arousal: float
+    intensity: float
+    appraisal_target: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _check_category(self) -> "Emotion":
+        self.category = self.category.strip().lower()
+        if self.category not in EMOTION_CATEGORIES:
+            raise ValueError(
+                f"emotion category {self.category!r} not in the closed set "
+                f"{EMOTION_CATEGORIES}"
+            )
+        return self
+
+
+class NodeUpdate(BaseModel):
+    """One delta op the LLM proposes; the deterministic updater applies it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: str = Field(pattern=r"^(add|update|deactivate)$")
+    node_id: Optional[str] = None
+    node: Optional[NodeDraft] = None
+    level_probs: Optional[list[float]] = Field(default=None, min_length=5, max_length=5)
+    content: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _check_op_requirements(self) -> "NodeUpdate":
+        if self.op == "add" and self.node is None:
+            raise ValueError("op=add requires 'node'")
+        if self.op in ("update", "deactivate") and not self.node_id:
+            raise ValueError(f"op={self.op} requires 'node_id'")
+        if self.op == "update" and self.level_probs is None and self.content is None:
+            raise ValueError("op=update requires 'level_probs' and/or 'content'")
+        return self
+
+
+class EdgeUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    op: str = Field(pattern=r"^(add|remove)$")
+    edge: Edge
+
+
+class TurnOutput(BaseModel):
+    """The full per-turn LLM contract (single structured call)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    node_updates: list[NodeUpdate] = Field(default_factory=list)
+    edge_updates: list[EdgeUpdate] = Field(default_factory=list)
+    appraisal: Appraisal
+    emotion: Emotion
+    user_utterance: str = Field(min_length=1)
+    done: bool = False
+    done_reason: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _strip_utterance(self) -> "TurnOutput":
+        self.user_utterance = self.user_utterance.strip()
+        if self.done_reason is not None:
+            self.done_reason = self.done_reason.strip()
+        return self
+
+
+class InitOutput(BaseModel):
+    """LLM contract for G0 = Init(P, S, u0)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    nodes: list[NodeDraft] = Field(default_factory=list)
+    edges: list[Edge] = Field(default_factory=list)
+
+
+class Utterance(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: str
+    text: str
+
+
+class Seed(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    seed_id: str
+    task: Task
+    persona: str                       # public pre-dialogue facts (visible to the agent LLM)
+    private_persona: Optional[str] = None  # simulator-only private state (e.g. buyer's reservation price)
+    agent_private: Optional[str] = None    # agent-side private state (e.g. seller's own reservation
+                                           # values) — goes ONLY into the agent context, never the simulator
+    scenario: str
+    u0: str                            # the user's first utterance (first user line of pre_context)
+    pre_context: list[Utterance] = Field(default_factory=list)
+    # ^ conversation prefix BEFORE the agent's first intervention — the
+    #   user's spontaneous expressions plus neutral greetings/questions.
+    #   G0 = Init(P, S, pre_context). The simulation continues from here.
+    reference_transcript: list[Utterance] = Field(default_factory=list)
+    notes: dict[str, Any] = Field(default_factory=dict)
+
+    def simulator_persona(self) -> str:
+        """Persona block for the simulator (Init + turn transitions)."""
+        if self.private_persona:
+            return f"{self.persona}\n\nPRIVATE (known only to the user): {self.private_persona}"
+        return self.persona
+
+
+class GraphState(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nodes: list[Node] = Field(default_factory=list)
+    edges: list[Edge] = Field(default_factory=list)
+
+
+class StepRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    seed_id: str
+    mode: str = Field(pattern=r"^(manual|auto|auto_editable)$")
+    agent_reply: Optional[str] = None
+    system_prompt: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _check_mode_requirements(self) -> "StepRequest":
+        if self.mode == "manual":
+            if not self.agent_reply or not self.agent_reply.strip():
+                raise ValueError("mode=manual requires non-empty agent_reply")
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Anthropic tool input_schemas (hand-written, flat, no $ref).
+# Kept in sync with the pydantic models above; locked by tests/test_schema.py.
+# ---------------------------------------------------------------------------
+
+_LEVEL_PROBS_DESC = (
+    "Five-bin probability distribution over strength levels 0..4. "
+    "The engine (not you) normalizes it and computes strength = sum(p_k * k)."
+)
+
+_NODE_PROPS = {
+    "id": {"type": "string", "pattern": "^(B|D|I)[1-9][0-9]*$",
+           "description": "Fresh node id; prefix letter must match type (B/D/I). Never reuse a retired id."},
+    "type": {"type": "string", "enum": ["belief", "desire", "intention"]},
+    "content": {"type": "string", "minLength": 1,
+                "description": "Short proposition-like statement of the state."},
+    "level_probs": {"type": "array", "items": {"type": "number"},
+                    "minItems": 5, "maxItems": 5, "description": _LEVEL_PROBS_DESC},
+}
+
+_EDGE_PROPS = {
+    "from": {"type": "string", "description": "Source node id."},
+    "to": {"type": "string", "description": "Target node id."},
+    "relation": {"type": "string",
+                 "enum": ["facilitates", "inhibits", "means_for", "conflicts_with"],
+                 "description": "Cognition flows forward B->D->I. facilitates/inhibits: B->D, D->I, B->I ONLY (same-level and backward pairs are illegal); means_for: intention->desire only; conflicts_with: desire<->desire only."},
+}
+
+SIMULATE_USER_TURN_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "node_updates": {
+            "type": "array",
+            "description": "Deltas to persistent BDI nodes. Empty array = no cognitive change this turn (allowed).",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "op": {"type": "string", "enum": ["add", "update", "deactivate"]},
+                    "node_id": {"type": "string",
+                                "description": "Required for update/deactivate. Must reference an existing ACTIVE node (update may revive a deactivated node)."},
+                    "node": {
+                        "type": "object",
+                        "description": "Required for op=add.",
+                        "properties": _NODE_PROPS,
+                        "required": ["id", "type", "content", "level_probs"],
+                        "additionalProperties": False,
+                    },
+                    "level_probs": {"type": "array", "items": {"type": "number"},
+                                    "minItems": 5, "maxItems": 5,
+                                    "description": "For op=update: the node's new 5-bin distribution."},
+                    "content": {"type": "string",
+                                "description": "For op=update: optional revised content; omit to keep it unchanged."},
+                },
+                "required": ["op"],
+                "additionalProperties": False,
+            },
+        },
+        "edge_updates": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "op": {"type": "string", "enum": ["add", "remove"]},
+                    "edge": {
+                        "type": "object",
+                        "properties": _EDGE_PROPS,
+                        "required": ["from", "to", "relation"],
+                        "additionalProperties": False,
+                    },
+                },
+                "required": ["op", "edge"],
+                "additionalProperties": False,
+            },
+        },
+        "appraisal": {
+            "type": "object",
+            "description": "Event appraisal of THIS agent reply relative to the user's active desires.",
+            "properties": {
+                "goal_congruence": {"type": "number", "description": "[-1,1]; >0 helps the user's active desires."},
+                "controllability": {"type": "number",
+                                    "description": "[0,1]; how much agency the user feels over THEIR OWN SITUATION (job/money/relationship) — not their reaction to this reply."},
+                "certainty": {"type": "number", "description": "[0,1]"},
+                "goal_conflict": {"type": "number", "description": "[0,1]"},
+            },
+            "required": ["goal_congruence", "controllability", "certainty", "goal_conflict"],
+            "additionalProperties": False,
+        },
+        "emotion": {
+            "type": "object",
+            "properties": {
+                "category": {"type": "string",
+                             "enum": list(EMOTION_CATEGORIES),
+                             "description": "Closed label set; pick the single closest one."},
+                "valence": {"type": "number", "description": "[-1,1]"},
+                "arousal": {"type": "number", "description": "[0,1]"},
+                "intensity": {"type": "number", "description": "[0,1]"},
+                "appraisal_target": {"type": "string", "minLength": 1,
+                                     "description": "Node id most affected, or '#agent_reply', or a short phrase."},
+            },
+            "required": ["category", "valence", "arousal", "intensity", "appraisal_target"],
+            "additionalProperties": False,
+        },
+        "user_utterance": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The next user utterance: 1-3 natural first-person sentences, explainable by the post-update graph. When done=true this is the user's closing line.",
+        },
+        "done": {
+            "type": "boolean",
+            "description": "true ONLY when the interaction has reached a terminal outcome and no further interaction is needed: the user's core issue is resolved (emotional relief / donation decision made / deal or breakdown). Otherwise false.",
+        },
+        "done_reason": {
+            "type": "string",
+            "description": "When done=true: one short sentence naming the terminal outcome. Omit or leave empty when done=false.",
+        },
+    },
+    "required": ["node_updates", "edge_updates", "appraisal", "emotion", "user_utterance", "done"],
+    "additionalProperties": False,
+}
+
+INIT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "nodes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": _NODE_PROPS,
+                "required": ["id", "type", "content", "level_probs"],
+                "additionalProperties": False,
+            },
+        },
+        "edges": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": _EDGE_PROPS,
+                "required": ["from", "to", "relation"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["nodes", "edges"],
+    "additionalProperties": False,
+}
+
+TOOL_DEFS = {
+    "simulate_user_turn": {
+        "name": "simulate_user_turn",
+        "description": (
+            "Emit the user simulator's single-turn cognitive transition: graph update ops, "
+            "appraisal, emotion, and the next user utterance. The deterministic engine applies "
+            "the ops and computes strengths from level_probs; you never output strength numbers."
+        ),
+        "input_schema": SIMULATE_USER_TURN_SCHEMA,
+    },
+    "initialize_cognitive_state": {
+        "name": "initialize_cognitive_state",
+        "description": (
+            "Build the initial cognitive graph G0 from persona, scenario, and the first user "
+            "utterance only. Minimal and evidence-supported; an empty graph is valid."
+        ),
+        "input_schema": INIT_SCHEMA,
+    },
+}

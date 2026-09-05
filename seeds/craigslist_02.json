@@ -1,0 +1,91 @@
+{
+ "seed_id": "craigslist_02",
+ "task": "price_negotiation",
+ "persona": "The user is the BUYER, negotiating to buy a second-hand item from a private seller.",
+ "private_persona": "The buyer's private negotiation position: target price ~$180; no hard bottom line set.",
+ "agent_private": "Your listed price is $300; your target price is ~$300; no hard bottom line set.",
+ "scenario": "The SELLER has listed a phone item: \"Iphone 6\" for $300. Listing description: Black iPhone 6 looks brand new with screen cover and case with a kickstand. Verizon phone Pittsburg. Has extended memory 64 gigs . Has new screen cover and kickstand case . The buyer opens the negotiation over the price.",
+ "u0": "Hello. I am a verizon customer and would really like to purchase the IPhone. is it brand new?",
+ "pre_context": [
+  {
+   "role": "buyer",
+   "text": "Hello. I am a verizon customer and would really like to purchase the IPhone. is it brand new?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "buyer",
+   "text": "Hello. I am a verizon customer and would really like to purchase the IPhone. is it brand new?"
+  },
+  {
+   "role": "seller",
+   "text": "It's only a few months old. I didn't like it and went with a Samsung, I need to get $350 for it."
+  },
+  {
+   "role": "buyer",
+   "text": "Wow the ad says its for $300?"
+  },
+  {
+   "role": "seller",
+   "text": "Your right, I am selling another on too, this one is $300"
+  },
+  {
+   "role": "buyer",
+   "text": "Okay. How many GB is this?"
+  },
+  {
+   "role": "seller",
+   "text": "I got the extended memory so it has a whopping 64 GB"
+  },
+  {
+   "role": "buyer",
+   "text": "Good! But $300 is too pricey for me. I am willing to pay $170"
+  },
+  {
+   "role": "seller",
+   "text": "No way, I paid over $700 for it back in March"
+  },
+  {
+   "role": "buyer",
+   "text": "Okay, so how about $200 that's  pretty much what I can do right now taking my budget into consideration"
+  },
+  {
+   "role": "seller",
+   "text": "I have a standing offer right now for $290 but they can't pick it up untill saturday, if you can match that it's yours"
+  },
+  {
+   "role": "buyer",
+   "text": "Okay, with the memory given and it being new I can accept it but I would pay in installments would that be okay? cause I don't have the full amount in me right now"
+  },
+  {
+   "role": "seller",
+   "text": "For $290?"
+  },
+  {
+   "role": "buyer",
+   "text": "Yes!"
+  },
+  {
+   "role": "seller",
+   "text": "I will take payments, and you can have it once it is paid off"
+  },
+  {
+   "role": "buyer",
+   "text": "great thank you then we got a deal!"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/Cog-Graph-Engine/seeds/raw/craigslist_train_parsed.json",
+  "source_record_id": "C_d19a8d90e7a1481891ee81a4e4e08372",
+  "category": "phone",
+  "title": "Iphone 6",
+  "listed_price": 300,
+  "buyer_target": 180,
+  "buyer_bottomline": null,
+  "seller_target": 300,
+  "seller_bottomline": null,
+  "n_utterances": 15,
+  "price_changes": 5,
+  "prefix_end_index": 1
+ }
+}

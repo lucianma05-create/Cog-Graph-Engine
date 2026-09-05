@@ -1,0 +1,120 @@
+{
+ "seed_id": "p4g_01",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.8 (1-5), conscientious ~4.2 (1-5), extrovert ~2.4 (1-5), agreeable ~4.0 (1-5), neurotic ~3.6 (1-5). Moral foundations (1-6 scale): care 4.2, fairness 4.75, loyalty 2.0, authority 3.8, purity 5.666666667, freedom 3.5. Demographics: age 36.0, sex Male, education Less than four-year college, political ideology Moderate.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to save the children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "I'm good. How is your day going?",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "hello how are you?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I'm good. How is your day going?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "hello how are you?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I'm good. How is your day going?"
+  },
+  {
+   "role": "persuader",
+   "text": "good. Would you like to donate to help save the children?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I don't think I am currently able to give anything."
+  },
+  {
+   "role": "persuader",
+   "text": "what do you mean? why not?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Things are so tight at home that I can barely make things work as it is."
+  },
+  {
+   "role": "persuader",
+   "text": "seriously? You can't even donate 0-2 dollars for other kids?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Not if it takes away from my own kids that are my responsibility."
+  },
+  {
+   "role": "persuader",
+   "text": "what about the kids that really need it though? why don't you think about them?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Well I am thinking about them. I don't really know what kids this is even going to though."
+  },
+  {
+   "role": "persuader",
+   "text": "but people donate all the time without knowing who it is going to"
+  },
+  {
+   "role": "persuadee",
+   "text": "Well that seems silly. You wouldn't know if your money is going to a child or some random people's pocket."
+  },
+  {
+   "role": "persuader",
+   "text": "can you please donate? one of the children in this group is my child"
+  },
+  {
+   "role": "persuadee",
+   "text": "Well that doesn't really legitmize the operation."
+  },
+  {
+   "role": "persuader",
+   "text": "how about just a dollar?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I would need to know what organization it was going to."
+  },
+  {
+   "role": "persuader",
+   "text": "here: Save the Children is an international non-governmental organization that promotes children's rights, provides relief and helps support children in developing countries."
+  },
+  {
+   "role": "persuadee",
+   "text": "What percentage of the donation actually goes towards helping the children?"
+  },
+  {
+   "role": "persuader",
+   "text": "one hundred percent; why would someone take that money for themselves?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Because all organizations take a percentage to pay for overhead costs."
+  },
+  {
+   "role": "persuader",
+   "text": "how about just 75 cents then?"
+  },
+  {
+   "role": "persuadee",
+   "text": "No I won't be contributing today ."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180904-151613_546_live",
+  "split": "train",
+  "n_messages": 22,
+  "contentful_turn_count": 5,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 3,
+  "outcome_committed": true,
+  "outcome_amount": null,
+  "prefix_end_index": 2
+ }
+}

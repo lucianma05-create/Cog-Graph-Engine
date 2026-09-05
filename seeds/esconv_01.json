@@ -1,0 +1,152 @@
+{
+ "seed_id": "esconv_01",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: I hate my job but I am scared to quit and seek a new career. Presenting problem: job crisis (predominant emotion: anxiety). The seeker self-reported an initial emotional intensity of 5 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: job crisis.",
+ "u0": "Hello",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hello"
+  },
+  {
+   "role": "supporter",
+   "text": "Hello, what would you like to talk about?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am having a lot of anxiety about quitting my current job. It is too stressful but pays well"
+  },
+  {
+   "role": "supporter",
+   "text": "What makes your job stressful for you?"
+  },
+  {
+   "role": "seeker",
+   "text": "I have to deal with many people in hard financial situations and it is upsetting"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hello"
+  },
+  {
+   "role": "supporter",
+   "text": "Hello, what would you like to talk about?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am having a lot of anxiety about quitting my current job. It is too stressful but pays well"
+  },
+  {
+   "role": "supporter",
+   "text": "What makes your job stressful for you?"
+  },
+  {
+   "role": "seeker",
+   "text": "I have to deal with many people in hard financial situations and it is upsetting"
+  },
+  {
+   "role": "supporter",
+   "text": "Do you help your clients to make it to a better financial situation?"
+  },
+  {
+   "role": "seeker",
+   "text": "I do, but often they are not going to get back to what they want. Many people are going to lose their home when safeguards are lifted"
+  },
+  {
+   "role": "supporter",
+   "text": "But you offer them a better future than what they have currently. It may not be what they wanted, but it helps them in the long run."
+  },
+  {
+   "role": "seeker",
+   "text": "That is true but sometimes I feel like I should put my feelings and health first"
+  },
+  {
+   "role": "supporter",
+   "text": "I can understand that."
+  },
+  {
+   "role": "supporter",
+   "text": "Is there another job that would pay you close to what you currently make?"
+  },
+  {
+   "role": "seeker",
+   "text": "Probably not. I was with the same company for a long time and I consistently get a bonus every year"
+  },
+  {
+   "role": "supporter",
+   "text": "Is it possible to reframe how you look at your clients' dire financial situations?"
+  },
+  {
+   "role": "seeker",
+   "text": "I could try. It mostly gets to me at the end of the day"
+  },
+  {
+   "role": "supporter",
+   "text": "Some people can't do what you do because they don't have the heart to give someone else bad news. The reality is though, someone needs to fill that role and you do help people"
+  },
+  {
+   "role": "seeker",
+   "text": "That is also true. Sometimes I wonder if it really is for me though"
+  },
+  {
+   "role": "supporter",
+   "text": "I've had to deal with collections before when I was in  bad financial condition. The person on the other line was really helpful though. She was understanding,"
+  },
+  {
+   "role": "supporter",
+   "text": "It may not be for you. I think you should think about the pros and cons of keeping your position. It might make things clearer for you."
+  },
+  {
+   "role": "seeker",
+   "text": "That is true. Maybe I just need to sit down and really think about it"
+  },
+  {
+   "role": "supporter",
+   "text": "I wouldn't stay if it really impacts your mental health in a negative way. Still, you may need to zoom out and see the bigger picture: that you provide a needed service and you do it compassionately"
+  },
+  {
+   "role": "seeker",
+   "text": "It really is a big decision"
+  },
+  {
+   "role": "seeker",
+   "text": "Thank you for the different perspective"
+  },
+  {
+   "role": "supporter",
+   "text": "No doubt, but you know in your heart what is right for you."
+  },
+  {
+   "role": "seeker",
+   "text": "That is true. Thanks again"
+  },
+  {
+   "role": "seeker",
+   "text": "Bye"
+  },
+  {
+   "role": "supporter",
+   "text": "It's no problem. I hope you can make a decision about this situation and then be at peace with it"
+  },
+  {
+   "role": "supporter",
+   "text": "Ok, take care"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00000",
+  "split": "train",
+  "problem_type": "job crisis",
+  "emotion_type": "anxiety",
+  "n_messages": 27,
+  "contentful_turn_count": 6,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 2,
+  "prefix_end_index": 5
+ }
+}

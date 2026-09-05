@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cog-Graph-Engine · BDI 用户模拟器</title>
+<link rel="stylesheet" href="/viewer.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="field">
+    <label for="seedSelect">场景种子</label>
+    <select id="seedSelect"></select>
+  </div>
+  <div class="field" id="modeGroup">
+    <label>驱动模式</label>
+    <label class="radio"><input type="radio" name="mode" value="manual" checked> 手动输入</label>
+    <label class="radio"><input type="radio" name="mode" value="auto"> LLM 自动</label>
+    <label class="radio"><input type="radio" name="mode" value="auto_editable"> LLM 自定义提示词</label>
+  </div>
+  <button id="resetBtn" title="丢弃当前会话，重新初始化认知图（一次 LLM 调用）">重置会话</button>
+  <a id="reportLink" href="#" title="下载当前会话的完整交互轨迹报告（markdown）" class="hidden">⬇ 轨迹报告</a>
+</header>
+
+<div id="main">
+  <div id="graphPane">
+    <div id="legend">
+      <span class="lg belief">Belief</span>
+      <span class="lg desire">Desire</span>
+      <span class="lg intention">Intention</span>
+      <span class="lg off">已失活</span>
+      <span class="lg new">本轮新增</span>
+      <span class="lg changed">强度变化</span>
+    </div>
+    <div id="network"></div>
+  </div>
+
+  <aside id="sidebar">
+    <section>
+      <h3>节点详情（点击图上的节点查看完整内容）</h3>
+      <div id="nodeDetailBox" class="box"></div>
+    </section>
+    <section>
+      <h3>本轮对话</h3>
+      <div id="dialogBox" class="box"></div>
+    </section>
+    <section>
+      <h3>Appraisal / Emotion</h3>
+      <div id="stateBox" class="box"></div>
+    </section>
+    <section>
+      <h3>本轮图更新操作</h3>
+      <div id="opsBox" class="box"></div>
+    </section>
+    <section>
+      <h3>完整交互轨迹（点击跳转）</h3>
+      <div id="trajectoryBox" class="box"></div>
+    </section>
+    <section>
+      <h3>参考真实对话（只读）</h3>
+      <div id="refBox" class="box"></div>
+    </section>
+  </aside>
+</div>
+
+<footer id="bottombar">
+  <div id="nav">
+    <button id="prevBtn">◀ 上一轮</button>
+    <span id="turnLabel">初始状态 (G0)</span>
+    <button id="nextBtn">下一轮 ▶</button>
+    <input id="jumpInput" type="number" min="0" placeholder="跳到…">
+    <button id="fitBtn">适应画布</button>
+  </div>
+  <div id="inputArea">
+    <textarea id="replyInput" placeholder="输入 agent 回复（手动模式）…"></textarea>
+    <textarea id="promptArea" placeholder="agent 系统提示词（LLM 模式）…"></textarea>
+    <button id="sendBtn">发送 → 更新用户状态</button>
+  </div>
+  <div id="doneBanner" class="hidden">✓ 模拟器已判定会话结束，无需继续交互。可点击「重置会话」重新开始。</div>
+  <div id="statusLine">加载中…</div>
+</footer>
+
+<script src="/vendor/vis-network.min.js"></script>
+<script src="/viewer.js"></script>
+</body>
+</html>

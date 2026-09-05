@@ -1,0 +1,79 @@
+{
+ "seed_id": "craigslist_01",
+ "task": "price_negotiation",
+ "persona": "The user is the BUYER, negotiating to buy a second-hand item from a private seller.",
+ "private_persona": "The buyer's private negotiation position: target price ~$69; no hard bottom line set.",
+ "agent_private": "Your listed price is $75; your target price is ~$75; no hard bottom line set.",
+ "scenario": "The SELLER has listed a electronics item: \"Brand NEW SanDisk ULTRA MicroSDXC 200GB\" for $75. Listing description: I have a brand new unopened microSD card. Great for Android users, Nintendo Switch, 3DS and GoPro cameras, and beyond. On Amazon for more than this right now. This is a great deal. The buyer opens the negotiation over the price.",
+ "u0": "Hi iam interested in your MicroSD Card for sale",
+ "pre_context": [
+  {
+   "role": "buyer",
+   "text": "Hi iam interested in your MicroSD Card for sale"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "buyer",
+   "text": "Hi iam interested in your MicroSD Card for sale"
+  },
+  {
+   "role": "seller",
+   "text": "Good.  What is your offer?"
+  },
+  {
+   "role": "buyer",
+   "text": "I would like to offer  you 65.00, I know their worth and that seems of correct value to me."
+  },
+  {
+   "role": "seller",
+   "text": "Well I think there are a lot of opinions about the value, and I think it's good to open a dialog about the value."
+  },
+  {
+   "role": "buyer",
+   "text": "This is true, There are larger ones for same price, so I feel my price is fair. I would also pick up the item at your convience."
+  },
+  {
+   "role": "seller",
+   "text": "That's interesting.  I've seen ones my size sell for $85 in some places!  Picking up the item is a good offer too!"
+  },
+  {
+   "role": "buyer",
+   "text": "Really? I have seen them cheaper then that. How about I pick up the item anytime you are free, and I pay 69 for it?"
+  },
+  {
+   "role": "seller",
+   "text": "That's a pretty good offer.  Is it possible for you to come up to $71?"
+  },
+  {
+   "role": "buyer",
+   "text": "Since I am picking it up I would like to stay at the 69."
+  },
+  {
+   "role": "seller",
+   "text": "Hmm...Okay, let me think about if for a minute.  You will definitely like this SD card."
+  },
+  {
+   "role": "buyer",
+   "text": "I am sure I will, it seems great, I also think you will like not having to leave your home or go out of your way. I would love to buy it, I could even meet you in the middle at 70.00."
+  },
+  {
+   "role": "seller",
+   "text": "That sounds even better.  I accept your offer and look forward to seeing you.  I'm glad we could come to an agreement!"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/Cog-Graph-Engine/seeds/raw/craigslist_train_parsed.json",
+  "source_record_id": "C_5c26a95cef21489bb071772ab5efcf77",
+  "category": "electronics",
+  "title": "Brand NEW SanDisk ULTRA MicroSDXC 200GB",
+  "listed_price": 75,
+  "buyer_target": 69,
+  "buyer_bottomline": null,
+  "seller_target": 75,
+  "seller_bottomline": null,
+  "n_utterances": 12,
+  "price_changes": 6,
+  "prefix_end_index": 1
+ }
+}

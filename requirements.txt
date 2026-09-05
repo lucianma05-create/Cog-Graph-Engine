@@ -1,0 +1,7 @@
+# Runtime deps (documentation only — no pip install needed if already present):
+# engine + server use ONLY stdlib + these two:
+anthropic>=0.107
+pydantic>=2.10
+
+# tools/ additionally uses requests for the Craigslist download:
+requests>=2.30
