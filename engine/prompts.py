@@ -177,6 +177,12 @@ Step 4 — add edges, forward direction only (each direction has a distinct mean
   D <conflicts_with> D: two strong desires that cannot both be satisfied now.
     Any link between two desires is conflicts_with (opposition) or NOTHING —
     desire-vs-desire facilitates/inhibits is always illegal.
+ISOLATION DISCIPLINE: a desire with an evidence-relevant belief in the graph
+must NOT stay isolated — the B -> D facilitates/inhibits link IS the intended
+connection (this is why D->D links feel tempting but are illegal: express the
+tension through beliefs or conflicts_with, never through D->D edges). A Tier-1
+trait node that connects to nothing is irrelevant to this decision space —
+drop it instead of keeping it isolated.
 Add an edge ONLY when the connection is clear in the evidence; same-level and
 backward pairs (B->B, D->D, D->B, I->B, I->I, I->D) are illegal. I->B is never
 legal: an intention does not create a belief (wishful thinking).

@@ -285,6 +285,17 @@ class UserSimulator:
             out, raw = llm.generate_init(system, user_text)
         result = build_initial_graph(out)
         self.graph = result.graph
+        # deterministic isolation audit: an active node with no edges breaks the
+        # causal spine — surface it (trajectory analysis + next Init debugging)
+        isolated = sorted(
+            nid for nid in result.graph.nodes
+            if nid not in result.graph.deactivated
+            and not any(nid in (e.frm, e.to) for e in result.graph.edges.values())
+        )
+        init_notes = list(result.notes)
+        if isolated:
+            init_notes.append(f"G0 isolation: {', '.join(isolated)} have no edges — "
+                              "causal structure incomplete or nodes irrelevant")
         self.initial_log = {
             "seed_id": self.seed.seed_id,
             "created_at": _now(),
@@ -295,7 +306,7 @@ class UserSimulator:
             "emotion": dict(NEUTRAL_EMOTION),
             "llm_raw": raw,
             "ops_rejected": result.ops_rejected,
-            "notes": result.notes,
+            "notes": init_notes,
         }
         if cache is not None:
             atomic_write_json(cache, self.initial_log)
