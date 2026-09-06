@@ -316,10 +316,10 @@ SIMULATE_USER_TURN_SCHEMA = {
             "type": "object",
             "description": "Event appraisal of THIS agent reply relative to the user's active desires.",
             "properties": {
-                "goal_congruence": {"type": "number", "description": "[-1,1]; >0 helps the user's active desires."},
+                "goal_congruence": {"type": "number", "description": "[-1,1]; NET effect on the user's DOMINANT (strongest) active desire — when the reply splits the user's desires into winners and losers, follow the dominant one."},
                 "controllability": {"type": "number",
                                     "description": "[0,1]; how much agency the user feels over THEIR OWN SITUATION (job/money/relationship) — not their reaction to this reply."},
-                "goal_conflict": {"type": "number", "description": "[0,1]"},
+                "goal_conflict": {"type": "number", "description": "how much the reply pits the user's active desires against each other (winners vs losers; activates conflicts_with)."},
             },
             "required": ["goal_congruence", "controllability", "goal_conflict"],
             "additionalProperties": False,

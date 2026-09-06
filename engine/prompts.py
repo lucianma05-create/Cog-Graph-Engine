@@ -194,8 +194,17 @@ user feels now, caused by a_t plus the user's thoughts), then u_{t+1}.
   confusion, frustration, irritation, distrust, relief, hope, warmth, surprise.
   appraisal_target points at the node most affected, or '#agent_reply'.
 - valence in [-1,1]; controllability/goal_conflict/arousal in [0,1].
-- controllability = how much agency the user feels over THEIR OWN SITUATION
-  (job/money/relationship) right now — NOT their reaction to this reply.
+- APPRAISAL SEMANTICS:
+  * goal_congruence [-1,1] is the NET evaluation — does a_t advance or obstruct
+    the user's currently DOMINANT (strongest) active desire. When a_t splits the
+    user's desires into winners and losers, congruence follows the dominant one.
+  * goal_conflict [0,1] is how much a_t pits the user's active desires against
+    each other (activates conflicts_with). High conflict + positive congruence =
+    "I get what I most want, at a cost"; high conflict + negative congruence =
+    "it hurts what I want AND turns my desires against each other"; low conflict
+    = pure win or pure loss.
+  * controllability = how much agency the user feels over THEIR OWN SITUATION
+    (job/money/relationship) right now — NOT their reaction to this reply.
 - u_{t+1}: 1-3 natural spoken sentences, explainable by the post-update state.
 - CAUSAL DISCIPLINE: when u_{t+1} shifts the user's stance (agrees, accepts,
   refuses, deflects, changes topic, takes an emotional turn), the thought that
