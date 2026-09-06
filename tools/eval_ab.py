@@ -34,7 +34,13 @@ from engine.prompts import render_agent_user
 from engine.schema import Seed
 from engine.simulator import UserSimulator
 
-TMP = ROOT / "sessions" / "_ab_tmp.json"
+import threading
+import uuid
+
+def _tmp_session() -> Path:
+    """Unique per-episode session file: thread-safe and g0-cache-aware
+    (parent = sessions/)."""
+    return ROOT / "sessions" / f"_ab_tmp_{threading.get_ident()}_{uuid.uuid4().hex[:8]}.json"
 RESULTS = ROOT / "sessions" / "ab_results.json"
 
 # 策略集：文献锚定（good/bad/third），每个 = agent 的系统提示词
@@ -148,8 +154,10 @@ def checkpoint(results: dict) -> None:
 
 
 def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, int]:
-    sim = UserSimulator(seed, TMP)
+    tmp = _tmp_session()
+    sim = UserSimulator(seed, tmp)
     sim.init()
+    tmp.unlink(missing_ok=True)
     sim.session_file = None
     sys_prompt = STRATEGIES[strategy][seed.task.value]
     turns_done = 0
@@ -172,6 +180,8 @@ def main() -> None:
     ap.add_argument("--n", type=int, default=3, help="episodes per seed×strategy")
     ap.add_argument("--max-turns", type=int, default=6)
     ap.add_argument("--seed", default=None, help="single seed smoke run")
+    ap.add_argument("--workers", type=int, default=16,
+                    help="parallel episodes (flash supports concurrent calls)")
     ap.add_argument("--strategies", default="good,bad,third,random")
     args = ap.parse_args()
 
@@ -182,22 +192,31 @@ def main() -> None:
     if args.seed:
         sids = [args.seed]
     strategies = [s for s in args.strategies.split(",") if s]
+    from concurrent.futures import ThreadPoolExecutor
     results: dict[str, list[float]] = {}
-    for sid in sids:
+    lock = threading.Lock()
+
+    def one(sid: str, strategy: str) -> None:
         seed = _seed(sid)
-        for strategy in strategies:
-            vals = []
-            for run in range(args.n):
-                try:
-                    v, turns = run_episode(seed, strategy, args.max_turns)
-                except Exception as e:
-                    print(f"[FAIL] {sid} {strategy} run{run}: {type(e).__name__}: {str(e)[:100]}")
-                    vals.append(float("nan"))
-                    continue
-                vals.append(round(v, 3))
+        vals = []
+        for run in range(args.n):
+            try:
+                v, turns = run_episode(seed, strategy, args.max_turns)
+            except Exception as e:
+                print(f"[FAIL] {sid} {strategy} run{run}: {type(e).__name__}: {str(e)[:100]}",
+                      flush=True)
+                vals.append(float("nan"))
+                continue
+            vals.append(round(v, 3))
+        with lock:
             results[f"{sid}|{strategy}"] = vals
             checkpoint(results)
-            print(f"{sid} [{strategy}] {vals}")
+        print(f"{sid} [{strategy}] {vals}", flush=True)
+
+    tasks = [(sid, s) for sid in sids for s in strategies]
+    with ThreadPoolExecutor(max_workers=args.workers) as ex:
+        for _ in ex.map(lambda t: one(*t), tasks):
+            pass
     # 汇总：按任务 × 策略
     print("\n===== 汇总（均值 ± 标准差） =====")
     by = {}
@@ -228,7 +247,6 @@ def main() -> None:
             print(f"{task:<20} mean_diff={statistics.mean(diffs):+.3f}  "
                   f"per-seed={[round(d, 2) for d in diffs]}")
     checkpoint(results)
-    TMP.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
