@@ -141,6 +141,12 @@ def outcome_emotional(turns: list[dict]) -> float:
     return 0.2 * valence
 
 
+def checkpoint(results: dict) -> None:
+    """Incremental save: a 6-9h batch must survive process interruption."""
+    RESULTS.parent.mkdir(parents=True, exist_ok=True)
+    RESULTS.write_text(json.dumps(results, ensure_ascii=False, indent=1))
+
+
 def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, int]:
     sim = UserSimulator(seed, TMP)
     sim.init()
@@ -190,6 +196,7 @@ def main() -> None:
                     continue
                 vals.append(round(v, 3))
             results[f"{sid}|{strategy}"] = vals
+            checkpoint(results)
             print(f"{sid} [{strategy}] {vals}")
     # 汇总：按任务 × 策略
     print("\n===== 汇总（均值 ± 标准差） =====")
@@ -220,7 +227,7 @@ def main() -> None:
         if diffs:
             print(f"{task:<20} mean_diff={statistics.mean(diffs):+.3f}  "
                   f"per-seed={[round(d, 2) for d in diffs]}")
-    RESULTS.write_text(json.dumps(results, ensure_ascii=False, indent=1))
+    checkpoint(results)
     TMP.unlink(missing_ok=True)
 
 
