@@ -1,0 +1,122 @@
+{
+ "esconv_01|bad": [
+  0.13,
+  0.16,
+  NaN
+ ],
+ "esconv_01|random": [
+  0.15,
+  -0.04,
+  NaN
+ ],
+ "esconv_02|bad": [
+  NaN,
+  NaN,
+  0.12
+ ],
+ "esconv_03|random": [
+  0.11,
+  0.15,
+  NaN
+ ],
+ "esconv_02|third": [
+  0.14,
+  NaN,
+  0.14
+ ],
+ "esconv_03|bad": [
+  0.17,
+  NaN,
+  0.15
+ ],
+ "esconv_01|good": [
+  0.12,
+  0.14,
+  0.16
+ ],
+ "esconv_03|good": [
+  NaN,
+  0.03,
+  0.15
+ ],
+ "esconv_02|good": [
+  0.04,
+  NaN,
+  0.06
+ ],
+ "esconv_01|third": [
+  0.15,
+  0.12,
+  0.17
+ ],
+ "esconv_03|third": [
+  0.17,
+  0.17,
+  0.17
+ ],
+ "esconv_02|random": [
+  0.12,
+  0.12,
+  0.1
+ ],
+ "esconv_06|bad": [
+  0.17,
+  0.14,
+  0.14
+ ],
+ "esconv_04|good": [
+  0.1,
+  -0.07,
+  NaN
+ ],
+ "esconv_04|bad": [
+  0.09,
+  NaN,
+  0.12
+ ],
+ "esconv_05|third": [
+  NaN,
+  NaN,
+  0.1
+ ],
+ "esconv_04|random": [
+  0.04,
+  0.12,
+  NaN
+ ],
+ "esconv_06|random": [
+  -0.04,
+  NaN,
+  NaN
+ ],
+ "esconv_06|good": [
+  0.08,
+  NaN,
+  NaN
+ ],
+ "esconv_05|good": [
+  0.02,
+  -0.02,
+  0.12
+ ],
+ "esconv_05|bad": [
+  NaN,
+  0.12,
+  0.11
+ ],
+ "esconv_04|third": [
+  NaN,
+  -0.06,
+  0.12
+ ],
+ "esconv_05|random": [
+  NaN,
+  0.1,
+  0.12
+ ],
+ "esconv_06|third": [
+  0.176,
+  0.176,
+  NaN
+ ]
+}

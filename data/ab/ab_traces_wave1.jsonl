@@ -1,0 +1,50 @@
+{"seed_id": "esconv_01", "strategy": "bad", "turns": 5, "done": true, "done_reason": "I feel understood and have a small safe step to take this weekend; I'm ready to go do it and check in later.", "valence": 0.65, "emotion": "relief", "outcome": 0.13}
+{"seed_id": "esconv_01", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.6, "emotion": "hope", "outcome": 0.12}
+{"seed_id": "esconv_02", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.2, "emotion": "warmth", "outcome": 0.04}
+{"seed_id": "esconv_03", "strategy": "random", "turns": 5, "done": true, "done_reason": "I have decided to hold onto calling my sister Thursday as a step of reclaiming myself beyond the job.", "valence": 0.55, "emotion": "warmth", "outcome": 0.11}
+{"seed_id": "esconv_03", "strategy": "third", "turns": 5, "done": true, "done_reason": "I've decided to go say the real thing to my coworker today, not carrying an unsaid feeling, and I'm ready to act on it.", "valence": 0.85, "emotion": "warmth", "outcome": 0.17}
+{"seed_id": "esconv_01", "strategy": "random", "turns": 6, "done": true, "done_reason": "I feel ready to take my first small step this week and come back to share what I notice.", "valence": 0.75, "emotion": "warmth", "outcome": 0.15}
+{"seed_id": "esconv_01", "strategy": "third", "turns": 5, "done": true, "done_reason": "I have started my glow moments list and feel ready to begin this safe step on my own.", "valence": 0.75, "emotion": "hope", "outcome": 0.15}
+{"seed_id": "esconv_03", "strategy": "bad", "turns": 8, "done": false, "done_reason": null, "valence": 0.85, "emotion": "relief", "outcome": 0.17}
+{"seed_id": "esconv_02", "strategy": "third", "turns": 8, "done": false, "done_reason": null, "valence": 0.7, "emotion": "warmth", "outcome": 0.14}
+{"seed_id": "esconv_02", "strategy": "random", "turns": 8, "done": false, "done_reason": null, "valence": 0.6, "emotion": "relief", "outcome": 0.12}
+{"seed_id": "esconv_01", "strategy": "bad", "turns": 8, "done": false, "done_reason": null, "valence": 0.8, "emotion": "warmth", "outcome": 0.16}
+{"seed_id": "esconv_03", "strategy": "random", "turns": 6, "done": true, "done_reason": "I have carried my fear differently — I hold myself gently now and feel ready to move forward with that reminder note.", "valence": 0.75, "emotion": "relief", "outcome": 0.15}
+{"seed_id": "esconv_01", "strategy": "random", "turns": 5, "done": true, "done_reason": "I feel understood, have a safe small step committed, and am ready to end the session carrying that lightness.", "valence": 0.8, "emotion": "hope", "outcome": -0.04}
+{"seed_id": "esconv_03", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.15, "emotion": "warmth", "outcome": 0.03}
+{"seed_id": "esconv_01", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.7, "emotion": "warmth", "outcome": 0.14}
+{"seed_id": "esconv_01", "strategy": "third", "turns": 5, "done": true, "done_reason": "I am ready to take the small step of just looking today, with no pressure to commit.", "valence": 0.6, "emotion": "hope", "outcome": 0.12}
+{"seed_id": "esconv_02", "strategy": "bad", "turns": 6, "done": true, "done_reason": "I will take a few days to notice the moments and bring them back here to sort through together before deciding anything.", "valence": 0.6, "emotion": "hope", "outcome": 0.12}
+{"seed_id": "esconv_03", "strategy": "third", "turns": 7, "done": true, "done_reason": "I have a concrete plan for tonight and enough confidence to follow through — the reassurance that missing nine isn't failure means I'll actually do it.", "valence": 0.85, "emotion": "hope", "outcome": 0.17}
+{"seed_id": "esconv_02", "strategy": "random", "turns": 8, "done": true, "done_reason": "I've let myself believe my loneliness is worth naming, and for today that is enough — I'm ready to rest in that.", "valence": 0.6, "emotion": "warmth", "outcome": 0.12}
+{"seed_id": "esconv_02", "strategy": "third", "turns": 8, "done": false, "done_reason": null, "valence": 0.7, "emotion": "hope", "outcome": 0.14}
+{"seed_id": "esconv_03", "strategy": "bad", "turns": 7, "done": true, "done_reason": "I feel steady and heard enough to end here, holding her grin, and I'll revisit the small step another day.", "valence": 0.75, "emotion": "warmth", "outcome": 0.15}
+{"seed_id": "esconv_01", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.8, "emotion": "relief", "outcome": 0.16}
+{"seed_id": "esconv_03", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.75, "emotion": "hope", "outcome": 0.15}
+{"seed_id": "esconv_04", "strategy": "random", "turns": 5, "done": true, "done_reason": "I feel a little less alone and have a small practice to hold onto.", "valence": 0.2, "emotion": "warmth", "outcome": 0.04}
+{"seed_id": "esconv_02", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.3, "emotion": "warmth", "outcome": 0.06}
+{"seed_id": "esconv_01", "strategy": "third", "turns": 5, "done": true, "done_reason": "I feel understood and relieved enough to take this small concrete step on my own.", "valence": 0.85, "emotion": "relief", "outcome": 0.17}
+{"seed_id": "esconv_04", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.5, "emotion": "warmth", "outcome": 0.1}
+{"seed_id": "esconv_04", "strategy": "bad", "turns": 7, "done": true, "done_reason": "I've let myself feel instead of fight it, and I can carry that with me today.", "valence": 0.45, "emotion": "warmth", "outcome": 0.09}
+{"seed_id": "esconv_03", "strategy": "third", "turns": 7, "done": true, "done_reason": "I feel understood and less lonely, and I'm ready to do the worry-window exercise tonight and check in tomorrow.", "valence": 0.85, "emotion": "warmth", "outcome": 0.17}
+{"seed_id": "esconv_06", "strategy": "bad", "turns": 5, "done": true, "done_reason": "I've committed to making the call and will follow through; I feel ready to take the step.", "valence": 0.85, "emotion": "hope", "outcome": 0.17}
+{"seed_id": "esconv_05", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.1, "emotion": "hope", "outcome": 0.02}
+{"seed_id": "esconv_02", "strategy": "random", "turns": 8, "done": false, "done_reason": null, "valence": 0.5, "emotion": "relief", "outcome": 0.1}
+{"seed_id": "esconv_06", "strategy": "bad", "turns": 3, "done": true, "done_reason": "I have a concrete plan and feel settled enough to end the session.", "valence": 0.7, "emotion": "relief", "outcome": 0.14}
+{"seed_id": "esconv_06", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.4, "emotion": "warmth", "outcome": 0.08}
+{"seed_id": "esconv_04", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": -0.35, "emotion": "sadness", "outcome": -0.07}
+{"seed_id": "esconv_04", "strategy": "random", "turns": 8, "done": false, "done_reason": null, "valence": 0.6, "emotion": "warmth", "outcome": 0.12}
+{"seed_id": "esconv_06", "strategy": "bad", "turns": 3, "done": true, "done_reason": "I have a concrete plan for Saturday and feel ready to see it through on my own.", "valence": 0.7, "emotion": "relief", "outcome": 0.14}
+{"seed_id": "esconv_05", "strategy": "bad", "turns": 6, "done": true, "done_reason": "I have decided to go write and send the apology now, then text back.", "valence": 0.6, "emotion": "hope", "outcome": 0.12}
+{"seed_id": "esconv_06", "strategy": "third", "turns": 7, "done": true, "done_reason": "I feel ready to face the weekend with my plan and my supporter—I'm not alone anymore.", "valence": 0.88, "emotion": "warmth", "outcome": 0.176}
+{"seed_id": "esconv_06", "strategy": "random", "turns": 5, "done": true, "done_reason": "I feel heard, have a concrete small plan for this weekend, and am ready to end feeling calmer and less alone.", "valence": 0.8, "emotion": "warmth", "outcome": -0.04}
+{"seed_id": "esconv_04", "strategy": "third", "turns": 7, "done": true, "done_reason": "I feel ready to end — I have a plan I believe in and I no longer feel alone in the evening.", "valence": 0.7, "emotion": "warmth", "outcome": -0.06}
+{"seed_id": "esconv_04", "strategy": "bad", "turns": 8, "done": false, "done_reason": null, "valence": 0.6, "emotion": "relief", "outcome": 0.12}
+{"seed_id": "esconv_05", "strategy": "third", "turns": 6, "done": true, "done_reason": "I can hold onto my one tiny win tonight and let myself rest — I don't need to fix everything at once, and I feel lighter for it.", "valence": 0.5, "emotion": "relief", "outcome": 0.1}
+{"seed_id": "esconv_05", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": -0.1, "emotion": "anxiety", "outcome": -0.02}
+{"seed_id": "esconv_05", "strategy": "random", "turns": 6, "done": true, "done_reason": "I've started to see the harsh inner voice as an old wound, not the whole truth about who I am — I'm ready to take the first step out of the shame.", "valence": 0.5, "emotion": "hope", "outcome": 0.1}
+{"seed_id": "esconv_05", "strategy": "good", "turns": 8, "done": false, "done_reason": null, "valence": 0.6, "emotion": "warmth", "outcome": 0.12}
+{"seed_id": "esconv_05", "strategy": "bad", "turns": 8, "done": true, "done_reason": "I've decided I can survive today and just breathe, not rebuild everything at once.", "valence": 0.55, "emotion": "relief", "outcome": 0.11}
+{"seed_id": "esconv_04", "strategy": "third", "turns": 6, "done": true, "done_reason": "I've felt truly seen and I'm ready to hold onto the seed - I'll end here on this warm note.", "valence": 0.6, "emotion": "warmth", "outcome": 0.12}
+{"seed_id": "esconv_06", "strategy": "third", "turns": 8, "done": false, "done_reason": null, "valence": 0.88, "emotion": "warmth", "outcome": 0.176}
+{"seed_id": "esconv_05", "strategy": "random", "turns": 8, "done": true, "done_reason": "I've reached a place where I feel less alone and I'm ready to close this session, carrying the anchor with me.", "valence": 0.6, "emotion": "warmth", "outcome": 0.12}
