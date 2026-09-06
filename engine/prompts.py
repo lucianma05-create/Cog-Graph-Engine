@@ -423,7 +423,7 @@ Return initialize_cognitive_state with nodes and (optional) edges only."""
 
 def render_turn_user(seed: Seed, graph, appraisal: dict, emotion: dict,
                      history: list[dict], agent_reply: str,
-                     feedback: list[str] | None = None) -> str:
+                     feedback: list[str] | None = None, retry: bool = False) -> str:
     nudge = ""
     if len(history) >= 16:  # 8+ exchanges: deterministic conclusion guardrail
         nudge = (
@@ -435,12 +435,22 @@ def render_turn_user(seed: Seed, graph, appraisal: dict, emotion: dict,
     fb = ""
     if feedback:
         lines = "\n".join(f"  - {item}" for item in feedback)
-        fb = (
-            "\n\nENGINE FEEDBACK (last turn's rejected proposals — do NOT repeat "
-            "them — plus ⚠ audit warnings about inconsistencies to address; the "
-            "graph above is the ACTUAL state):\n"
-            f"{lines}"
-        )
+        if retry:
+            fb = (
+                "\n\nENGINE REJECTED PARTS OF YOUR PREVIOUS PROPOSAL THIS TURN. "
+                "The CURRENT GRAPH above is the ACTUAL state after rejection. Your "
+                "previous utterance may no longer match it. Rewrite ONLY the user "
+                "utterance (and done if needed) to be explainable by THIS graph — "
+                "do not re-propose graph changes. What was rejected/flagged:\n"
+                f"{lines}"
+            )
+        else:
+            fb = (
+                "\n\nENGINE FEEDBACK (last turn's rejected proposals — do NOT repeat "
+                "them — plus ⚠ audit warnings about inconsistencies to address; the "
+                "graph above is the ACTUAL state):\n"
+                f"{lines}"
+            )
     style = _style_block(seed, "honor these conditions when you update")
     return f"""\
 PERSONA: {seed.simulator_persona()}{style}
@@ -461,7 +471,7 @@ LATEST AGENT REPLY (a_t):
 "{agent_reply}"
 {nudge}
 
-Return simulate_user_turn now."""
+Return {"rewrite_user_turn" if retry else "simulate_user_turn"} now."""
 
 
 def _agent_context_common(seed: Seed, history: list[dict]) -> str:

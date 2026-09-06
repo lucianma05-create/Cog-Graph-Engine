@@ -13,7 +13,7 @@ from typing import Any
 import anthropic
 from pydantic import BaseModel, ValidationError
 
-from engine.schema import InitOutput, TOOL_DEFS, TurnOutput
+from engine.schema import InitOutput, RewriteOutput, TOOL_DEFS, TurnOutput
 
 # ---------------------------------------------------------------------------
 # Config: env vars, optionally overridden by a project-local .env file
@@ -142,6 +142,13 @@ def generate_init(system: str, user_text: str) -> tuple[InitOutput, dict[str, An
     seed so the seed graph is stable."""
     out, raw = call_structured("initialize_cognitive_state", InitOutput, system, user_text,
                                temperature=0.0, model=INIT_MODEL)
+    return out, raw  # type: ignore[return-value]
+
+
+def generate_rewrite(system: str, user_text: str) -> tuple[RewriteOutput, dict[str, Any]]:
+    """Conditional retry: rewrite the utterance only, against the real
+    post-apply graph (the rewrite tool has no delta fields by construction)."""
+    out, raw = call_structured("rewrite_user_turn", RewriteOutput, system, user_text)
     return out, raw  # type: ignore[return-value]
 
 

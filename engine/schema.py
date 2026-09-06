@@ -184,6 +184,25 @@ class InitOutput(BaseModel):
     edges: list[Edge] = Field(default_factory=list)
 
 
+class RewriteOutput(BaseModel):
+    """Conditional-retry contract: when the engine rejected substantive ops or
+    fired audit warnings, a second call rewrites ONLY the utterance (and the
+    completion flag) against the REAL post-apply graph. Graph changes are
+    structurally impossible here — no delta fields exist."""
+    model_config = ConfigDict(extra="forbid")
+
+    user_utterance: str = Field(min_length=1)
+    done: bool = False
+    done_reason: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _strip(self) -> "RewriteOutput":
+        self.user_utterance = self.user_utterance.strip()
+        if self.done_reason is not None:
+            self.done_reason = self.done_reason.strip()
+        return self
+
+
 class Utterance(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -356,6 +375,24 @@ SIMULATE_USER_TURN_SCHEMA = {
     "additionalProperties": False,
 }
 
+REWRITE_TURN_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "user_utterance": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The rewritten user utterance: 1-3 natural first-person sentences, explainable by the CURRENT GRAPH shown in the prompt. When done=true this is the user's closing line.",
+        },
+        "done": {"type": "boolean"},
+        "done_reason": {
+            "type": "string",
+            "description": "When done=true: the user's terminal stance in one short first-person sentence.",
+        },
+    },
+    "required": ["user_utterance", "done"],
+    "additionalProperties": False,
+}
+
 INIT_SCHEMA = {
     "type": "object",
     "properties": {
@@ -391,6 +428,16 @@ TOOL_DEFS = {
             "strength is a 0-4 float you emit directly."
         ),
         "input_schema": SIMULATE_USER_TURN_SCHEMA,
+    },
+    "rewrite_user_turn": {
+        "name": "rewrite_user_turn",
+        "description": (
+            "Conditional retry: the previous turn's graph proposal was partially rejected or "
+            "audit-flagged by the engine. The CURRENT GRAPH in the prompt is the actual state. "
+            "Rewrite ONLY the user utterance (and completion flag) to be consistent with it — "
+            "do not re-propose graph changes (this tool has no fields for them)."
+        ),
+        "input_schema": REWRITE_TURN_SCHEMA,
     },
     "initialize_cognitive_state": {
         "name": "initialize_cognitive_state",

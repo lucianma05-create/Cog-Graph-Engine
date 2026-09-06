@@ -128,6 +128,45 @@ def propagation_audit_note(edges: list, deltas: dict[str, float]) -> list[str]:
     return notes
 
 
+# Substantive rejection classes: the post-apply graph differs from what the
+# LLM intended in a way the utterance could reference. Benign ones (jitter,
+# duplicate, already-deactivated, edge-not-found, cascade) leave the graph
+# matching the intent and do NOT trigger the conditional retry.
+_REWRITE_REASONS = ("illegal relation", "commitment guard", "schema", "pattern",
+                    "missing", "unknown node_id", "endpoint", "id pattern",
+                    "blank content", "strength must be")
+
+
+def _format_rejections(ops_rejected: list[dict], max_items: int = 5) -> list[str]:
+    items: list[str] = []
+    for r in ops_rejected[:max_items]:
+        op = r.get("op") or {}
+        if isinstance(op, dict) and "edge" in op:
+            e = op["edge"]
+            items.append(f"{op.get('op')} edge {e['from']} -{e['relation']}-> "
+                         f"{e['to']} REJECTED: {r.get('reason', '')}")
+        elif isinstance(op, dict) and "node_id" in op:
+            items.append(f"{op.get('op')} {op['node_id']} "
+                         f"REJECTED: {r.get('reason', '')}")
+        elif isinstance(op, dict):
+            items.append(f"{op.get('op')} {op.get('id', '?')} "
+                         f"REJECTED: {r.get('reason', '')}")
+        else:
+            items.append(f"{op} REJECTED: {r.get('reason', '')}")
+    return items
+
+
+def needs_rewrite(ops_rejected: list[dict], notes: list[str]) -> bool:
+    """Conditional-retry trigger: substantive rejections or any ⚠ audit
+    warning. Retrying rewrites the utterance against the REAL post-apply
+    graph, turning 'utterance explainable by the graph' from prompt
+    discipline into a per-turn structural guarantee."""
+    for r in ops_rejected:
+        if any(m in str(r.get("reason", "")) for m in _REWRITE_REASONS):
+            return True
+    return any(isinstance(n, str) and n.startswith("⚠") for n in notes)
+
+
 def _prev_max_offer(task: str, history: list[dict]) -> float | None:
     """Highest $ amount the simulated user has mentioned so far."""
     if task != "price_negotiation":
@@ -321,21 +360,8 @@ class UserSimulator:
         prev_rec = self.turns[-1] if self.turns else self.initial_log
         if not prev_rec:
             return None
-        items: list[str] = []
-        for r in (prev_rec.get("ops_rejected") or [])[:max_rejected]:
-            op = r.get("op") or {}
-            if isinstance(op, dict) and "edge" in op:
-                e = op["edge"]
-                items.append(f"{op.get('op')} edge {e['from']} -{e['relation']}-> "
-                             f"{e['to']} REJECTED: {r.get('reason', '')}")
-            elif isinstance(op, dict) and "node_id" in op:
-                items.append(f"{op.get('op')} {op['node_id']} "
-                             f"REJECTED: {r.get('reason', '')}")
-            elif isinstance(op, dict):
-                items.append(f"{op.get('op')} {op.get('id', '?')} "
-                             f"REJECTED: {r.get('reason', '')}")
-            else:
-                items.append(f"{op} REJECTED: {r.get('reason', '')}")
+        items: list[str] = _format_rejections(prev_rec.get("ops_rejected") or [],
+                                             max_rejected)
         for n in prev_rec.get("notes") or []:
             if isinstance(n, str) and n.startswith("⚠"):
                 items.append(n)
@@ -379,6 +405,28 @@ class UserSimulator:
         react_note = reactance_audit_note(profile, agent_reply,
                                           appraisal.get("goal_conflict", 0.0),
                                           result.deltas, node_types, added_intents)
+        all_notes = (result.notes + a_notes + e_notes + prop_notes
+                     + ([react_note] if react_note else [])
+                     + ([audit_note] if audit_note else []))
+        # Conditional retry: substantive rejections or ⚠ warnings -> rewrite
+        # the utterance against the REAL post-apply graph (second call, only
+        # the utterance; the rewrite tool has no delta fields by construction).
+        retries = 0
+        retry_raw = None
+        if needs_rewrite(result.ops_rejected, all_notes):
+            retry_feedback = _format_rejections(result.ops_rejected) + [
+                n for n in all_notes if isinstance(n, str) and n.startswith("⚠")
+            ]
+            retry_text = prompts.render_turn_user(
+                self.seed, result.graph, appraisal, emotion, self.history,
+                agent_reply, feedback=retry_feedback or None, retry=True)
+            rw, retry_raw = llm.generate_rewrite(system, retry_text)
+            out = out.model_copy(update={
+                "user_utterance": rw.user_utterance,
+                "done": rw.done,
+                "done_reason": (rw.done_reason or "").strip() or None,
+            })
+            retries = 1
 
         turn = {
             "turn_index": len(self.turns) + 1,
@@ -397,10 +445,10 @@ class UserSimulator:
             "deltas": result.deltas,
             "ops_applied": result.ops_applied,
             "ops_rejected": result.ops_rejected,
-            "notes": (result.notes + a_notes + e_notes + prop_notes
-                      + ([react_note] if react_note else [])
-                      + ([audit_note] if audit_note else [])),
-            "validation": {"schema_ok": True, "retries": 0},
+            "notes": all_notes,
+            "retries": retries,
+            "retry_raw": retry_raw,
+            "validation": {"schema_ok": True, "retries": retries},
         }
         # commit (nothing above mutated self)
         self.graph = result.graph

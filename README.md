@@ -35,10 +35,13 @@ sim.step(agent_reply)
  │    节点 add/update/deactivate、边 add/remove；非法方向/噪声/违约操作被拒
  ├─ 守卫与审计（全确定性，不改状态只记账）：
  │    噪声守卫、承诺持久守卫、价格审计、施压反制 ⚠、传播一致性 ⚠
- └─ 记录 turn（deltas、ops_applied/ops_rejected、notes、graph_after）并持久化
+ ├─ 条件重试：本轮有实质性拒绝（非法边/承诺守卫/未知节点等）或 ⚠ 审计触发时，
+ │    第二次调用（rewrite_user_turn 工具，只有话语/终局字段）对着落地后的
+ │    真实图重写话语——"话语可被真实图解释"逐轮结构保证；正常轮不触发
+ └─ 记录 turn（deltas、ops_applied/ops_rejected、notes、retries、graph_after）并持久化
 ```
 
-每轮模拟器转移只调 **1 次 LLM**；auto 模式额外 1 次 agent 回复调用。
+每轮模拟器转移正常 **1 次 LLM 调用**（异常轮 +1 次重写）；auto 模式额外 1 次 agent 回复调用。
 
 ## 3. 上下文构成（每个 LLM 调用里放什么）
 
@@ -55,6 +58,7 @@ sim.step(agent_reply)
 |---|---|
 | system | SYSTEM_CORE + TURN_SYSTEM_EXTRA（CAUSAL DISCIPLINE/情绪闭合集/done 规则）+ TASK_RULES[task] |
 | user | **PERSONA**（含 PRIVATE）、**COGNITIVE STYLE**、**CURRENT GRAPH**（活跃节点+边+最近 10 条失活）、**PREVIOUS APPRAISAL/EMOTION**、**DIALOGUE HISTORY**（前缀全量 + 最近 8 句）、**LATEST AGENT REPLY**、**ENGINE FEEDBACK**（上一轮被拒+⚠，首轮用 Init 的）、≥16 句时追加**确定性收尾提示** |
+| user（条件重试） | 同 Turn 调用，但 CURRENT GRAPH = **落地后的真实图**、附本轮被拒清单 + 提示"只重写话语，勿重提图变更"；工具为 `rewrite_user_turn`（无 delta 字段，结构上禁止再改图） |
 
 ### 3.3 Agent 调用（auto / auto_editable 模式，扮演对方）
 
