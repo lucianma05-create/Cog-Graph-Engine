@@ -164,28 +164,19 @@ unless the evidence is genuinely ambiguous. For P-sourced nodes, the strength sh
 match how strongly P states it; for H0-sourced nodes, match how emphatically the user
 said it.
 
-Step 4 — add edges, forward direction only (each direction has a distinct meaning):
-  B -> D: the belief supports (facilitates) or undermines (inhibits) the
-         desire — it changes how much the user wants the goal (desirability).
-  D -> I: the desire drives (facilitates) or blocks (inhibits) the intention
-         (deliberation).
-  B -> I: the belief bears on the ACTION itself — feasibility, cost, quality
-         of the means (means evaluation). Use only when the belief is about
-         the action/offer, not about the goal's importance; skip it otherwise.
-  I -means_for-> D: the intention SERVES that desire (its purpose — means-end
-         reasoning), even if the desire is not its only driver.
-  D <conflicts_with> D: two strong desires that cannot both be satisfied now.
-    Any link between two desires is conflicts_with (opposition) or NOTHING —
-    desire-vs-desire facilitates/inhibits is always illegal.
+Step 4 — add edges following the edge ontology in the system prompt (B->D
+desirability, D->I deliberation, B->I means evaluation, I -means_for-> D purpose,
+D <conflicts_with> D opposition; the illegal same-level/backward pairs are
+listed there too). At t0 the typical connections are B->D links between
+evidence beliefs and the desires they support or undermine; intentions are
+rare, so means_for/D->I appear only when H0 literally expresses an intention.
 ISOLATION DISCIPLINE: a desire with an evidence-relevant belief in the graph
-must NOT stay isolated — the B -> D facilitates/inhibits link IS the intended
-connection (this is why D->D links feel tempting but are illegal: express the
-tension through beliefs or conflicts_with, never through D->D edges). A Tier-1
-trait node that connects to nothing is irrelevant to this decision space —
-drop it instead of keeping it isolated.
-Add an edge ONLY when the connection is clear in the evidence; same-level and
-backward pairs (B->B, D->D, D->B, I->B, I->I, I->D) are illegal. I->B is never
-legal: an intention does not create a belief (wishful thinking).
+must NOT stay isolated — the B -> D link IS the intended connection (this is
+why D->D links feel tempting but are illegal: express the tension through
+beliefs or conflicts_with, never through D->D edges). A Tier-1 trait node that
+connects to nothing is irrelevant to this decision space — drop it instead of
+keeping it isolated.
+Add an edge ONLY when the connection is clear in the evidence.
 
 Step 5 — output. Emit the initialize_cognitive_state tool call with nodes and edges
 only. Never output strength numbers (level_probs only), never add extra fields.
@@ -442,9 +433,9 @@ def render_turn_user(seed: Seed, graph, appraisal: dict, emotion: dict,
     if feedback:
         lines = "\n".join(f"  - {item}" for item in feedback)
         fb = (
-            "\n\nENGINE FEEDBACK (your last turn's rejected proposals — the "
-            "graph above is the ACTUAL state after rejection; do not repeat "
-            "these, and keep your next utterance consistent with it):\n"
+            "\n\nENGINE FEEDBACK (last turn's rejected proposals — do NOT repeat "
+            "them — plus ⚠ audit warnings about inconsistencies to address; the "
+            "graph above is the ACTUAL state):\n"
             f"{lines}"
         )
     style = _style_block(seed, "honor these conditions when you update")
