@@ -137,9 +137,10 @@
     "first_contentful_turn_id": 3,
     "prefix_end_index": 4
   },
-  "cognitive_style": "I am in a low, heavy mood that makes hopeful claims feel unreal — I come to believe change only gradually, when it shows up in small felt steps, not when someone asserts it. I need gentle, patient listening before I can put my feelings into words; pressure or quick fixes make me withdraw. I hesitate to act on what I want until someone shows me a small, safe step. Small signs of being truly understood lift me noticeably.",
+  "cognitive_style": "I hold my position unless the evidence is overwhelming — and when I am low, even hopeful claims barely reach me. I move only gradually, through small felt steps rather than persuasion.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal"
+    "reactance": "normal",
+    "inertia": "resistant"
   }
 }

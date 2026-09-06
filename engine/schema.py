@@ -98,7 +98,7 @@ class Appraisal(BaseModel):
 EMOTION_CATEGORIES = (
     "neutral", "anxiety", "sadness", "shame", "guilt", "anger", "fear",
     "loneliness", "helplessness", "confusion", "frustration", "irritation",
-    "distrust", "relief", "hope", "warmth",
+    "distrust", "relief", "hope", "warmth", "surprise",
 )
 
 

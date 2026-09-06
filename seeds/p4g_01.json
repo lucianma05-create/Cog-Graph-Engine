@@ -117,9 +117,10 @@
     "outcome_amount": null,
     "prefix_end_index": 2
   },
-  "cognitive_style": "I change my beliefs when I get concrete facts about where money goes, not when someone flatters or pressures me. I check details carefully before deciding, and guilt-heavy appeals make me anxious and defensive rather than generous. Once I commit to something, I keep my word. I am open to new information, but I set my standards first.",
+  "cognitive_style": "I move when the evidence is solid: concrete facts about where money goes persuade me, flattery does not. Once I commit to something, I keep my word.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal"
+    "reactance": "normal",
+    "inertia": "normal"
   }
 }

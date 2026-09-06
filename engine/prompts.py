@@ -200,7 +200,7 @@ user feels now, caused by a_t plus the user's thoughts), then u_{t+1}.
   persist by commitment even when the desire no longer drives them.
 - Emotion category must be ONE of this closed set (pick the single closest):
   neutral, anxiety, sadness, shame, guilt, anger, fear, loneliness, helplessness,
-  confusion, frustration, irritation, distrust, relief, hope, warmth.
+  confusion, frustration, irritation, distrust, relief, hope, warmth, surprise.
   appraisal_target points at the node most affected, or '#agent_reply'.
 - valence in [-1,1]; controllability/goal_conflict/arousal in [0,1].
 - controllability = how much agency the user feels over THEIR OWN SITUATION

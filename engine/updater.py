@@ -190,6 +190,10 @@ def apply_updates(
     done: bool = False,
     commitment: str = "persistent",
 ) -> ApplyResult:
+    """Noise filtering is a GLOBAL signal-reliability mechanism (the content
+    revision exemption included). Update resistance (认知风格 ①) is a property
+    of the transition function and is carried by the NL style block, NOT by the
+    filter — see the 2026-09-06 modeling review."""
     nodes = dict(graph.nodes)
     edges = dict(graph.edges)
     dist = dict(graph.dist)

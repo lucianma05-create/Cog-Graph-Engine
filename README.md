@@ -1,94 +1,144 @@
 # Cog-Graph-Engine
 
-轻量化的 **BDI 图结构用户模拟器** + 可视化交互窗口，面向主动对话（情感支持 / 劝说捐赠 / 讨价还价）。
-
-设计文档：[shared_work_space/insight.md](shared_work_space/insight.md)
-
-## 原理
+可解释因果用户模拟器：**BDI 图结构用户心智** + 可视化交互窗口，面向主动对话（情感支持 / 劝说捐赠 / 讨价还价）。设计文档：[shared_work_space/insight.md](shared_work_space/insight.md)。
 
 ```
 Agent Reply → 认知状态转移（BDI 图增量更新 + Appraisal + Emotion）→ User Reply
 ```
 
-- **图是用户自己的第一人称心智**：节点 content 一律以用户口吻书写（Belief=用户持有的命题、Desire="I want/avoid ..."、Intention="I will ..."），禁止 "The user ..." 第三人称包装；Appraisal/Emotion 同样以用户视角产出。模拟器定位仍是 insight.md §3 的"结构化潜在状态后验估计"——第一人称是表示语言，不是 ground truth 声明；
-- 每轮 LLM 只输出**图更新操作**（节点 `add/update/deactivate`、边 `add/remove`）与 appraisal/emotion/用户话语，**确定性引擎** `G_t = Apply(G_{t-1}, Updates_t)` 负责落地——节点 ID 永不漂移、状态全程可审计；
-- 节点强度 = LLM 输出的 0–4 五档概率分布的期望（`strength = Σ p(k)·k`），引擎程序计算，LLM 永不直接写强度；
-- **边方向遵循 BDI 实践推理的三个机制**（同层与逆向边被引擎拒绝）：
-  - `facilitates/inhibits`：B→D = 合意性评价，D→I = 慎思，B→I = 手段评估（信念作用于行动本身）；
-  - `means_for` 仅 I→D = 意向的目的归属（手段-目的推理，意向在驱动欲望减弱后仍存续）；
-  - `conflicts_with` 仅 D↔D；欲望之间的任何连接只能用 conflicts_with（对立）或不建边；
-  - I→B 非法（Bratman 不对称论题：意向不产生信念，反推即 wishful thinking）；
-- **G0 三层证据政策**（`G0 = Init(P, S, H0)`）：Tier 1 固有态度——persona 量表的价值观/人格直接建节点（情境相关 + 强度按量表极端度 + 忠实转写）；Tier 2 情境激活——自报问题/私有谈判立场；Tier 3 前缀证据——H0 自发表达。**结果变量（捐赠意向/成交意向等）留给干预**：G0 不预植，除非 H0 明说。前缀之后的对话绝不进入 LLM 上下文；
-- **认知风格（cognitive_style）**：种子内置一段第一人称"条件化更新习惯"（如"I only change my mind on verifiable facts"），决定用户认知状态**怎么变**而非**想什么**；仅进模拟器上下文、绝不进 agent 上下文。`cognitive_profile` 是引擎专属的守卫开关（commitment / reactance），LLM 只看到 NL 描述；
-- **确定性守卫与审计**（引擎侧兜底，违规尝试经 ENGINE FEEDBACK 回注下一轮提示）：
-  - 噪声守卫：|Δ|<0.4 的纯抖动拒绝；**携带真实内容修改的亚阈值移动生效**（内容重写是真实认知变化的证据）；
-  - 承诺持久守卫：仍挂着活跃 means_for 欲望的意向不能被 deactivate/清零（欲望同轮死亡/同轮替代/边同轮移除/done 可解封）；
-  - 价格审计：新出价高于历史最高且无 worth-belief/urgency 正向 Δ 时打 ⚠（**带让步条件且涨幅 ≤5% 的提价豁免**）；
-  - 施压反制 ⚠（reactance=pronounced 用户：施压 + 高 goal_conflict + 意向上升）与传播一致性 ⚠（同轮相邻边反向移动）；
-  - **CAUSAL DISCIPLINE**：u_t 立场切换必须有同轮节点变化，无切换时空更新合法；
-- 字段最小集（如无必要勿增实体）：Appraisal = goal_congruence / controllability / goal_conflict；Emotion = category / valence / arousal / appraisal_target（intensity、certainty 已删——分别由 arousal 与 belief strength 承载）；
-- 种子图稳定：Init 使用 temperature=0 + 分步明确指令，且首次生成的 G0 持久化于 `sessions/g0/<seed_id>.json` 复用——同一种子每次初始化的基础图一致（删除该文件或 `--reinit` 可重新生成）；8 轮后追加确定性收尾提示防漂移；
-- 三种驱动模式：**手动输入** / **LLM 自动扮演 agent** / **LLM 自定义提示词**（基础提示词可编辑）。
+---
 
-## 运行
+## 1. 名词速查
+
+| 名词 | 含义 |
+|---|---|
+| **BDI 图** | 用户心智的结构化表示：B=Belief（用户持有的命题）、D=Desire（想实现/避免的状态）、I=Intention（对具体行动的承诺倾向）。节点字段仅 `id/type/content/strength` |
+| **第一人称立场** | 图上维护的是"用户自己心中的想法"：节点 content 一律用户口吻（B=命题本身，D="I want/avoid..."，I="I will..."），禁 "The user..." 包装；引擎扮演用户心智而非观察者 |
+| **G0** | 初始认知图 = Init(P, S, H0)，temperature=0 + 最强模型（ANTHROPIC_INIT_MODEL）生成，持久化于 `sessions/g0/<seed>.json` 复用；删文件或 `--reinit` 重新生成 |
+| **P / S / H0** | Init 的三个证据源：P=persona（对话前已知：人格问卷/自报问题/私有谈判立场）、S=场景、H0=干预前的对话前缀。**前缀之后的对话绝不进 LLM 上下文** |
+| **三层证据政策** | G0 建节点的规则：Tier 1 固有态度（量表直接建：情境相关+强度按量表极端度+忠实转写）、Tier 2 情境激活（自报问题/私有立场）、Tier 3 前缀证据；**结果变量（捐赠/成交意向等）留给干预**，G0 不预植 |
+| **level_probs / strength** | LLM 只输出 0–4 五档概率分布，引擎算 `strength = Σ p(k)·k`——LLM 永不直接写强度 |
+| **Appraisal** | 每轮对 agent 回复的事件评价：`goal_congruence / controllability / goal_conflict` 三字段（certainty 已删，由 belief strength 承载） |
+| **Emotion** | 短期情绪：`category(闭合 17 标签) / valence / arousal / appraisal_target`（intensity 已删，由 arousal 承载；target 指向受影响节点或 `#agent_reply`，是因果归因） |
+| **边关系（4 种）** | 见 §4 边规则 |
+| **done / done_reason** | 终局标志；done_reason 是用户终局立场的第一人称表述（"I will take it at $70"） |
+| **CAUSAL DISCIPLINE** | 因果纪律：u_t 立场切换必须有同轮节点变化；无切换时空更新合法（不逼造变化） |
+| **ENGINE FEEDBACK** | 引擎把上一轮被拒操作及原因、⚠ 审计标记回注下一轮提示，保持 LLM 心理图与真实图一致 |
+| **认知风格（3 维）** | 见 §5 |
+
+## 2. 每轮发生什么（pipeline）
+
+```
+sim.step(agent_reply)
+ ├─ 组装提示词（见 §3 上下文构成）——1 次 LLM 结构化调用（forced tool_choice，1 次校验重试）
+ ├─ deterministic updater 落地：G_t = Apply(G_{t-1}, Updates_t)
+ │    节点 add/update/deactivate、边 add/remove；非法方向/噪声/违约操作被拒
+ ├─ 守卫与审计（全确定性，不改状态只记账）：
+ │    噪声守卫、承诺持久守卫、价格审计、施压反制 ⚠、传播一致性 ⚠
+ └─ 记录 turn（deltas、ops_applied/ops_rejected、notes、graph_after）并持久化
+```
+
+每轮模拟器转移只调 **1 次 LLM**；auto 模式额外 1 次 agent 回复调用。
+
+## 3. 上下文构成（每个 LLM 调用里放什么）
+
+### 3.1 Init 调用（构建 G0，每种子只跑一次）
+
+| 位置 | 内容 |
+|---|---|
+| system | SYSTEM_CORE（本体论/边规则/更新纪律）+ INIT_SYSTEM_EXTRA（三步证据+三层政策+确定性要求）+ TASK_RULES[task] |
+| user | **PERSONA(P)**（含 PRIVATE 私有谈判立场）、**COGNITIVE STYLE**（用户自述更新习惯）、**SCENARIO**、**H0 前缀** |
+
+### 3.2 Turn 调用（每轮一次）
+
+| 位置 | 内容 |
+|---|---|
+| system | SYSTEM_CORE + TURN_SYSTEM_EXTRA（CAUSAL DISCIPLINE/情绪闭合集/done 规则）+ TASK_RULES[task] |
+| user | **PERSONA**（含 PRIVATE）、**COGNITIVE STYLE**、**CURRENT GRAPH**（活跃节点+边+最近 10 条失活）、**PREVIOUS APPRAISAL/EMOTION**、**DIALOGUE HISTORY**（前缀全量 + 最近 8 句）、**LATEST AGENT REPLY**、**ENGINE FEEDBACK**（上一轮被拒+⚠，首轮用 Init 的）、≥16 句时追加**确定性收尾提示** |
+
+### 3.3 Agent 调用（auto / auto_editable 模式，扮演对方）
+
+| 内容 | 可见性 |
+|---|---|
+| 公开 persona、场景、前缀、对话历史；auto_editable 可编辑系统提示词 | ✅ |
+| 谈判任务的 agent 私有立场（agent_private，如卖家底价） | ✅ 仅 agent 上下文 |
+| **认知图、private_persona（买家目标价）、cognitive_style** | ❌ **永不进 agent 上下文**（有防泄漏测试） |
+
+## 4. 边规则（Bratman/Rao & Georgeff 实践推理）
+
+认知前向流动 B→D→I，`facilitates/inhibits` 只允许三个方向，各对应一种机制：
+
+| 方向 | 机制 |
+|---|---|
+| B→D | 合意性评价：信念改变对目标的渴望程度 |
+| D→I | 慎思：欲望强度驱动行动承诺 |
+| B→I | 手段评估：信念作用于行动本身的可行性/代价 |
+| I→D `means_for` | 目的归属（手段-目的推理）：意向**服务**于哪个欲望；驱动欲望减弱后仍存续（承诺持久性） |
+| D↔D `conflicts_with` | 欲望对立（欲望间唯一的合法连接；同层/逆向边一律被引擎拒绝） |
+| I→B | **永非法**（不对称论题：意向不产生信念，反推即 wishful thinking） |
+
+## 5. 认知风格（3 维，文献支撑，LLM 只见 NL）
+
+| 维度 | 档位 | 理论依据 | 实现 |
+|---|---|---|---|
+| ① 更新阻抗 | malleable / normal / resistant（触发可以是事实或情感确认，NL 中写明） | ELM 双路径 + Need for Cognition（Haugtvedt & Petty 1992）、态度强度（Krosnick & Petty 1995）、Edwards 保守主义 | **仅 NL 风格块**（实测 esconv 对区分度干净）；profile 中 `inertia` 档位仅作标注，机械实现（收缩系数）待定 |
+| ② 反向敏感性 | reactant / non-reactant | Brehm 1966 心理阻抗（量表 Hong & Faedda 1996，效度有争议，仅限有量表证据的种子） | NL + reactance ⚠ 审计（引擎） |
+| ③ 承诺粘性 | persistent / flexible | Bratman 1987；R&G 承诺策略 | NL + **承诺持久守卫**（引擎，persistent 档） |
+
+种子字段：`cognitive_style`（第一人称 NL 块，simulator-only）、`cognitive_profile`（引擎只读枚举：`commitment/reactance/inertia`，LLM 永不看到）。6 种子当前配置：craigslist_01=resistant/non/persistent、craigslist_02=malleable/non/persistent、p4g_01=normal/non/persistent、p4g_02=resistant/reactant/persistent、esconv_01=normal(情感确认触发)/non/persistent、esconv_02=resistant(低落时门槛更高)/non/persistent。
+
+## 6. 守卫与审计（引擎兜底，确定性）
+
+| 机制 | 作用 |
+|---|---|
+| **噪声守卫** | 全局 \|Δ\|<0.4 的纯强度抖动拒绝；**携带真实内容修改的亚阈值移动放行**（内容重写=真实变化而非抖动） |
+| **承诺持久守卫** | 挂着活跃 means_for 的意向不得 deactivate/清零，除非：欲望同轮死亡 / 同轮新意向+指向同欲望的 means_for 边 / 边同轮移除 / done / commitment=flexible |
+| **价格审计** | 新出价高于历史最高且无 worth-belief/urgency 正向 Δ（或同轮新增）时 ⚠；带让步条件且涨幅 ≤5% 豁免（"throw in the adapter" 类） |
+| **施压反制 ⚠** | reactant 用户：施压措辞 + goal_conflict≥0.6 + 意向上升 → ⚠（不拒绝，进回馈） |
+| **传播一致性 ⚠** | 同轮相邻边（facilitates/inhibits）反向移动 ≥0.4 → ⚠（post-apply 边集，同轮切边不算） |
+| **空 G0 守卫** | 非空 persona 下 Init 返回空图 → 带提醒重试一次 |
+
+⚠ 标记与拒绝对（含原因）经 **ENGINE FEEDBACK** 回注下一轮提示。
+
+## 7. 运行
 
 ```bash
-# 1. 单元测试（无需 LLM）
-python -m unittest discover tests
-
-# 2. 启动可视化服务（默认 http://127.0.0.1:8644/）
-python run_demo.py --seed esconv_01        # 可选 --seed / --port / --host / --reinit
+python -m unittest discover tests           # 88 个单元测试（无需 LLM）
+python run_demo.py --seed esconv_01         # 可视化服务（默认 8644；8642/8643 被占用）
+python replay_cli.py --seed p4g_01 --turns 6   # 真实 agent 回复回放，对照真实/模拟用户
+python tests/smoke_e2e.py --live --turns 3      # 冒烟（6 种子 × Init+3 轮）
+python tools/eval_session.py --all          # 确定性日志指标（schema 拒绝/⚠ 审计/噪声计数）
+python tools/eval_probes.py                 # 风格探针（reactance/facts-first/commitment，3/3 断言）
+python tools/eval_tree.py --runs 3          # 共享前缀树 rollout（因果性/区分度聚合）
+python tools/eval_dims.py                   # 3 维风格符合度对照审查
 ```
 
-可视化窗口：左侧 BDI 图（蓝=Belief、橙=Desire、绿=Intention，四种边关系区分样式），每轮变更高亮（新增绿 / 强度变化橙 + Δ / 失活灰虚线 / 边增删）；侧栏显示双方话语、appraisal/emotion、本轮更新操作、真实参考对话；底部支持逐轮回放与三种模式输入。
-
-```bash
-# 3. Headless 回放：用真实 agent 回复逐轮喂模拟器，对照真实/模拟用户回复
-python replay_cli.py --seed p4g_01 --turns 6
-
-# 4. 冒烟测试（真实 LLM 调用，6 个种子各 Init + 3 轮 manual + 1 轮 auto）
-python tests/smoke_e2e.py --live --turns 3
-
-# 5. 评估工具
-python tools/eval_session.py --all   # 确定性日志分析：schema 拒绝/审计 ⚠/噪声计数
-python tools/eval_probes.py          # 风格探针套件（reactance / facts-first / commitment，3/3 断言）
-python tools/eval_tree.py --runs 3   # 共享前缀树状 rollout：因果性（状态分叉）与区分度（结局分化）聚合
-```
-
-## 目录结构
-
-```
-engine/     核心：schema（pydantic + LLM tool schema）、updater（确定性图引擎 + 守卫）、
-            prompts、llm（anthropic 封装）、agent（auto 模式）、simulator（会话编排 + 审计）
-server/     极简 stdlib HTTP 服务 + 可视化前端（vis-network 本地化，无 CDN）
-seeds/      6 个种子（ESConv / P4G / CraigslistBargain 各 2，来自真实对话，
-            含第一人称 cognitive_style + cognitive_profile）
-tools/      种子提取脚本 + 评估工具（eval_session / eval_probes / eval_tree）
-sessions/   会话日志（JSON 机器日志 + g0 缓存 + markdown 报告，API 不回传 llm_raw）
-tests/      单元测试（84 个，无需 LLM）+ 冒烟测试
-```
-
-## 数据来源
-
-- **ESConv / P4G**：`/data/user21300120/mmh/CogWM/bdi-annotation/output/` 的标注 jsonl（persona 只用对话前自述/前测字段，事后标注的 global_bdi 绝不进入种子）；
-- **CraigslistBargain**：Stanford NLP 官方数据（Codalab bundle，下载缓存于 `seeds/raw/`）。
-
-## LLM 配置
-
-在项目根目录的 **`.env`** 中配置（该文件已被 `.gitignore` 排除，勿提交/分享）：
+## 8. LLM 配置（.env，已被 gitignore）
 
 ```ini
 ANTHROPIC_BASE_URL=...
 ANTHROPIC_AUTH_TOKEN=...
-ANTHROPIC_MODEL=...          # 高频路径：turn 状态更新 + agent 回复
-ANTHROPIC_INIT_MODEL=...     # G0 种子图（一次性、持久化缓存，建议用最强模型）
+ANTHROPIC_MODEL=...        # turn 更新 + agent 回复（高频路径）
+ANTHROPIC_INIT_MODEL=...   # G0 种子图（一次性、缓存复用，用最强模型）
 ```
 
-模型分层：种子图 G0 用 `ANTHROPIC_INIT_MODEL`（默认回退 `ANTHROPIC_MODEL`），每轮状态更新与 agent 回复用 `ANTHROPIC_MODEL`。**`.env` 的键优先于 shell 环境变量**；未写入 `.env` 的键回退到进程环境变量，两者都缺省时 fallback 为 `claude-sonnet-4-6`。空 G0 守卫：非空 persona 下 Init 返回空图会带提醒自动重试一次。
+**`.env` 优先于 shell 环境变量**（曾经被 shell 里的旧导出压住，已修）；缺省 fallback `claude-sonnet-4-6`。注意：代理默认 thinking 模式拒绝强制 tool_choice，结构化调用已传 `thinking={"type": "disabled"}`。
 
-## 说明
+## 9. 目录结构
 
-- 每轮模拟器转移只调 1 次 LLM（forced tool_choice 结构化输出 + pydantic 校验 + 1 次重试）；auto 模式额外 1 次 agent 回复调用；
-- 会话日志含每轮 `llm_raw`（审计用，API 不回传）；
-- 评估方法论：结局对齐用 replay（模拟 vs 真实对话）、风格一致性用探针套件、可操纵性用树状 rollout 的剂量-反应曲线、结构健康度用 eval_session——中间认知状态只做诊断/路由（potential-based shaping），**credit 只从结局来**，避免模拟器自证陷阱；
-- 奖励分配 / RL 训练等后续工作尚未开始。
+```
+engine/   schema（pydantic + LLM tool schema）、updater（确定性图引擎+守卫）、prompts、
+          llm（anthropic 封装+模型分层）、agent（auto 模式）、simulator（会话编排+审计）
+server/   stdlib HTTP 服务 + 可视化前端（vis-network 本地化，无 CDN）
+seeds/    6 种子（真实对话；persona/私有立场/前缀/风格块/风格 profile）
+tools/    种子提取 + 评估工具（eval_session/eval_probes/eval_tree/eval_dims）
+sessions/ 会话日志（JSON 机器日志 + g0 缓存 + markdown 报告）
+tests/    单元测试 + 冒烟测试
+```
+
+## 10. 已知边界（记录在案）
+
+- 价格审计的文本正则读不懂让步语义的全貌（引用报价/条件句存在已知盲点）
+- ⚠ 协议为字符串前缀约定（"⚠" 前缀 + 关键词匹配），改措辞会破坏路由
+- ENGINE FEEDBACK 措辞把 ⚠ 警告与拒绝混称"rejected proposals"
+- 历史会话日志含旧格式字段（读兼容，无害）；SCHEMA_VERSION=2

@@ -88,9 +88,10 @@
     "price_changes": 5,
     "prefix_end_index": 1
   },
-  "cognitive_style": "I really want this phone, and I get engaged quickly when the seller seems genuine. My budget is tight, but I don't hold a hard line — a friendly seller, a sense that others want the item, or an easy way to pay like installments makes me stretch beyond my original number more than I planned. Pressure and scarcity talk work on me. Once I agree to a price, I keep my word.",
+  "cognitive_style": "I shift my view fairly easily — a friendly manner, a sense that others want the item, or an easy way to pay is enough to move me beyond my original number. Once I agree to a price, I keep my word.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal"
+    "reactance": "normal",
+    "inertia": "malleable"
   }
 }

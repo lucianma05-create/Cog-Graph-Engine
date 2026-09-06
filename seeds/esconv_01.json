@@ -149,9 +149,10 @@
     "first_contentful_turn_id": 2,
     "prefix_end_index": 5
   },
-  "cognitive_style": "I am overwhelmed and anxious right now, so I need to feel heard before I can think clearly. Being listened to without judgment opens me up and lets me see my situation differently; being pushed toward solutions makes me shut down. My fear of change is strong — small, concrete, safe steps can shift it, big leaps cannot. My mood swings easily with how the conversation goes.",
+  "cognitive_style": "I move when I feel understood: being genuinely listened to opens me up to see my situation differently, being pushed toward solutions shuts me down. Small, concrete, safe steps can shift me; big leaps cannot.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal"
+    "reactance": "normal",
+    "inertia": "normal"
   }
 }

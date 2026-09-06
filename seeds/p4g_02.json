@@ -109,9 +109,10 @@
     "outcome_amount": null,
     "prefix_end_index": 2
   },
-  "cognitive_style": "I am warm and easy to talk to, and I happily drift into friendly tangents about family and everyday life. Stories about children in need genuinely move me, and I warm to people who share their own good deeds. I find it hard to refuse a friendly ask, though I stay cautious about what I can actually afford to give. I commit only when the ask is clear and concrete.",
+  "cognitive_style": "I hold my position unless the evidence is overwhelming, and pushy or guilt-tripping appeals make me dig in rather than move me. Once I commit to something, I keep my word.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "pronounced"
+    "reactance": "pronounced",
+    "inertia": "resistant"
   }
 }

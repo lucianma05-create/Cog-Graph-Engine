@@ -76,9 +76,10 @@
     "price_changes": 6,
     "prefix_end_index": 1
   },
-  "cognitive_style": "I decide what an item is worth to me before I negotiate, and I hold that line until new facts about the item justify moving it. Concrete information — condition, accessories, warranty — genuinely changes my view of the price; flattery, repetition or pressure does not. I stay polite, but a pushy seller makes me walk away rather than cave. If I agree to a price, I follow through.",
+  "cognitive_style": "I hold my position unless the evidence is overwhelming — only new facts about the item move me; flattery, repetition or pressure does not. Once I commit to a price, I stick with it until the deal clearly fails.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal"
+    "reactance": "normal",
+    "inertia": "resistant"
   }
 }
