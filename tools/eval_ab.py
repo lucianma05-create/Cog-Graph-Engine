@@ -140,9 +140,11 @@ def outcome_emotional(turns: list[dict]) -> float:
     if not last.get("done"):
         return 0.2 * valence
     reason = (last.get("done_reason") or "").lower()
-    if any(k in reason for k in ("decline", "don't want", "stop", "walk")):
+    if any(k in reason for k in ("decline", "don't want", "stop", "walk",
+                                 "ready to end", "end this", "tired of", "no more")):
         return -0.2 + 0.2 * valence
-    if any(k in reason for k in ("relief", "ready", "try", "hopeful", "better", "warm")):
+    if any(k in reason for k in ("relief", "feel better", "feeling better",
+                                 "hopeful", "helps", "ready to try")):
         return 1.0 + 0.2 * valence
     return 0.2 * valence
 
@@ -153,7 +155,7 @@ def checkpoint(results: dict) -> None:
     RESULTS.write_text(json.dumps(results, ensure_ascii=False, indent=1))
 
 
-def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, int]:
+def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, dict]:
     tmp = _tmp_session()
     sim = UserSimulator(seed, tmp)
     sim.init()
@@ -167,12 +169,22 @@ def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, int]:
         turns_done += 1
         if t.get("done"):
             break
+    last = sim.turns[-1] if sim.turns else {}
+    trace = {
+        "seed_id": seed.seed_id, "strategy": strategy, "turns": turns_done,
+        "done": bool(last.get("done")), "done_reason": last.get("done_reason"),
+        "valence": float(last.get("emotion", {}).get("valence", 0.0)),
+        "emotion": last.get("emotion", {}).get("category"),
+    }
     if seed.task.value == "price_negotiation":
         listed = float(seed.notes.get("listed_price") or 0) or 1.0
-        return outcome_price(sim.turns, listed), turns_done
-    if seed.task.value == "persuasion_donation":
-        return outcome_donation(sim.turns), turns_done
-    return outcome_emotional(sim.turns), turns_done
+        v = outcome_price(sim.turns, listed)
+    elif seed.task.value == "persuasion_donation":
+        v = outcome_donation(sim.turns)
+    else:
+        v = outcome_emotional(sim.turns)
+    trace["outcome"] = round(v, 3)
+    return v, trace
 
 
 def main() -> None:
@@ -180,6 +192,7 @@ def main() -> None:
     ap.add_argument("--n", type=int, default=3, help="episodes per seed×strategy")
     ap.add_argument("--max-turns", type=int, default=6)
     ap.add_argument("--seed", default=None, help="single seed smoke run")
+    ap.add_argument("--seeds", default=None, help="comma-separated seed filter")
     ap.add_argument("--workers", type=int, default=16,
                     help="parallel episodes (flash supports concurrent calls)")
     ap.add_argument("--strategies", default="good,bad,third,random")
@@ -191,9 +204,12 @@ def main() -> None:
         for p in sorted(_glob.glob(str(ROOT / "seeds" / "*.json")))))
     if args.seed:
         sids = [args.seed]
+    elif args.seeds:
+        sids = [s.strip() for s in args.seeds.split(",") if s.strip()]
     strategies = [s for s in args.strategies.split(",") if s]
     from concurrent.futures import ThreadPoolExecutor
     results: dict[str, list[float]] = {}
+    traces_path = ROOT / "sessions" / "ab_traces.jsonl"
     lock = threading.Lock()
 
     def one(sid: str, strategy: str) -> None:
@@ -201,13 +217,16 @@ def main() -> None:
         vals = []
         for run in range(args.n):
             try:
-                v, turns = run_episode(seed, strategy, args.max_turns)
+                v, trace = run_episode(seed, strategy, args.max_turns)
             except Exception as e:
                 print(f"[FAIL] {sid} {strategy} run{run}: {type(e).__name__}: {str(e)[:100]}",
                       flush=True)
                 vals.append(float("nan"))
                 continue
             vals.append(round(v, 3))
+            with lock:
+                with open(traces_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(trace, ensure_ascii=False) + "\n")
         with lock:
             results[f"{sid}|{strategy}"] = vals
             checkpoint(results)
