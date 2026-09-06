@@ -122,7 +122,9 @@ def call_structured(
             raw = _forced_tool_call(tool_name, system, user_text,
                                     temperature=temperature, model=model)
             return model_cls.model_validate(raw), raw
-        except ValidationError as e:
+        except (ValidationError, SchemaError) as e:
+            # SchemaError here = the model emitted NO tool call at all
+            # (observed with flash); retry once with the validation suffix.
             errors.append(str(e)[:600])
         except anthropic.APIError as e:
             errors.append(str(e)[:600])

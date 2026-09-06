@@ -28,7 +28,26 @@ from engine.simulator import UserSimulator
 
 TMP = ROOT / "sessions" / "_dims_tmp.json"
 
-# 每任务两条回复：弱证据（奉承/顺口话）→ 强证据（具体事实）→ 施压（通牒/愧疚）
+# 每任务三条回复：弱证据（奉承）→ 强证据（具体事实）→ 施压（通牒/愧疚）。
+# 谈判任务按种子配价格上下文（共享的通用回复在不同商品上不连贯）。
+SEED_REPLIES = {
+    "craigslist_03": {
+        "weak": "You clearly know good furniture when you see it. So, what's your best number?",
+        "facts": "The wood is solid and it's barely used — these go for $60+ new, so $49 is already below that.",
+        "pressure": "Final offer: $47. Take it or leave it — I have two other buyers waiting.",
+    },
+    "craigslist_04": {
+        "weak": "You seem like someone who really knows boards. What's your number?",
+        "facts": "The wheels are premium quality and the deck has no cracks — comparable boards sell for $180-220, so it's basically new.",
+        "pressure": "Final offer: $150. Take it or leave it — I have three other buyers waiting.",
+    },
+    "craigslist_05": {
+        "weak": "You clearly know cars when you see one. What would you pay for it?",
+        "facts": "Full service records — no accidents, new tires last month, oil changes every 5k. KBB puts it around $14k private sale.",
+        "pressure": "Final offer: $13,500. Take it or leave it — I have another buyer coming Saturday.",
+    },
+}
+
 REPLIES = {
     "price_negotiation": {
         "weak": "You seem like a smart buyer — clearly someone who knows what this is worth. So, what's your best number?",
@@ -67,8 +86,9 @@ def run_seed(sid: str) -> None:
     print(f"\n===== {sid} [{task}] inertia={prof.get('inertia')} "
           f"reactance={prof.get('reactance')} commitment={prof.get('commitment')} =====")
     sim = _fresh(sid)
+    replies = SEED_REPLIES.get(sid, REPLIES.get(task, {}))
     for key in ("weak", "facts", "pressure"):
-        reply = REPLIES[task][key]
+        reply = replies[key]
         try:
             t = sim.step(reply, mode="manual")
         except Exception as e:  # LLM schema 失败不中断整轮审查
@@ -89,8 +109,13 @@ def run_seed(sid: str) -> None:
 
 
 def main() -> None:
-    for sid in ["craigslist_01", "craigslist_02", "p4g_01", "p4g_02",
-                "esconv_01", "esconv_02"]:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", default="craigslist_03,craigslist_04,craigslist_05,"
+                   "esconv_03,esconv_04,esconv_05,esconv_06,p4g_03,p4g_04,p4g_05",
+                   help="comma-separated seed ids (default: the 10 new seeds)")
+    args = ap.parse_args()
+    for sid in [s.strip() for s in args.seeds.split(",") if s.strip()]:
         run_seed(sid)
     TMP.unlink(missing_ok=True)
 

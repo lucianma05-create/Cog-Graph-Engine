@@ -1,0 +1,129 @@
+{
+ "seed_id": "esconv_06",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Not having enough friends nearby.  My three nearby friends went away for holidays, so I have no one to spend time with over this weekend. Presenting problem: ongoing depression (predominant emotion: depression). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: ongoing depression.",
+ "u0": "I'm, okay, thanks, and you?  I'm feeling a bit down because I'm alone for the holidays.",
+ "pre_context": [
+  {
+   "role": "supporter",
+   "text": "Hello how are you?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "supporter",
+   "text": "Hello how are you?"
+  },
+  {
+   "role": "seeker",
+   "text": "I'm, okay, thanks, and you?  I'm feeling a bit down because I'm alone for the holidays."
+  },
+  {
+   "role": "supporter",
+   "text": "Well that's no good, does your family live far away?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, my family is scattered all over the country, like Seattle, Georgia, PA.  I'm sure I'm not the only one with no plans this weekend, though."
+  },
+  {
+   "role": "supporter",
+   "text": "True but I can understand that, it is hard being alone at the holidays."
+  },
+  {
+   "role": "supporter",
+   "text": "Did you have plans this weekend?"
+  },
+  {
+   "role": "seeker",
+   "text": "No.  My nearby friends all went away for the holidays.  I could probably just occupy my time with things I need or want to do in order to distract myself."
+  },
+  {
+   "role": "supporter",
+   "text": "What kind of hobbies do you have?"
+  },
+  {
+   "role": "seeker",
+   "text": "I'm teaching myself the piano.  I'm also teaching myself  how to work a stenography machine for possible future employment as a stenographer.  I also like to read novels."
+  },
+  {
+   "role": "supporter",
+   "text": "I have never understood how those work..I find it amazing someone can type out whole words or sentences with one word"
+  },
+  {
+   "role": "seeker",
+   "text": "Yeah, it's pretty cool.  For example, if I hit DRAT in one stroke, then \"Did there come a time\" will appear in English on my machine's  LCD screen."
+  },
+  {
+   "role": "supporter",
+   "text": "Wow that is crazy, I don't understand how that works, is it preprogrammed or does it go by how the word sounds?"
+  },
+  {
+   "role": "seeker",
+   "text": "Each stenographer has their own \"Personal Dictionary\" which is a list of words in English along with how you in particular write out those words or phrases in steno.  This dictionary is present within the actual steno machine after you transfer it from your laptop to the machine via cable or wifi.  Thus your machine then knows how you write out words in particular and how to translate those words from steno to English - each stenographer writes a little differently."
+  },
+  {
+   "role": "supporter",
+   "text": "OK that makes sense, so you basically program it as the user. I take it your stenography machine becomes pretty close to you lol"
+  },
+  {
+   "role": "supporter",
+   "text": "Is this your first holiday alone?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, exactly!  And it's very important to back up your personal dictionary to the cloud or a seperate drive so that you don't lose it in a hard-drive crash.  A lot of work goes into creating that dictionary!  No, it's happened before, being along for the holidays; but you've helped to cheer me up, so thanks!"
+  },
+  {
+   "role": "supporter",
+   "text": "No problem, I hope I have made your day a little better!"
+  },
+  {
+   "role": "seeker",
+   "text": "You have, thanks!  Did you do anything special?"
+  },
+  {
+   "role": "supporter",
+   "text": "Have a good rest of this year and don't forget to make your New Year's resolution!"
+  },
+  {
+   "role": "seeker",
+   "text": "I will do that - you too.  Thanks, again..."
+  },
+  {
+   "role": "supporter",
+   "text": "Not really, stayed home lol... Have a good one!"
+  },
+  {
+   "role": "seeker",
+   "text": "You too... bye now..."
+  },
+  {
+   "role": "supporter",
+   "text": "Good day!"
+  },
+  {
+   "role": "supporter",
+   "text": "What else can I help you with today?"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00013",
+  "split": "train",
+  "problem_type": "ongoing depression",
+  "emotion_type": "depression",
+  "n_messages": 24,
+  "contentful_turn_count": 5,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 1,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I shift my view fairly easily — I am lonely and eager for connection, so a warm, engaged listener lifts me quickly. I move toward anyone who shows genuine interest in my life.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

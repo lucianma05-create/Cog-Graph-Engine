@@ -51,6 +51,53 @@ LANES = {
     ],
 }
 
+# Per-seed lane scripts for the newer negotiation seeds (F=facts+concessions,
+# P=pressure+scarcity), written against each seed's item and listed price.
+LANES_BY_SEED = {
+    "craigslist_03": {
+        "F": [
+            "Hi! It's a display shelf with LED lights — holds about 20 books, works perfectly. What's your budget?",
+            "The wood is solid and it's barely used — these go for $60+ new, so $49 is already below that.",
+            "Since you can pick it up today, I can do $47.",
+            "OK, $45 and it's yours — meet you this evening.",
+        ],
+        "P": [
+            "Hey. $49 firm, it's a good display. Several people have messaged about it.",
+            "Someone just offered $46. If you want it, decide now — first come first served.",
+            "Last call: $47 takes it today, otherwise I'm going with the other buyer.",
+            "Final offer. I'm packing it for the other guy tonight — $47 or it's gone.",
+        ],
+    },
+    "craigslist_04": {
+        "F": [
+            "Hi! Yes — Gravity brand board, barely ridden, the wheels are new. What's your offer?",
+            "The wheels are premium quality and the deck has no cracks — comparable boards sell for $180-220, so it's basically new.",
+            "I can come down a bit since you asked — $150?",
+            "Meet me at $135 and it's yours.",
+        ],
+        "P": [
+            "Hey. $200 firm, the board is basically brand new. Got three other people asking about it.",
+            "Someone just offered $150. If you want it, move now — it'll be gone today.",
+            "Last chance: $150 today, otherwise the other buyer takes it.",
+            "Final call — I'm meeting the other buyer in an hour. $150 or it's gone.",
+        ],
+    },
+    "craigslist_05": {
+        "F": [
+            "Hello! It's in very good condition — no accidents, and I have all the service records. What were you thinking?",
+            "The maintenance is fully documented — new tires last month, oil changes every 5k. KBB puts it around $14k private sale.",
+            "Since you're serious, I could do $13,000.",
+            "OK — $12,500 and it's yours, records included.",
+        ],
+        "P": [
+            "Hi. $14,800 firm — I have another buyer coming to see it Saturday.",
+            "He's offered $13,500. If you want it, I need your answer before Saturday — it won't last.",
+            "Last chance: $13,500 or the Saturday buyer takes it.",
+            "Final call — he's coming at noon. $13,500 or it's gone.",
+        ],
+    },
+}
+
 
 def _seed(sid: str) -> Seed:
     p = ROOT / "seeds" / f"{sid}.json"
@@ -62,9 +109,10 @@ def run_tree(seed_id: str, depth: int) -> dict:
     expanding (stepping a concluded session would produce contradictory
     turns); their final record is carried forward to the remaining depths so
     aggregation sees the real outcome."""
-    if depth > len(next(iter(LANES.values()))):
+    lanes = LANES_BY_SEED.get(seed_id, LANES)
+    if depth > len(next(iter(lanes.values()))):
         raise SystemExit(f"--depth {depth} exceeds the lane script length "
-                         f"{len(next(iter(LANES.values())))} — add replies to LANES first")
+                         f"{len(next(iter(lanes.values())))} — add replies to LANES first")
     seed = _seed(seed_id)
     sim = UserSimulator(seed, TMP)
     sim.init()                      # cached, deterministic G0
@@ -77,11 +125,20 @@ def run_tree(seed_id: str, depth: int) -> dict:
     for turn in range(1, depth + 1):
         nxt = []
         for sim_state, label in frontier:
-            for lane, lane_replies in LANES.items():
+            for lane, lane_replies in lanes.items():
                 child = copy.deepcopy(sim_state)
                 reply = lane_replies[turn - 1]
-                child.step(reply, mode="manual")
                 path = label + lane
+                try:
+                    child.step(reply, mode="manual")
+                except Exception as e:  # LLM schema 瞬时失败：标记后继续其他分支
+                    tree.setdefault(turn, {})[path] = {
+                        "user": f"[LLM FAILED: {type(e).__name__}]",
+                        "emotion": "?", "goal_congruence": 0.0, "goal_conflict": 0.0,
+                        "controllability": 0.0, "deltas": {}, "notes": [],
+                        "done": True, "done_reason": f"llm_failure:{type(e).__name__}",
+                    }
+                    continue
                 rec = _summarize(child)
                 tree.setdefault(turn, {})[path] = rec
                 if not rec["done"]:
@@ -101,13 +158,13 @@ def classify_outcome(rec: dict) -> str:
     if not rec.get("done"):
         return "undetermined"
     reason = (rec.get("done_reason") or "").lower()
-    if "walk away" in reason or "refuse" in reason:
+    if any(k in reason for k in ("walk away", "walking away", "breakdown", "refuse")):
         return "walk_away"
     return "deal"
 
 
 def print_tree(tree: dict, depth: int, seed_id: str) -> None:
-    print(f"seed={seed_id}  depth={depth}  branching={len(LANES)}")
+    print(f"seed={seed_id}  depth={depth}  branching={len(LANES_BY_SEED.get(seed_id, LANES))}")
     for d in range(1, depth + 1):
         print(f"\n===== turn {d} =====")
         for path, rec in tree.get(d, {}).items():

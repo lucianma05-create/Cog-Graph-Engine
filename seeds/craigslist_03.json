@@ -1,0 +1,84 @@
+{
+ "seed_id": "craigslist_03",
+ "task": "price_negotiation",
+ "persona": "The user is the BUYER, negotiating to buy a second-hand item from a private seller.",
+ "private_persona": "The buyer's private negotiation position: target price ~$45; no hard bottom line set.",
+ "agent_private": "Your listed price is $49; your target price is ~$49; no hard bottom line set.",
+ "scenario": "The SELLER has listed a furniture item: \"FASHION OPTICAL KIDS' FRAME DISPLAY\" for $49. Listing description: This Fashion Optical Kids' Frame Display is in excellent condition,  It measures 75\"H x 23.5\"W x 9\"D.  It has 3 fixed vertical bars each 36\", plus two wall-mountable bars each 20.5\".  Comes with 20 frame clips that can be moved from bar to bar and spaced in any configuration.  Additional frame clips The buyer opens the negotiation over the price.",
+ "u0": "Hello. This looks like a good display. What can it do?",
+ "pre_context": [
+  {
+   "role": "seller",
+   "text": "I have no idea why I didn't throw this away instead of selling it so, lets start there."
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seller",
+   "text": "I have no idea why I didn't throw this away instead of selling it so, lets start there."
+  },
+  {
+   "role": "buyer",
+   "text": "Hello. This looks like a good display. What can it do?"
+  },
+  {
+   "role": "seller",
+   "text": "It can hold books"
+  },
+  {
+   "role": "buyer",
+   "text": "Is it large enough and spacious?"
+  },
+  {
+   "role": "seller",
+   "text": "It's shiny and has LED lights, if that's a plus"
+  },
+  {
+   "role": "buyer",
+   "text": "cool. I see the price is $49 but its too pricey for me."
+  },
+  {
+   "role": "seller",
+   "text": "For me too, it would cost me $50 to have someone come take it and throw it away"
+  },
+  {
+   "role": "buyer",
+   "text": "well I can only pay $45 because that's what I can afford honestly."
+  },
+  {
+   "role": "seller",
+   "text": "That's fair"
+  },
+  {
+   "role": "buyer",
+   "text": "great so we're good with the price?"
+  },
+  {
+   "role": "seller",
+   "text": "Yes. I'll accept that."
+  },
+  {
+   "role": "buyer",
+   "text": "Thanks!"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/Cog-Graph-Engine/seeds/raw/craigslist_train_parsed.json",
+  "source_record_id": "C_42693ef870d4469083c2efcc5400d34f",
+  "category": "furniture",
+  "title": "FASHION OPTICAL KIDS' FRAME DISPLAY",
+  "listed_price": 49,
+  "buyer_target": 45,
+  "buyer_bottomline": null,
+  "seller_target": 49,
+  "seller_bottomline": null,
+  "n_utterances": 12,
+  "price_changes": 2,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when the evidence is solid: concrete details about the item persuade me, sales talk does not. Once I agree on a price, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

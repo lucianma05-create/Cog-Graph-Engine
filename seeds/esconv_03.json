@@ -1,0 +1,125 @@
+{
+ "seed_id": "esconv_03",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Fear of layoff from job Presenting problem: job crisis (predominant emotion: fear). The seeker self-reported an initial emotional intensity of 5 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: job crisis.",
+ "u0": "Hello",
+ "pre_context": [
+  {
+   "role": "supporter",
+   "text": "hi"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "supporter",
+   "text": "hi"
+  },
+  {
+   "role": "seeker",
+   "text": "Hello"
+  },
+  {
+   "role": "supporter",
+   "text": "how are doing you today, what is troubling you?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am not good at all"
+  },
+  {
+   "role": "supporter",
+   "text": "you are not good, why"
+  },
+  {
+   "role": "seeker",
+   "text": "I am scaring about layoff from job"
+  },
+  {
+   "role": "supporter",
+   "text": "oh, if i get you clearly, you mean covid-19 impact on your job might soon affect you job"
+  },
+  {
+   "role": "seeker",
+   "text": "You are very correct"
+  },
+  {
+   "role": "seeker",
+   "text": "Pandemic is giving us problems"
+  },
+  {
+   "role": "supporter",
+   "text": "yeah, covid-19 is a real bummer but i am sure we will soon get over it and the economy will bounce back"
+  },
+  {
+   "role": "seeker",
+   "text": "I pray its over soon, firstly it was paying cut off and now it is layoff"
+  },
+  {
+   "role": "supporter",
+   "text": "i was furloughed my self and now i am working part-time, its not s lot but it is better than nothing"
+  },
+  {
+   "role": "seeker",
+   "text": "Seriously! What I  am scare of now is how to secure another job"
+  },
+  {
+   "role": "supporter",
+   "text": "i can feel your pain just by chatting with you"
+  },
+  {
+   "role": "supporter",
+   "text": "i was scared at first too before but now that i gat something i am doing it feels better a bit"
+  },
+  {
+   "role": "seeker",
+   "text": "It is not easy my friend! I don't even dream about this at all I don't believed it is happening"
+  },
+  {
+   "role": "supporter",
+   "text": "yea, it soo surreal, but even though there is a lot lost jobs, there is still a lot of job you can get to keep things balance"
+  },
+  {
+   "role": "seeker",
+   "text": "That is it my friend! A lot of people are losing their jobs every day by day that one a lone is caring"
+  },
+  {
+   "role": "supporter",
+   "text": "first of all, polish your resume, go online and ask around"
+  },
+  {
+   "role": "seeker",
+   "text": "Thanks friend! That what I was thinking about"
+  },
+  {
+   "role": "seeker",
+   "text": "You are too good friend, it is time to go thanks"
+  },
+  {
+   "role": "supporter",
+   "text": "from what i have heard and seen, there is job somewhere around, you just have to ask the right person"
+  },
+  {
+   "role": "seeker",
+   "text": "Thanks for being there for me. we have to go now. Bye"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00017",
+  "split": "train",
+  "problem_type": "job crisis",
+  "emotion_type": "fear",
+  "n_messages": 23,
+  "contentful_turn_count": 6,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 3,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when I feel understood: being genuinely listened to calms my fear and lets me see my situation differently; being pushed or dismissed shuts me down. Small, concrete, safe steps can shift me.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

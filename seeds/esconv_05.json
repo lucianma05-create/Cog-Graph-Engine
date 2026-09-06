@@ -1,0 +1,165 @@
+{
+ "seed_id": "esconv_05",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: I really blew it with my girlfriend, so she left me right before Christmas. Presenting problem: breakup with partner (predominant emotion: disgust). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: breakup with partner.",
+ "u0": "Hello.",
+ "pre_context": [
+  {
+   "role": "supporter",
+   "text": "Good afternoon"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "supporter",
+   "text": "Good afternoon"
+  },
+  {
+   "role": "seeker",
+   "text": "Hello."
+  },
+  {
+   "role": "supporter",
+   "text": "How r u"
+  },
+  {
+   "role": "seeker",
+   "text": "Not doing too well."
+  },
+  {
+   "role": "supporter",
+   "text": "What is your day like"
+  },
+  {
+   "role": "seeker",
+   "text": "Bleak and depressing.  How is yours going?"
+  },
+  {
+   "role": "supporter",
+   "text": "What seems to be the issue"
+  },
+  {
+   "role": "supporter",
+   "text": "What is making you feel this way"
+  },
+  {
+   "role": "seeker",
+   "text": "My girlfriend left me and I am all alone."
+  },
+  {
+   "role": "supporter",
+   "text": "That is rough. How long ago"
+  },
+  {
+   "role": "seeker",
+   "text": "This happened nine days ago.  I haven't been able to sleep or eat very well this whole time."
+  },
+  {
+   "role": "supporter",
+   "text": "I can assume that the relationship was for awhile"
+  },
+  {
+   "role": "seeker",
+   "text": "We were together for six and a half years."
+  },
+  {
+   "role": "supporter",
+   "text": "Breakups are hard especially when you have been together for awhile"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, and I think I will miss the pegging the most.  No one can do it better or harder than her."
+  },
+  {
+   "role": "supporter",
+   "text": "That was along time. 6 years. WAs the breakup sudden or had it gradually happened over time"
+  },
+  {
+   "role": "supporter",
+   "text": "What may I ask is pegging"
+  },
+  {
+   "role": "seeker",
+   "text": "It was probably gradual, but it seemed like all of a sudden at the end."
+  },
+  {
+   "role": "supporter",
+   "text": "had there been any disagreements"
+  },
+  {
+   "role": "seeker",
+   "text": "Pegging is when she puts on a strap on and pleasures me from behind.  It is definitely a niche fetish."
+  },
+  {
+   "role": "supporter",
+   "text": "R u a female"
+  },
+  {
+   "role": "seeker",
+   "text": "The biggest disagreement was that she wanted to start pegging other guys, and I told her no way, we did not agree to that arrangement."
+  },
+  {
+   "role": "seeker",
+   "text": "No I am a male.  But please don't judge me, I am very fragile right now."
+  },
+  {
+   "role": "supporter",
+   "text": "i am not judging you in anyway. Helps me better understand"
+  },
+  {
+   "role": "supporter",
+   "text": "WAs there another person involved with the relationship or just you both"
+  },
+  {
+   "role": "seeker",
+   "text": "I really miss her a lot, I would let her peg those other guys if she wanted to, I just need to get her back in my life.  I told her I would give her as many rimjobs that she requested."
+  },
+  {
+   "role": "seeker",
+   "text": "There were other women and men that she would bring home for us to have threesomes with.  It made me feel like she was in power."
+  },
+  {
+   "role": "supporter",
+   "text": "sounds like you both had a solid relationship"
+  },
+  {
+   "role": "seeker",
+   "text": "Very solid like a rock.  I feel like you are mocking me now.  Are you a man or woman?"
+  },
+  {
+   "role": "supporter",
+   "text": "Was she domineering in the relationship she felt she needed control"
+  },
+  {
+   "role": "supporter",
+   "text": "i am a man. And no I am not mocking you. Just better understanding of the relationship"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, but I wanted her to be domineering, that is how I like it."
+  },
+  {
+   "role": "supporter",
+   "text": "Just need to better understand so I can talk better"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00009",
+  "split": "train",
+  "problem_type": "breakup with partner",
+  "emotion_type": "disgust",
+  "n_messages": 33,
+  "contentful_turn_count": 6,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 3,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — I am stuck in bleak regret, and hopeful claims feel unreal. I move only gradually, when someone accepts my guilt without judging it.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

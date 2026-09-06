@@ -1,0 +1,84 @@
+{
+ "seed_id": "craigslist_05",
+ "task": "price_negotiation",
+ "persona": "The user is the BUYER, negotiating to buy a second-hand item from a private seller.",
+ "private_persona": "The buyer's private negotiation position: target price ~$11248; no hard bottom line set.",
+ "agent_private": "Your listed price is $14800; your target price is ~$14800; no hard bottom line set.",
+ "scenario": "The SELLER has listed a car item: \"2010 camaro ss   on zl1 rims runs good 2018 tags clean title\" for $14800. Listing description: selling my 2010 camaro ss  6.2L  auto and  maunal  runs good  120miles smoged   2018 tags    clean title     sun roof     on   20'' zl1 rims serious callers The buyer opens the negotiation over the price.",
+ "u0": "Hello. I saw your listing and I am interested in your car. However, I have a few questions.",
+ "pre_context": [
+  {
+   "role": "seller",
+   "text": "Hello."
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seller",
+   "text": "Hello."
+  },
+  {
+   "role": "buyer",
+   "text": "Hello. I saw your listing and I am interested in your car. However, I have a few questions."
+  },
+  {
+   "role": "seller",
+   "text": "Sure, go ahead."
+  },
+  {
+   "role": "buyer",
+   "text": "Has it been in any major accidents?"
+  },
+  {
+   "role": "seller",
+   "text": "No, I`ve kept it in very good condition."
+  },
+  {
+   "role": "buyer",
+   "text": "All of the electronics are in working order, correct?"
+  },
+  {
+   "role": "seller",
+   "text": "Yes, everything has been checked out recently."
+  },
+  {
+   "role": "buyer",
+   "text": "Great! Would you take $10,000? 120k miles is kinda a lot."
+  },
+  {
+   "role": "seller",
+   "text": "I`m open to negotiate but 10k is a bit low. We could meet in the middle and say 13 000? I`ll include the extra speakers I recently purchased."
+  },
+  {
+   "role": "buyer",
+   "text": "13,000 is fair, however I can only afford paying 12,500"
+  },
+  {
+   "role": "seller",
+   "text": "Alright, I think that`s reasonable. We can agree on 12,500 then."
+  },
+  {
+   "role": "buyer",
+   "text": "Great!"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/Cog-Graph-Engine/seeds/raw/craigslist_train_parsed.json",
+  "source_record_id": "C_405fcb5c0e01489cb8a7b3592e341ffa",
+  "category": "car",
+  "title": "2010 camaro ss   on zl1 rims runs good 2018 tags clean title",
+  "listed_price": 14800,
+  "buyer_target": 11248,
+  "buyer_bottomline": null,
+  "seller_target": 14800,
+  "seller_bottomline": null,
+  "n_utterances": 12,
+  "price_changes": 3,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — a car is a big purchase, and only verifiable facts about condition, maintenance and history move me. Once I commit to a price, I stick with it.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

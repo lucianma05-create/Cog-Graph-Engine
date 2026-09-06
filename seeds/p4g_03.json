@@ -1,0 +1,113 @@
+{
+ "seed_id": "p4g_03",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.4 (1-5), conscientious ~5.0 (1-5), extrovert ~3.0 (1-5), agreeable ~3.6 (1-5), neurotic ~2.0 (1-5). Moral foundations (1-6 scale): care 5.2, fairness 5.0, loyalty 4.0, authority 4.4, purity 5.0, freedom 3.5. Demographics: age 42.0, sex Female, education Four-year college, political ideology Conservative.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to children of the world should be better looked out for?. The persuadee starts out neutral — not committed to donating.",
+ "u0": "Yes I do. I believe there are lots of vulnerable and helpless children everywhere who deserve a lot more than they are getting.",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Do you feel like the children of the world should be better looked out for?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Do you feel like the children of the world should be better looked out for?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Yes I do. I believe there are lots of vulnerable and helpless children everywhere who deserve a lot more than they are getting."
+  },
+  {
+   "role": "persuader",
+   "text": "Save the Children is an international non-governmental organization that promotes children's rights, provides relief and helps support children in developing countries. Have you heard of them before?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Yes, I have heard of them before and it has all been good things. I like organizations who take care of our children."
+  },
+  {
+   "role": "persuader",
+   "text": "Save the Children believe no child should go to bed hungry and it's their goal to make this a reality."
+  },
+  {
+   "role": "persuadee",
+   "text": "That is a very noble goal and I hope that lot's of people get behind them so they can continue to do what they are doing."
+  },
+  {
+   "role": "persuader",
+   "text": "How can this world have so many wealth people but yet have so many people who are suffering! Do you feel like those who are well off should do more to help? Doesn't it upset you when they don't?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Well I don't think the amount of wealth has much to do with it. I think it has to do with what is in people's hearts. Whether you are rich or poor, it all comes down to whether you are a giving person."
+  },
+  {
+   "role": "persuader",
+   "text": "Exactly! I could never turn a blind eye to those who are in need. How about you?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I agree completely. I give to all sorts of non profit organizations and charities whenever I can. I just imagine that if I am ever in need that I would want someone to help me."
+  },
+  {
+   "role": "persuader",
+   "text": "In the first two months of 2018 alone, 1,000 children were reportedly killed or injured in Syria. Insane numbers right!?!?"
+  },
+  {
+   "role": "persuadee",
+   "text": "That is really sad! What was the cause of that? War?"
+  },
+  {
+   "role": "persuader",
+   "text": "It is a civil war between those in power and those who feel the need to fight back for a better life."
+  },
+  {
+   "role": "persuadee",
+   "text": "So basically they are harming the ones who would one be their future leaders and the ones taking care of them."
+  },
+  {
+   "role": "persuader",
+   "text": "It's a despicable mes i tell you! Would you be willing to donate something to help them? our donation will be directly deducted from your task payment. You can choose any amount from $0 to all your payment ($2)."
+  },
+  {
+   "role": "persuadee",
+   "text": "I will probably do that for sure. Every little bit helps and if everyone does something, it will make the load a little lighter."
+  },
+  {
+   "role": "persuader",
+   "text": "The research team will collect all donations and send it to Save the Children. I'm going to give some of my earnings as well."
+  },
+  {
+   "role": "persuadee",
+   "text": "That is great to hear. Who knows the impact that they will make over the course of time."
+  },
+  {
+   "role": "persuader",
+   "text": "I wish more people would open up their hearts and try to help the way you did."
+  },
+  {
+   "role": "persuadee",
+   "text": "Well I'm sure there are lots out there who would if they could."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180828-151016_679_live",
+  "split": "train",
+  "n_messages": 20,
+  "contentful_turn_count": 5,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 1,
+  "outcome_committed": false,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when the evidence is solid: clear facts about how the money is used persuade me, vague appeals do not. I care deeply about fairness and children. Once I commit to something, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

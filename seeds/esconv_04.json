@@ -1,0 +1,121 @@
+{
+ "seed_id": "esconv_04",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Not being able to see family and friends due to Covid. Presenting problem: ongoing depression (predominant emotion: depression). The seeker self-reported an initial emotional intensity of 5 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: ongoing depression.",
+ "u0": "Hello",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hello"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hello"
+  },
+  {
+   "role": "supporter",
+   "text": "Hi, how are you feeling today?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am not feeling the best. I have been having some depression, because of not being able to see friends and family during this pandemic."
+  },
+  {
+   "role": "supporter",
+   "text": "Oh, boy, do I know that feeling! How are you dealing with it? (if I may ask)"
+  },
+  {
+   "role": "seeker",
+   "text": "I try to message them as much as possible and call them on the phone but it is just not the same as actually getting to give the a hug and see them in person."
+  },
+  {
+   "role": "supporter",
+   "text": "I know that. I use Zoom, just to see them...do you have a computer?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes. That works for some of my family but I have family in the nursing home that does not have access to computers. I haven't seen them in several months. It just breaks my heart."
+  },
+  {
+   "role": "supporter",
+   "text": "Oh. I can feel it. I have someone who's sick as well. Do you have any one friend with whom you can share your feelings, your depression. I understand you're having issues with depression, right? It sometimes helps me to feel that we're all in this together. And, at the other end of this, we will be able to give the biggest hugs ever!"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes. I have some very dear friends that have helped me a lot. I guess the depression is just worse because it is the holidays and this is the first year that I haven't got to spend it with my extended family members."
+  },
+  {
+   "role": "supporter",
+   "text": "Oh....That's so tough...it being the first year!!!! Sometimes, I cry (I cry with my cat), and just to say the feelings out loud makes me feel a bit better."
+  },
+  {
+   "role": "seeker",
+   "text": "Yeah. I have a little dog that has been my cuddle buddy. I have had him for 13 years so he has seen me ugly cry many times. What are some things you do to deal with depression?"
+  },
+  {
+   "role": "supporter",
+   "text": "I try to read, watch programs or podcasts that take away my negativity. Anything that will give me a lift, so that my own depression won't get so bad that I can't remember what it felt like to be a bit happy."
+  },
+  {
+   "role": "seeker",
+   "text": "That sounds like some good advice. I think I will try to find a good podcast or a good comedy series that I like and spend time doing that. It's hard to be sad when you are watching something funny or listening to something funny. Thank you for the good advice and the listening ear."
+  },
+  {
+   "role": "supporter",
+   "text": "I wish that I could listen to more....this thing is so slow. Remember, we\n're all in this together, and we will come out the other end. Isn't it OK to be happy a bit, even though this takes such a toll on so many people?"
+  },
+  {
+   "role": "seeker",
+   "text": "That is so true. I guess we tend to feel guilty if we feel happy since there is so much sadness in the world right now. But you are so right about the fact that we will come out on the other side. It helps to remember that bad things don't last forever."
+  },
+  {
+   "role": "supporter",
+   "text": "Yes, and are you somewhere where you can walk or exercise a bit? I always feel better if I can move around...dance...something active. What I find helps me the most is to remember that we need to stay safe and be OK, so that we will be here to celebrate when this is over."
+  },
+  {
+   "role": "seeker",
+   "text": "Yes. I live in the country so I can go for nice walks when the weather is nice. Staying safe is definitely important right now."
+  },
+  {
+   "role": "supporter",
+   "text": "Oh...it's fortunate that you live in the country. Can you take some deep breathes and watch the trees, the animals, and nature....they are all here for us???"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes that is exactly what I do. Thank you so much for your help today. You have made me feel better just having someone to vent to."
+  },
+  {
+   "role": "supporter",
+   "text": "Keep venting, if it makes you feel better. I know I do when I can talk to someone I don't know. Is it nice where you are today, so that you can look at something bigger than the indoors?? That often helps me feel better."
+  },
+  {
+   "role": "seeker",
+   "text": "Yes. It the weather is very pretty here today. As a matter of fact, I think I am fixing to go for a nice walk. I hope you have a wonderful day and thank you for listening."
+  },
+  {
+   "role": "supporter",
+   "text": "You bet, I hope you feel so much better and can take that with you tomorrow--that you had a good day on the day after Christmas!!!!"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00021",
+  "split": "train",
+  "problem_type": "ongoing depression",
+  "emotion_type": "depression",
+  "n_messages": 22,
+  "contentful_turn_count": 5,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 2,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — and when I am low, even warm suggestions barely reach me. I move only gradually, through small felt steps and real human contact, not persuasion.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

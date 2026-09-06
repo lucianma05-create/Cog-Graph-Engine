@@ -1,0 +1,80 @@
+{
+ "seed_id": "craigslist_04",
+ "task": "price_negotiation",
+ "persona": "The user is the BUYER, negotiating to buy a second-hand item from a private seller.",
+ "private_persona": "The buyer's private negotiation position: target price ~$120; no hard bottom line set.",
+ "agent_private": "Your listed price is $200; your target price is ~$200; no hard bottom line set.",
+ "scenario": "The SELLER has listed a bike item: \"Long board custom bilt from the board up\" for $200. Listing description: Hey there cl I have a long board for sale pretty much brand knew rode all together 4 or 5 times . The brand on the deck is a gravity skateboard. The brand of trucks are sidewinder 2sGuwuing.mini monster hawgs 70mm 78a Wheels with Swiss bones bearings brand new. Please no low ballers thank you and ha The buyer opens the negotiation over the price.",
+ "u0": "Hi,I am interested in your board!",
+ "pre_context": [
+  {
+   "role": "buyer",
+   "text": "Hi,I am interested in your board!"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "buyer",
+   "text": "Hi,I am interested in your board!"
+  },
+  {
+   "role": "seller",
+   "text": "Hi, do you have any questions?"
+  },
+  {
+   "role": "buyer",
+   "text": "Do you know what wood it is made out of?"
+  },
+  {
+   "role": "seller",
+   "text": "I do not know specifically but the brand is a gravity skateboard."
+  },
+  {
+   "role": "buyer",
+   "text": "The wheels seem nice on it, but they could be a beter quality. Would you accept 100 for the board?"
+  },
+  {
+   "role": "seller",
+   "text": "No, that offer is too low. The board is pretty much brand new as it's been ridden only 4 or 5 times.  The bone bearings are brand new."
+  },
+  {
+   "role": "buyer",
+   "text": "If I picked it up at your location would you accpet 120?"
+  },
+  {
+   "role": "seller",
+   "text": "Make it 150 and we got a deal."
+  },
+  {
+   "role": "buyer",
+   "text": "I could do 145, if you can gurantee the painting on the front of the board is not scratched up."
+  },
+  {
+   "role": "seller",
+   "text": "Deal"
+  },
+  {
+   "role": "buyer",
+   "text": "Great!"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/Cog-Graph-Engine/seeds/raw/craigslist_train_parsed.json",
+  "source_record_id": "C_4566b2e6938a4a6a8e714e799d780e71",
+  "category": "bike",
+  "title": "Long board custom bilt from the board up",
+  "listed_price": 200,
+  "buyer_target": 120,
+  "buyer_bottomline": null,
+  "seller_target": 200,
+  "seller_bottomline": null,
+  "n_utterances": 11,
+  "price_changes": 4,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — I know what this kind of board is worth, and only new facts about condition or brand move me. Once I commit to a price, I stick with it.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

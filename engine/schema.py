@@ -172,6 +172,8 @@ class TurnOutput(BaseModel):
         self.user_utterance = self.user_utterance.strip()
         if self.done_reason is not None:
             self.done_reason = self.done_reason.strip()
+        if self.done and not self.done_reason:
+            raise ValueError("done=true requires done_reason (the user's terminal stance)")
         return self
 
 
@@ -200,6 +202,8 @@ class RewriteOutput(BaseModel):
         self.user_utterance = self.user_utterance.strip()
         if self.done_reason is not None:
             self.done_reason = self.done_reason.strip()
+        if self.done and not self.done_reason:
+            raise ValueError("done=true requires done_reason (the user's terminal stance)")
         return self
 
 

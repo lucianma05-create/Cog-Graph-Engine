@@ -1,0 +1,113 @@
+{
+ "seed_id": "p4g_04",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.8 (1-5), conscientious ~4.2 (1-5), extrovert ~3.6 (1-5), agreeable ~4.4 (1-5), neurotic ~1.6 (1-5). Moral foundations (1-6 scale): care 4.8, fairness 5.0, loyalty 5.666666667, authority 5.8, purity 5.333333333, freedom 4.5. Demographics: age 61.0, sex Female, education Less than four-year college, political ideology Conservative.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to Save the Children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "Hi, I am interested in giving a donation to them.",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Save the Children is a very important charity and they desperately need your help in order to help as many children as possible."
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Save the Children is a very important charity and they desperately need your help in order to help as many children as possible."
+  },
+  {
+   "role": "persuadee",
+   "text": "Hi, I am interested in giving a donation to them."
+  },
+  {
+   "role": "persuader",
+   "text": "that's great! what made you decide?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I care about children and animals the most. I love to donate to them."
+  },
+  {
+   "role": "persuader",
+   "text": "As do I.  I think Save the Children can really do some good!"
+  },
+  {
+   "role": "persuadee",
+   "text": "I agree. They are a good organization and I trust them. I would donate a portion of payment to them."
+  },
+  {
+   "role": "persuader",
+   "text": "How much do you like to donate to the chartiy now?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I am interested and would like to donate around 0.30 cents to them."
+  },
+  {
+   "role": "persuader",
+   "text": "I want you to know that your donation will be directly deducted from your task payment."
+  },
+  {
+   "role": "persuadee",
+   "text": "Yeah I figured that. But if I can help children in anyway I am willing to do so."
+  },
+  {
+   "role": "persuader",
+   "text": "Well, you can donate any amount from 0 to 2 dollars."
+  },
+  {
+   "role": "persuadee",
+   "text": "I am, Its an obligated duty to help children and animals. I am thinking about 0.30 cents donation."
+  },
+  {
+   "role": "persuader",
+   "text": "Remember, we are helping children here.  Is it possible for you do donate more?"
+  },
+  {
+   "role": "persuadee",
+   "text": "it is. If I can give 0.50 cents I feel that is adequate enough."
+  },
+  {
+   "role": "persuader",
+   "text": "All of those children are depending on each of us to do our best.  Really dig deep and think before making your decision."
+  },
+  {
+   "role": "persuadee",
+   "text": "I have really thought about it. I am willing to do any amount from 0.30-0.50"
+  },
+  {
+   "role": "persuader",
+   "text": "All right. What is your final donation amount?"
+  },
+  {
+   "role": "persuadee",
+   "text": "0.50 cents I am feeling generous today."
+  },
+  {
+   "role": "persuader",
+   "text": "okay.  I think that's good!"
+  },
+  {
+   "role": "persuadee",
+   "text": "ok I will give that amount as my donation."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180904-053728_415_live",
+  "split": "train",
+  "n_messages": 20,
+  "contentful_turn_count": 4,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 3,
+  "outcome_committed": true,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I shift my view fairly easily — I am already warm toward causes I trust, and a friendly, sincere appeal with concrete examples is enough to move me further. Once I commit to a donation, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}
