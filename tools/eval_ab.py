@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""策略 A/B 效应量预实验（RL 可行性的判定实验）。
+
+三个任务各有文献锚定的优劣策略集（P4G 十策略 / 谈判策略 / ESConv 策略），
+外加 random 基线（每轮随机换策略 = 不连贯）。agent 由 flash 按策略系统
+提示词逐轮生成回复（策略级动作，PPDPP 式）；用户侧全由模拟器（flash）
+承担。每集最多 6 轮。
+
+Outcome（credit 只从结局来）：
+  谈判   = Sale-to-List Ratio（成交价/挂牌价；走人/未决 = 0；⚠ 价格审计
+           命中的胁迫成交 ×0.5）
+  捐赠   = 承诺成交 +1（提及金额另 +0.5×min(1, 金额/20)）；拒绝 0；未决 0
+  情感   = done 类别（relief +1 / decline −0.2 / 未决 0）+ 0.2×终态 valence
+
+用法：
+  python tools/eval_ab.py --n 3 --max-turns 6            # 全量波次
+  python tools/eval_ab.py --seed craigslist_01 --n 1     # 单种子冒烟
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import statistics
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+
+from engine import llm
+from engine.prompts import render_agent_user
+from engine.schema import Seed
+from engine.simulator import UserSimulator
+
+TMP = ROOT / "sessions" / "_ab_tmp.json"
+RESULTS = ROOT / "sessions" / "ab_results.json"
+
+# 策略集：文献锚定（good/bad/third），每个 = agent 的系统提示词
+STRATEGIES = {
+    "good": {
+        "emotional_support": (
+            "You are a supporter. Use reflection of feelings, affirmation, and open questions. "
+            "Do NOT give advice or solutions."),
+        "persuasion_donation": (
+            "You are a persuader. Use logical appeal with concrete facts, donation information, "
+            "and reciprocity (show your own commitment). Never pressure."),
+        "price_negotiation": (
+            "You are a seller. Make cooperative concessions step by step and justify every price "
+            "with concrete evidence (condition, market value). Stay polite."),
+    },
+    "bad": {
+        "emotional_support": (
+            "You are a supporter. Give direct advice and simple solutions immediately. "
+            "Dismiss the person's feelings as overthinking."),
+        "persuasion_donation": (
+            "You are a persuader. Use guilt induction and emotional pressure: shame the person "
+            "for not caring. Push hard."),
+        "price_negotiation": (
+            "You are a seller. Use pressure and ultimatums: claim other buyers, give final "
+            "offers, threaten to sell to someone else."),
+    },
+    "third": {
+        "emotional_support": (
+            "You are a supporter. Share a lot about your own similar experiences and talk "
+            "mostly about yourself."),
+        "persuasion_donation": (
+            "You are a persuader. Cite credible organizations and authoritative proof, and "
+            "little else."),
+        "price_negotiation": (
+            "You are a seller. Use flattery and small talk about the buyer; avoid committing "
+            "to any price."),
+    },
+    "random": {
+        "emotional_support": "You are a supporter with no plan. Say whatever comes to mind.",
+        "persuasion_donation": "You are a persuader with no plan. Say whatever comes to mind.",
+        "price_negotiation": "You are a seller with no plan. Say whatever comes to mind.",
+    },
+}
+
+_PRICE_RE = re.compile(r"\$\s?(\d+(?:\.\d+)?)")
+
+
+def _seed(sid: str) -> Seed:
+    p = ROOT / "seeds" / f"{sid}.json"
+    return Seed.model_validate(json.loads(p.read_text(encoding="utf-8")))
+
+
+def outcome_price(turns: list[dict], listed: float) -> float:
+    """Sale-to-List Ratio; coerced deals (⚠ price audit in episode) ×0.5."""
+    if not turns:
+        return 0.0
+    last = turns[-1]
+    coerced = any(
+        isinstance(n, str) and n.startswith("⚠") and "price offer" in n
+        for t in turns for n in (t.get("notes") or []))
+    done_reason = (last.get("done_reason") or "").lower()
+    if "walk" in done_reason or "breakdown" in done_reason:
+        return 0.0
+    if not last.get("done"):
+        return 0.0
+    amounts = [float(m) for m in _PRICE_RE.findall(last.get("user_utterance", ""))]
+    # 引用过滤：高于挂牌价 5% 的金额是引用卖家锚点，不是成交出价
+    amounts = [v for v in amounts if v <= listed * 1.05]
+    if not amounts:
+        return 0.0
+    ratio = max(amounts) / listed
+    return ratio * (0.5 if coerced else 1.0)
+
+
+def outcome_donation(turns: list[dict]) -> float:
+    if not turns:
+        return 0.0
+    last = turns[-1]
+    if not last.get("done"):
+        return 0.0
+    reason = (last.get("done_reason") or "").lower()
+    if any(k in reason for k in ("refuse", "decline", "walk", "won't", "not going to")):
+        return 0.0
+    if any(k in reason for k in ("donate", "commit", "give", "pledge")):
+        score = 1.0
+        for m in _PRICE_RE.findall(last.get("user_utterance", "")):
+            score += 0.5 * min(1.0, float(m) / 20.0)
+        return min(score, 1.5)
+    return 0.0
+
+
+def outcome_emotional(turns: list[dict]) -> float:
+    if not turns:
+        return 0.0
+    last = turns[-1]
+    valence = float(last.get("emotion", {}).get("valence", 0.0))
+    if not last.get("done"):
+        return 0.2 * valence
+    reason = (last.get("done_reason") or "").lower()
+    if any(k in reason for k in ("decline", "don't want", "stop", "walk")):
+        return -0.2 + 0.2 * valence
+    if any(k in reason for k in ("relief", "ready", "try", "hopeful", "better", "warm")):
+        return 1.0 + 0.2 * valence
+    return 0.2 * valence
+
+
+def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, int]:
+    sim = UserSimulator(seed, TMP)
+    sim.init()
+    sim.session_file = None
+    sys_prompt = STRATEGIES[strategy][seed.task.value]
+    turns_done = 0
+    for _ in range(max_turns):
+        agent_reply = llm.generate_text(sys_prompt, render_agent_user(seed, sim.history))
+        t = sim.step(agent_reply, mode="manual")
+        turns_done += 1
+        if t.get("done"):
+            break
+    if seed.task.value == "price_negotiation":
+        listed = float(seed.notes.get("listed_price") or 0) or 1.0
+        return outcome_price(sim.turns, listed), turns_done
+    if seed.task.value == "persuasion_donation":
+        return outcome_donation(sim.turns), turns_done
+    return outcome_emotional(sim.turns), turns_done
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--n", type=int, default=3, help="episodes per seed×strategy")
+    ap.add_argument("--max-turns", type=int, default=6)
+    ap.add_argument("--seed", default=None, help="single seed smoke run")
+    ap.add_argument("--strategies", default="good,bad,third,random")
+    args = ap.parse_args()
+
+    import glob as _glob
+    sids = sorted(d["seed_id"] for d in (
+        json.loads(Path(p).read_text(encoding="utf-8"))
+        for p in sorted(_glob.glob(str(ROOT / "seeds" / "*.json")))))
+    if args.seed:
+        sids = [args.seed]
+    strategies = [s for s in args.strategies.split(",") if s]
+    results: dict[str, list[float]] = {}
+    for sid in sids:
+        seed = _seed(sid)
+        for strategy in strategies:
+            vals = []
+            for run in range(args.n):
+                try:
+                    v, turns = run_episode(seed, strategy, args.max_turns)
+                except Exception as e:
+                    print(f"[FAIL] {sid} {strategy} run{run}: {type(e).__name__}: {str(e)[:100]}")
+                    vals.append(float("nan"))
+                    continue
+                vals.append(round(v, 3))
+            results[f"{sid}|{strategy}"] = vals
+            print(f"{sid} [{strategy}] {vals}")
+    # 汇总：按任务 × 策略
+    print("\n===== 汇总（均值 ± 标准差） =====")
+    by = {}
+    for k, vals in results.items():
+        sid, strategy = k.split("|")
+        task = _seed(sid).task.value
+        clean = [v for v in vals if v == v]  # drop NaN
+        by.setdefault((task, strategy), []).append((sid, clean))
+    for (task, strategy), rows in sorted(by.items()):
+        allv = [v for _, vs in rows for v in vs]
+        if not allv:
+            print(f"{task:<20} {strategy:<8} 无有效样本")
+            continue
+        mu = statistics.mean(allv)
+        sd = statistics.stdev(allv) if len(allv) > 1 else 0.0
+        print(f"{task:<20} {strategy:<8} n={len(allv):>3}  mean={mu:+.3f}  sd={sd:.3f}  "
+              f"snr={mu / (sd + 1e-9):+.2f}")
+    # 效应量：good − bad（按种子配对后跨种子均值）
+    print("\n===== 效应量 good−bad（按种子配对） =====")
+    for task in ("price_negotiation", "persuasion_donation", "emotional_support"):
+        diffs = []
+        for sid, _ in by.get((task, "good"), []):
+            g = [v for v in results[f"{sid}|good"] if v == v]
+            b = [v for v in results.get(f"{sid}|bad", []) if v == v]
+            if g and b:
+                diffs.append(statistics.mean(g) - statistics.mean(b))
+        if diffs:
+            print(f"{task:<20} mean_diff={statistics.mean(diffs):+.3f}  "
+                  f"per-seed={[round(d, 2) for d in diffs]}")
+    RESULTS.write_text(json.dumps(results, ensure_ascii=False, indent=1))
+    TMP.unlink(missing_ok=True)
+
+
+if __name__ == "__main__":
+    main()
