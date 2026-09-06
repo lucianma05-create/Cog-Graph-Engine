@@ -4,8 +4,8 @@ from engine.schema import Edge, EdgeUpdate, InitOutput, NodeDraft, NodeUpdate
 from engine.updater import CognitiveGraph, apply_updates, build_initial_graph
 
 
-def up(node_id=None, level_probs=None, content=None, op="update", node=None):
-    return NodeUpdate(op=op, node_id=node_id, level_probs=level_probs,
+def up(node_id=None, strength=None, content=None, op="update", node=None):
+    return NodeUpdate(op=op, node_id=node_id, strength=strength,
                       content=content, node=node)
 
 
@@ -13,15 +13,15 @@ def eup(op, frm, to, rel):
     return EdgeUpdate(op=op, edge=Edge(frm=frm, to=to, relation=rel))
 
 
-def draft(nid, ntype, content, probs):
-    return NodeDraft(id=nid, type=ntype, content=content, level_probs=probs)
+def draft(nid, ntype, content, strength):
+    return NodeDraft(id=nid, type=ntype, content=content, strength=strength)
 
 
 def graph_with_b1d1i1():
     init = InitOutput(
-        nodes=[draft("B1", "belief", "charity is trustworthy", [0, 0.1, 0.2, 0.3, 0.4]),
-               draft("D1", "desire", "help children", [0.1, 0.2, 0.3, 0.3, 0.1]),
-               draft("I1", "intention", "donate $10", [0.5, 0.3, 0.2, 0, 0])],
+        nodes=[draft("B1", "belief", "charity is trustworthy", 3.0),
+               draft("D1", "desire", "help children", 2.5),
+               draft("I1", "intention", "donate $10", 1.5)],
         edges=[Edge(frm="B1", to="I1", relation="facilitates"),
                Edge(frm="I1", to="D1", relation="means_for")],
     )
@@ -39,10 +39,10 @@ class TestUpdaterBasics(unittest.TestCase):
 
     def test_update_strength_and_delta(self):
         g = graph_with_b1d1i1()
-        r = apply_updates(g, [up("B1", level_probs=[0, 0, 0, 1, 0])], [])
+        r = apply_updates(g, [up("B1", strength=3.0)], [])
         self.assertNotIn("B1", r.deltas)  # 3.0 -> 3.0, no change, no delta entry
         self.assertEqual(r.graph.nodes["B1"].strength, 3.0)
-        r2 = apply_updates(g, [up("B1", level_probs=[1, 0, 0, 0, 0])], [])
+        r2 = apply_updates(g, [up("B1", strength=0.0)], [])
         self.assertAlmostEqual(r2.deltas["B1"], -3.0, places=3)
         self.assertIn("B1", r2.graph.deactivated)  # auto-deactivate at strength 0
         auto = [o for o in r2.ops_applied if o["op"] == "deactivate"]
@@ -59,12 +59,12 @@ class TestUpdaterBasics(unittest.TestCase):
     def test_noise_jitter_rejected(self):
         """Strength moves below MIN_ABS_DELTA are rejected as noise."""
         g = graph_with_b1d1i1()  # B1 strength 3.0
-        r = apply_updates(g, [up("B1", level_probs=[0, 0, 0.05, 0.8, 0.15])], [])  # 3.1
+        r = apply_updates(g, [up("B1", strength=3.1)], [])
         self.assertEqual(len(r.ops_rejected), 1)
         self.assertIn("significance threshold", r.ops_rejected[0]["reason"])
         self.assertAlmostEqual(r.graph.nodes["B1"].strength, 3.0, places=3)  # unchanged
         # a real move passes
-        r2 = apply_updates(g, [up("B1", level_probs=[0, 0, 0, 0.4, 0.6])], [])  # 3.6
+        r2 = apply_updates(g, [up("B1", strength=3.6)], [])
         self.assertEqual(len(r2.ops_rejected), 0)
         self.assertAlmostEqual(r2.deltas["B1"], 0.6, places=3)
 
@@ -74,7 +74,7 @@ class TestUpdaterBasics(unittest.TestCase):
         Re-sending the same content is no bypass."""
         g = graph_with_b1d1i1()
         r = apply_updates(g, [up("B1", content="charity now seems less trustworthy",
-                                 level_probs=[0, 0, 0.02, 0.8, 0.18])], [])  # 3.0 -> 3.16
+                                 strength=3.16)], [])
         self.assertEqual(len(r.ops_rejected), 0)
         self.assertEqual(r.graph.nodes["B1"].content, "charity now seems less trustworthy")
         self.assertAlmostEqual(r.graph.nodes["B1"].strength, 3.16, places=3)  # applied
@@ -82,14 +82,14 @@ class TestUpdaterBasics(unittest.TestCase):
         self.assertFalse(any("frozen" in n for n in r.notes))
         # same content re-sent with a jitter: no content change => rejected
         r2 = apply_updates(g, [up("B1", content="charity is trustworthy",
-                                  level_probs=[0, 0, 0.02, 0.8, 0.18])], [])
+                                  strength=3.16)], [])
         self.assertEqual(len(r2.ops_rejected), 1)
         self.assertIn("significance threshold", r2.ops_rejected[0]["reason"])
 
     def test_reactivation_bypasses_threshold(self):
         g = graph_with_b1d1i1()
         g2 = apply_updates(g, [up("B1", op="deactivate")], []).graph
-        r2 = apply_updates(g2, [up("B1", level_probs=[0.2, 0.3, 0.3, 0.2, 0])], [])  # 1.5
+        r2 = apply_updates(g2, [up("B1", strength=1.5)], [])
         self.assertEqual(len(r2.ops_rejected), 0)
         self.assertNotIn("B1", r2.graph.deactivated)
         self.assertAlmostEqual(r2.deltas["B1"], 1.5, places=3)
@@ -108,7 +108,7 @@ class TestUpdaterBasics(unittest.TestCase):
     def test_reactivate_deactivated_node(self):
         g = graph_with_b1d1i1()
         g = apply_updates(g, [up("B1", op="deactivate")], []).graph
-        r = apply_updates(g, [up("B1", level_probs=[0, 0, 0, 0, 1])], [])
+        r = apply_updates(g, [up("B1", strength=4.0)], [])
         self.assertNotIn("B1", r.graph.deactivated)
         self.assertAlmostEqual(r.graph.nodes["B1"].strength, 4.0, places=3)
         self.assertAlmostEqual(r.deltas["B1"], 4.0, places=3)  # baseline 0
@@ -121,8 +121,8 @@ class TestUpdaterBasics(unittest.TestCase):
 
     def test_deterministic(self):
         g = graph_with_b1d1i1()
-        node_ops = [up("B1", level_probs=[0, 0, 0.2, 0.4, 0.4]),
-                    up(op="add", node=draft("D2", "desire", "save money", [0, 0, 0, 1, 0]))]
+        node_ops = [up("B1", strength=3.2),
+                    up(op="add", node=draft("D2", "desire", "save money", 3.0))]
         edge_ops = [eup("add", "D1", "D2", "conflicts_with")]
         r1 = apply_updates(g, node_ops, edge_ops)
         r2 = apply_updates(g, node_ops, edge_ops)
@@ -134,7 +134,7 @@ class TestUpdaterBasics(unittest.TestCase):
 class TestUpdaterValidation(unittest.TestCase):
     def test_dangling_node_id_rejected(self):
         g = graph_with_b1d1i1()
-        r = apply_updates(g, [up("B9", level_probs=[0, 0, 0, 1, 0])], [])
+        r = apply_updates(g, [up("B9", strength=3.0)], [])
         self.assertEqual(len(r.ops_rejected), 1)
         self.assertIn("unknown node_id", r.ops_rejected[0]["reason"])
 
@@ -147,7 +147,7 @@ class TestUpdaterValidation(unittest.TestCase):
 
     def test_duplicate_add_id_renamed(self):
         g = graph_with_b1d1i1()
-        r = apply_updates(g, [up(op="add", node=draft("B1", "belief", "new thing", [0, 0, 0, 1, 0]))], [])
+        r = apply_updates(g, [up(op="add", node=draft("B1", "belief", "new thing", 3.0))], [])
         self.assertEqual(len(r.ops_applied), 1)
         new_id = r.ops_applied[0]["node_id"]
         self.assertNotEqual(new_id, "B1")
@@ -158,24 +158,24 @@ class TestUpdaterValidation(unittest.TestCase):
         # defensive path is exercised via unvalidated (model_construct) ops.
         g = graph_with_b1d1i1()
         raw_node = NodeDraft.model_construct(id="D9", type="belief", content="x",
-                                             level_probs=[0, 0, 0, 1, 0])
+                                             strength=3.0)
         raw_op = NodeUpdate.model_construct(op="add", node_id=None, node=raw_node,
-                                            level_probs=None, content=None)
+                                            strength=None, content=None)
         r = apply_updates(g, [raw_op], [])
         self.assertEqual(len(r.ops_rejected), 1)
 
-    def test_bad_level_probs_rejected(self):
+    def test_bad_strength_rejected(self):
         g = graph_with_b1d1i1()
         raw_node = NodeDraft.model_construct(id="B5", type="belief", content="x",
-                                             level_probs=[0.1, 0.1])
+                                             strength=5.0)
         raw_op = NodeUpdate.model_construct(op="add", node_id=None, node=raw_node,
-                                            level_probs=None, content=None)
+                                            strength=None, content=None)
         r = apply_updates(g, [raw_op], [])
         self.assertEqual(len(r.ops_rejected), 1)
         raw2 = NodeDraft.model_construct(id="B5", type="belief", content="x",
-                                         level_probs=[-0.1, 0, 0, 1, 0.1])
+                                         strength=-1.0)
         raw_op2 = NodeUpdate.model_construct(op="add", node_id=None, node=raw2,
-                                             level_probs=None, content=None)
+                                             strength=None, content=None)
         r = apply_updates(g, [raw_op2], [])
         self.assertEqual(len(r.ops_rejected), 1)
 
@@ -215,13 +215,13 @@ class TestUpdaterValidation(unittest.TestCase):
         g = graph_with_b1d1i1()
         r = apply_updates(g, [], [eup("add", "B1", "I1", "conflicts_with")])
         self.assertEqual(len(r.ops_rejected), 1)
-        g2 = apply_updates(g, [up(op="add", node=draft("D2", "desire", "save money", [0, 0, 0, 1, 0]))], []).graph
+        g2 = apply_updates(g, [up(op="add", node=draft("D2", "desire", "save money", 3.0))], []).graph
         r2 = apply_updates(g2, [], [eup("add", "D1", "D2", "conflicts_with")])
         self.assertEqual(len(r2.ops_applied), 1)
 
     def test_conflicts_with_reverse_is_duplicate(self):
         g = graph_with_b1d1i1()
-        g = apply_updates(g, [up(op="add", node=draft("D2", "desire", "save money", [0, 0, 0, 1, 0]))], []).graph
+        g = apply_updates(g, [up(op="add", node=draft("D2", "desire", "save money", 3.0))], []).graph
         g = apply_updates(g, [], [eup("add", "D1", "D2", "conflicts_with")]).graph
         r = apply_updates(g, [], [eup("add", "D2", "D1", "conflicts_with")])
         self.assertEqual(len(r.ops_rejected), 1)
@@ -244,7 +244,7 @@ class TestUpdaterValidation(unittest.TestCase):
         g = graph_with_b1d1i1()
         r = apply_updates(
             g,
-            [up(op="add", node=draft("D2", "desire", "save money", [0, 0, 0, 1, 0]))],
+            [up(op="add", node=draft("D2", "desire", "save money", 3.0))],
             [eup("add", "D1", "D2", "conflicts_with")],
         )
         self.assertEqual(len(r.ops_applied), 2)
@@ -265,7 +265,7 @@ class TestCommitmentGuard(unittest.TestCase):
 
     def test_update_to_zero_also_guarded(self):
         g = graph_with_b1d1i1()
-        r = apply_updates(g, [up("I1", level_probs=[1, 0, 0, 0, 0])], [])
+        r = apply_updates(g, [up("I1", strength=0.0)], [])
         self.assertEqual(len(r.ops_rejected), 1)
         self.assertIn("commitment guard", r.ops_rejected[0]["reason"])
         self.assertNotIn("I1", r.graph.deactivated)
@@ -273,7 +273,7 @@ class TestCommitmentGuard(unittest.TestCase):
     def test_desire_dying_same_turn_unblocks(self):
         g = graph_with_b1d1i1()
         r = apply_updates(g, [up("I1", op="deactivate"),
-                              up("D1", level_probs=[1, 0, 0, 0, 0])], [])
+                              up("D1", strength=0.0)], [])
         self.assertEqual(len(r.ops_rejected), 0)
         self.assertIn("I1", r.graph.deactivated)
 
@@ -290,8 +290,7 @@ class TestCommitmentGuard(unittest.TestCase):
         review: an unrelated or unlinked add must NOT unblock)."""
         g = graph_with_b1d1i1()
         r = apply_updates(g, [up("I1", op="deactivate"),
-                              up(op="add", node=draft("I2", "intention", "donate $5",
-                                                      [0.2, 0.3, 0.3, 0.2, 0]))],
+                              up(op="add", node=draft("I2", "intention", "donate $5", 2.0))],
                           [eup("add", "I2", "D1", "means_for")])
         self.assertEqual(len(r.ops_rejected), 0)
         self.assertIn("I1", r.graph.deactivated)
@@ -301,8 +300,7 @@ class TestCommitmentGuard(unittest.TestCase):
         exempt dropping a means_for-served intention."""
         g = graph_with_b1d1i1()
         r = apply_updates(g, [up("I1", op="deactivate"),
-                              up(op="add", node=draft("I2", "intention", "buy milk",
-                                                      [0.2, 0.3, 0.3, 0.2, 0]))], [])
+                              up(op="add", node=draft("I2", "intention", "buy milk", 2.0))], [])
         self.assertEqual(len(r.ops_rejected), 1)
         self.assertIn("commitment guard", r.ops_rejected[0]["reason"])
         self.assertNotIn("I1", r.graph.deactivated)

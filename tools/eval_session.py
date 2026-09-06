@@ -28,7 +28,7 @@ from collections import Counter
 from pathlib import Path
 
 SCHEMA_REASONS = ("illegal relation", "schema", "pattern", "missing", "unknown node_id",
-                  "endpoint", "id pattern", "id_renamed", "level_probs", "blank content")
+                  "endpoint", "id pattern", "id_renamed", "blank content", "strength must be")
 BENIGN_REASONS = ("below significance threshold", "duplicate", "already deactivated",
                   "edge not found", "cascade", "commitment guard")
 

@@ -140,7 +140,6 @@
   "cognitive_style": "I hold my position unless the evidence is overwhelming — and when I am low, even hopeful claims barely reach me. I move only gradually, through small felt steps rather than persuasion.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal",
-    "inertia": "resistant"
+    "reactance": "normal"
   }
 }

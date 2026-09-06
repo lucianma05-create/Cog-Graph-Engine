@@ -1,10 +1,11 @@
 """Pydantic models and Anthropic tool input-schemas.
 
 Schema authority: shared_work_space/insight.md — nodes carry only
-{id, type, content, strength}; LLMs emit 5-bin level_probs and the engine
-derives strength. All models use extra="forbid" so any drift (e.g. the
-rejected 0904 fields confidence/observability/importance/goal_impact,
-or based_on/elicits edges) fails validation loudly.
+{id, type, content, strength}; the LLM emits strength directly as a 0-4
+float (the 5-bin level_probs machinery was deleted 2026-09-06: only
+strength was ever consumed). All models use extra="forbid" so any drift
+(e.g. the rejected 0904 fields confidence/observability/importance/
+goal_impact, or based_on/elicits edges) fails validation loudly.
 """
 
 from __future__ import annotations
@@ -55,14 +56,14 @@ class Edge(BaseModel):
 
 
 class NodeDraft(BaseModel):
-    """LLM-emitted node: strength is NOT here — only level_probs."""
+    """LLM-emitted node: strength is emitted directly (0-4 float)."""
 
     model_config = ConfigDict(extra="forbid")
 
     id: str = Field(pattern=r"^(B|D|I)[1-9]\d*$")
     type: NodeType
     content: str = Field(min_length=1)
-    level_probs: list[float] = Field(min_length=5, max_length=5)
+    strength: float = Field(ge=0.0, le=4.0)
 
     @model_validator(mode="after")
     def _check_consistency(self) -> "NodeDraft":
@@ -132,7 +133,7 @@ class NodeUpdate(BaseModel):
     op: str = Field(pattern=r"^(add|update|deactivate)$")
     node_id: Optional[str] = None
     node: Optional[NodeDraft] = None
-    level_probs: Optional[list[float]] = Field(default=None, min_length=5, max_length=5)
+    strength: Optional[float] = Field(default=None, ge=0.0, le=4.0)
     content: Optional[str] = None
 
     @model_validator(mode="after")
@@ -141,8 +142,8 @@ class NodeUpdate(BaseModel):
             raise ValueError("op=add requires 'node'")
         if self.op in ("update", "deactivate") and not self.node_id:
             raise ValueError(f"op={self.op} requires 'node_id'")
-        if self.op == "update" and self.level_probs is None and self.content is None:
-            raise ValueError("op=update requires 'level_probs' and/or 'content'")
+        if self.op == "update" and self.strength is None and self.content is None:
+            raise ValueError("op=update requires 'strength' and/or 'content'")
         return self
 
 
@@ -243,9 +244,9 @@ class StepRequest(BaseModel):
 # Kept in sync with the pydantic models above; locked by tests/test_schema.py.
 # ---------------------------------------------------------------------------
 
-_LEVEL_PROBS_DESC = (
-    "Five-bin probability distribution over strength levels 0..4. "
-    "The engine (not you) normalizes it and computes strength = sum(p_k * k)."
+_STRENGTH_DESC = (
+    "Strength 0-4 directly: 0-1 weak/tentative, 2-3 clearly present, "
+    ">=3.5 strong/core. The engine applies it as given."
 )
 
 _NODE_PROPS = {
@@ -254,8 +255,8 @@ _NODE_PROPS = {
     "type": {"type": "string", "enum": ["belief", "desire", "intention"]},
     "content": {"type": "string", "minLength": 1,
                 "description": "The thought AS THE USER HOLDS IT, in the user's first-person voice: beliefs as the proposition itself or 'I think/believe ...', desires as 'I want ... / I want to avoid ...', intentions as 'I will ... / I am ready to ...'. Never 'The user believes/wants/...' wrappers."},
-    "level_probs": {"type": "array", "items": {"type": "number"},
-                    "minItems": 5, "maxItems": 5, "description": _LEVEL_PROBS_DESC},
+    "strength": {"type": "number", "minimum": 0, "maximum": 4,
+                 "description": _STRENGTH_DESC},
 }
 
 _EDGE_PROPS = {
@@ -282,12 +283,11 @@ SIMULATE_USER_TURN_SCHEMA = {
                         "type": "object",
                         "description": "Required for op=add.",
                         "properties": _NODE_PROPS,
-                        "required": ["id", "type", "content", "level_probs"],
+                        "required": ["id", "type", "content", "strength"],
                         "additionalProperties": False,
                     },
-                    "level_probs": {"type": "array", "items": {"type": "number"},
-                                    "minItems": 5, "maxItems": 5,
-                                    "description": "For op=update: the node's new 5-bin distribution."},
+                    "strength": {"type": "number", "minimum": 0, "maximum": 4,
+                                 "description": "For op=update: the node's new strength."},
                     "content": {"type": "string",
                                 "description": "For op=update: optional revised content; omit to keep it unchanged."},
                 },
@@ -364,7 +364,7 @@ INIT_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": _NODE_PROPS,
-                "required": ["id", "type", "content", "level_probs"],
+                "required": ["id", "type", "content", "strength"],
                 "additionalProperties": False,
             },
         },
@@ -388,7 +388,7 @@ TOOL_DEFS = {
         "description": (
             "Emit the user simulator's single-turn cognitive transition: graph update ops, "
             "appraisal, emotion, and the next user utterance. The deterministic engine applies "
-            "the ops and computes strengths from level_probs; you never output strength numbers."
+            "strength is a 0-4 float you emit directly."
         ),
         "input_schema": SIMULATE_USER_TURN_SCHEMA,
     },

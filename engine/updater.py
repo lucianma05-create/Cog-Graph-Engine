@@ -9,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from engine.schema import Edge, EdgeUpdate, InitOutput, Node, NodeDraft, NodeUpdate, NODE_ID_RE
-from engine.strength import normalize5, strength_of
 
 # Significance threshold: strength jitters below this magnitude are rejected as
 # noise (evidence: 34% of deltas were < 0.25 in live testing). Reactivation,
@@ -23,12 +22,13 @@ MIN_ABS_DELTA = 0.4
 
 @dataclass
 class CognitiveGraph:
-    """All nodes ever created (active + deactivated), the edge set, and the
-    normalized 5-bin distribution behind every strength value."""
+    """All nodes ever created (active + deactivated) and the edge set.
+    Strength is emitted by the LLM directly (0-4 float); the 5-bin
+    level_probs machinery was deleted 2026-09-06 — only strength was ever
+    consumed."""
 
     nodes: dict[str, Node] = field(default_factory=dict)          # id -> node (deactivated keep content, strength 0)
     edges: dict[tuple[str, str, str], Edge] = field(default_factory=dict)
-    dist: dict[str, list[float]] = field(default_factory=dict)    # id -> normalized probs
     deactivated: set[str] = field(default_factory=set)
 
     def active_nodes(self) -> list[Node]:
@@ -62,10 +62,6 @@ class ApplyResult:
     ops_rejected: list[dict] = field(default_factory=list)       # {"op": ..., "reason": ...}
     notes: list[str] = field(default_factory=list)
 
-    @property
-    def rejected(self) -> list[dict]:
-        return self.ops_rejected
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -78,15 +74,11 @@ def _next_free_id(letter: str, used: set[str]) -> str:
     return f"{letter}{i}"
 
 
-def _valid_probs(probs: list[float] | None) -> str | None:
-    if probs is None:
-        return "missing level_probs"
-    if len(probs) != 5:
-        return "level_probs must have exactly 5 entries"
-    if any(p < 0 for p in probs):
-        return "level_probs contain negative values"
-    if sum(probs) <= 1e-9:
-        return "level_probs sum to ~0"
+def _valid_strength(s: float | None) -> str | None:
+    if s is None:
+        return "missing strength"
+    if not (0.0 <= s <= 4.0):
+        return "strength must be within [0,4]"
     return None
 
 
@@ -146,16 +138,15 @@ def _type_value(draft: NodeDraft):
     return draft.type.value if hasattr(draft.type, "value") else str(draft.type)
 
 
-def _draft_to_node(draft: NodeDraft, probs: list[float]) -> Node:
+def _draft_to_node(draft: NodeDraft) -> Node:
     return Node(id=draft.id, type=_type_value(draft), content=draft.content.strip(),
-                strength=strength_of(probs))
+                strength=draft.strength)
 
 
 def _deactivate_node(
     node_id: str,
     nodes: dict[str, Node],
     edges: dict[tuple[str, str, str], Edge],
-    dist: dict[str, list[float]],
     deactivated: set[str],
     deltas: dict[str, float],
     applied: list[dict],
@@ -165,7 +156,6 @@ def _deactivate_node(
     """Set a node inactive and cascade-remove every edge touching it."""
     old = nodes[node_id].strength
     nodes[node_id] = nodes[node_id].model_copy(update={"strength": 0.0})
-    dist[node_id] = [1.0, 0.0, 0.0, 0.0, 0.0]
     deactivated.add(node_id)
     if old > 0:
         deltas[node_id] = round(-old, 3)
@@ -196,7 +186,6 @@ def apply_updates(
     filter — see the 2026-09-06 modeling review."""
     nodes = dict(graph.nodes)
     edges = dict(graph.edges)
-    dist = dict(graph.dist)
     deactivated = set(graph.deactivated)
     deltas: dict[str, float] = {}
     applied: list[dict] = []
@@ -209,11 +198,9 @@ def apply_updates(
     for op in node_updates:
         if op.op == "deactivate" and op.node_id:
             killed_this_turn.add(op.node_id)
-        elif op.op == "update" and op.level_probs is not None:
-            if _valid_probs(op.level_probs) is None:
-                probs, _ = normalize5(op.level_probs)
-                if strength_of(probs) <= 1e-9:
-                    killed_this_turn.add(op.node_id or "")
+        elif op.op == "update" and op.strength is not None:
+            if op.strength <= 1e-9:
+                killed_this_turn.add(op.node_id or "")
     means_for_removed: set[tuple[str, str]] = set()
     means_for_added: set[tuple[str, str]] = set()
     for op in edge_updates:
@@ -230,7 +217,7 @@ def apply_updates(
         if draft is None:  # guarded by pydantic; defensive
             rejected.append({"op": {"op": "add"}, "reason": "missing node"})
             continue
-        err = _valid_probs(draft.level_probs)
+        err = _valid_strength(draft.strength)
         if err:
             rejected.append({"op": {"op": "add", "id": draft.id}, "reason": err})
             continue
@@ -248,11 +235,7 @@ def apply_updates(
             new_id = _next_free_id(final_id[0], set(nodes))
             notes.append(f"id_renamed {final_id} -> {new_id}")
             final_id = new_id
-        probs, note = normalize5(draft.level_probs)
-        if note:
-            notes.append(f"{final_id}: {note}")
-        nodes[final_id] = _draft_to_node(draft.model_copy(update={"id": final_id}), probs)
-        dist[final_id] = probs
+        nodes[final_id] = _draft_to_node(draft.model_copy(update={"id": final_id}))
         if type_val == "intention":
             applied_intents.add(final_id)
         applied.append({
@@ -289,7 +272,7 @@ def apply_updates(
                     rejected.append({"op": {"op": "deactivate", "node_id": node_id},
                                      "reason": why})
                     continue
-            _deactivate_node(node_id, nodes, edges, dist, deactivated, deltas, applied, auto=False)
+            _deactivate_node(node_id, nodes, edges, deactivated, deltas, applied, auto=False)
             continue
 
         # op == "update" (may revive a deactivated node)
@@ -297,21 +280,17 @@ def apply_updates(
         old_strength = 0.0 if was_deactivated else nodes[node_id].strength
         new_content = op.content.strip() if op.content is not None and op.content.strip() else None
 
-        if op.level_probs is not None:
-            err = _valid_probs(op.level_probs)
+        if op.strength is not None:
+            err = _valid_strength(op.strength)
             if err:
                 rejected.append({"op": {"op": "update", "node_id": node_id}, "reason": err})
                 continue
-            probs, note = normalize5(op.level_probs)
-            if note:
-                notes.append(f"{node_id}: {note}")
-            new_strength = strength_of(probs)
+            new_strength = op.strength
         else:
-            probs = None
             new_strength = old_strength
 
-        if probs is not None and new_strength <= 1e-9:
-            # mass at level 0 => node effectively gone
+        if op.strength is not None and new_strength <= 1e-9:
+            # strength driven to 0 => node effectively gone
             if commit_on:
                 blocked, why = _commitment_blocks(node_id, nodes, edges, deactivated,
                                                   killed_this_turn, means_for_removed,
@@ -320,7 +299,7 @@ def apply_updates(
                     rejected.append({"op": {"op": "update", "node_id": node_id},
                                      "reason": why})
                     continue
-            _deactivate_node(node_id, nodes, edges, dist, deactivated, deltas, applied,
+            _deactivate_node(node_id, nodes, edges, deactivated, deltas, applied,
                              auto=True, reason="update drove strength to 0")
             continue
 
@@ -332,7 +311,7 @@ def apply_updates(
         # bypasses the guard entirely.
         node = nodes[node_id]
         content_actually_changes = new_content is not None and new_content != node.content
-        if probs is not None and not was_deactivated:
+        if op.strength is not None and not was_deactivated:
             raw_delta = round(new_strength - old_strength, 3)
             if raw_delta != 0 and abs(raw_delta) < MIN_ABS_DELTA and not content_actually_changes:
                 rejected.append({
@@ -341,9 +320,8 @@ def apply_updates(
                 })
                 continue
 
-        if probs is not None:
+        if op.strength is not None:
             nodes[node_id] = node.model_copy(update={"strength": new_strength})
-            dist[node_id] = probs
         if content_actually_changes:
             nodes[node_id] = nodes[node_id].model_copy(update={"content": new_content})
         if was_deactivated:
@@ -357,7 +335,7 @@ def apply_updates(
             "op": "update", "node_id": node_id, "auto": False,
             "strength_after": new_strength,
             "content_changed": content_actually_changes,
-            **({"level_probs": probs} if probs is not None else {}),
+            **({"strength": new_strength} if op.strength is not None else {}),
         })
 
     # --- edge ops, in LLM order ---
@@ -398,7 +376,7 @@ def apply_updates(
             applied.append({"op": "remove", "edge": {"from": key[0], "to": key[1], "relation": key[2]},
                             "auto": False})
 
-    new_graph = CognitiveGraph(nodes=nodes, edges=edges, dist=dist, deactivated=deactivated)
+    new_graph = CognitiveGraph(nodes=nodes, edges=edges, deactivated=deactivated)
     return ApplyResult(graph=new_graph, deltas=deltas, ops_applied=applied,
                        ops_rejected=rejected, notes=notes)
 

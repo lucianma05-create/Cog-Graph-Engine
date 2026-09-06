@@ -152,7 +152,6 @@
   "cognitive_style": "I move when I feel understood: being genuinely listened to opens me up to see my situation differently, being pushed toward solutions shuts me down. Small, concrete, safe steps can shift me; big leaps cannot.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal",
-    "inertia": "normal"
+    "reactance": "normal"
   }
 }

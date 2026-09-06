@@ -112,7 +112,6 @@
   "cognitive_style": "I hold my position unless the evidence is overwhelming, and pushy or guilt-tripping appeals make me dig in rather than move me. Once I commit to something, I keep my word.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "pronounced",
-    "inertia": "resistant"
+    "reactance": "pronounced"
   }
 }

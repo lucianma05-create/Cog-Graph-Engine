@@ -120,7 +120,6 @@
   "cognitive_style": "I move when the evidence is solid: concrete facts about where money goes persuade me, flattery does not. Once I commit to something, I keep my word.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal",
-    "inertia": "normal"
+    "reactance": "normal"
   }
 }

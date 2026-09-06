@@ -18,7 +18,7 @@ from engine.strength import clamp
 from engine.updater import (MIN_ABS_DELTA, CognitiveGraph, apply_updates,
                             build_initial_graph)
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 NEUTRAL_APPRAISAL = {"goal_congruence": 0.0, "controllability": 0.5,
                      "goal_conflict": 0.0}
@@ -173,8 +173,7 @@ def _clamp_emotion(e: Emotion) -> tuple[dict, list[str]]:
     return out, notes
 
 
-def graph_from_snapshot(snapshot: dict, dist: dict | None,
-                        deactivated: list[dict] | None) -> CognitiveGraph:
+def graph_from_snapshot(snapshot: dict, deactivated: list[dict] | None) -> CognitiveGraph:
     nodes: dict[str, Node] = {}
     for nd in snapshot.get("nodes", []):
         n = Node.model_validate(nd)
@@ -193,8 +192,6 @@ def graph_from_snapshot(snapshot: dict, dist: dict | None,
             key = (min(key[0], key[1]), max(key[0], key[1]), key[2])
         edges[key] = edge
     graph = CognitiveGraph(nodes=nodes, edges=edges, deactivated=deact)
-    for nid, probs in (dist or {}).items():
-        graph.dist[nid] = list(probs)
     return graph
 
 
@@ -231,13 +228,11 @@ class UserSimulator:
         if self.turns:
             last = self.turns[-1]
             self.graph = graph_from_snapshot(last["graph_after"],
-                                             last.get("node_distributions_after"),
                                              last.get("deactivated_after"))
             self.appraisal = last["appraisal"]
             self.emotion = last["emotion"]
         elif self.initial_log:
             self.graph = graph_from_snapshot(self.initial_log["graph"],
-                                             self.initial_log.get("node_distributions"),
                                              self.initial_log.get("deactivated"))
             self.appraisal = self.initial_log.get("appraisal", dict(NEUTRAL_APPRAISAL))
             self.emotion = self.initial_log.get("emotion", dict(NEUTRAL_EMOTION))
@@ -261,8 +256,7 @@ class UserSimulator:
             cached = json.loads(cache.read_text(encoding="utf-8"))
             self.initial_log = cached
             self.graph = graph_from_snapshot(
-                cached["graph"], cached.get("node_distributions"),
-                cached.get("deactivated"))
+                cached["graph"], cached.get("deactivated"))
             self.appraisal = dict(NEUTRAL_APPRAISAL)
             self.emotion = dict(NEUTRAL_EMOTION)
             self.history = []
@@ -300,7 +294,7 @@ class UserSimulator:
             "seed_id": self.seed.seed_id,
             "created_at": _now(),
             "graph": self.graph.snapshot(),
-            "node_distributions": {i: p for i, p in sorted(self.graph.dist.items())},
+            "strengths": {i: self.graph.nodes[i].strength for i in sorted(self.graph.nodes)},
             "deactivated": self.graph.deactivated_info(),
             "appraisal": dict(NEUTRAL_APPRAISAL),
             "emotion": dict(NEUTRAL_EMOTION),
@@ -398,7 +392,7 @@ class UserSimulator:
             "done": bool(out.done),
             "done_reason": done_reason,
             "graph_after": result.graph.snapshot(),   # graph_before = previous turn's graph_after (redundant)
-            "node_distributions_after": {i: p for i, p in sorted(result.graph.dist.items())},
+            "strengths_after": {i: result.graph.nodes[i].strength for i in sorted(result.graph.nodes)},
             "deactivated_after": result.graph.deactivated_info(),
             "deltas": result.deltas,
             "ops_applied": result.ops_applied,

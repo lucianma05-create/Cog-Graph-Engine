@@ -17,7 +17,7 @@ Agent Reply → 认知状态转移（BDI 图增量更新 + Appraisal + Emotion�
 | **G0** | 初始认知图 = Init(P, S, H0)，temperature=0 + 最强模型（ANTHROPIC_INIT_MODEL）生成，持久化于 `sessions/g0/<seed>.json` 复用；删文件或 `--reinit` 重新生成 |
 | **P / S / H0** | Init 的三个证据源：P=persona（对话前已知：人格问卷/自报问题/私有谈判立场）、S=场景、H0=干预前的对话前缀。**前缀之后的对话绝不进 LLM 上下文** |
 | **三层证据政策** | G0 建节点的规则：Tier 1 固有态度（量表直接建：情境相关+强度按量表极端度+忠实转写）、Tier 2 情境激活（自报问题/私有立场）、Tier 3 前缀证据；**结果变量（捐赠/成交意向等）留给干预**，G0 不预植 |
-| **level_probs / strength** | LLM 只输出 0–4 五档概率分布，引擎算 `strength = Σ p(k)·k`——LLM 永不直接写强度 |
+| **strength** | LLM 直接输出 0–4 浮点（0-1 弱、2-3 明确、≥3.5 强）——早期五档概率分布机制已于 2026-09-06 删除（只有期望被消费，熵/采样从未实现） |
 | **Appraisal** | 每轮对 agent 回复的事件评价：`goal_congruence / controllability / goal_conflict` 三字段（certainty 已删，由 belief strength 承载） |
 | **Emotion** | 短期情绪：`category(闭合 17 标签) / valence / arousal / appraisal_target`（intensity 已删，由 arousal 承载；target 指向受影响节点或 `#agent_reply`，是因果归因） |
 | **边关系（4 种）** | 见 §4 边规则 |
@@ -114,11 +114,11 @@ sim.step(agent_reply)
 ```json
 {
   "cognitive_style": "I hold my position unless the evidence is overwhelming — only new facts about the item move me; flattery, repetition or pressure does not. Once I commit to a price, I stick with it until the deal clearly fails.",
-  "cognitive_profile": { "inertia": "resistant", "reactance": "normal", "commitment": "persistent" }
+  "cognitive_profile": { "reactance": "normal", "commitment": "persistent" }
 }
 ```
 
-`cognitive_style` 只进模拟器上下文（Init/Turn），**永不进 agent 上下文**（有防泄漏测试）；`cognitive_profile` 只被引擎读取。
+`cognitive_style` 只进模拟器上下文（Init/Turn），**永不进 agent 上下文**（有防泄漏测试）；`cognitive_profile` 只被引擎读取（阻抗维度 ① 无机械实现，只由 NL 承担——建模审查结论：噪声过滤与人格阻抗是两个因果角色，不得共用阈值）。
 
 ### 6 种子当前配置
 

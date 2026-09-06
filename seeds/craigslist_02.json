@@ -91,7 +91,6 @@
   "cognitive_style": "I shift my view fairly easily — a friendly manner, a sense that others want the item, or an easy way to pay is enough to move me beyond my original number. Once I agree to a price, I keep my word.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal",
-    "inertia": "malleable"
+    "reactance": "normal"
   }
 }

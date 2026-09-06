@@ -10,9 +10,9 @@ from engine.schema import (InitOutput, Node, NodeDraft, Seed, StepRequest,
 
 VALID_TURN = {
     "node_updates": [
-        {"op": "update", "node_id": "B1", "level_probs": [0.05, 0.1, 0.25, 0.35, 0.25]},
+        {"op": "update", "node_id": "B1", "strength": 3.0},
         {"op": "add", "node": {"id": "I2", "type": "intention",
-                               "content": "look at other jobs", "level_probs": [0.1, 0.3, 0.3, 0.2, 0.1]}},
+                               "content": "look at other jobs", "strength": 3.0}},
     ],
     "edge_updates": [
         {"op": "add", "edge": {"from": "B1", "to": "I2", "relation": "facilitates"}},
@@ -56,9 +56,9 @@ class TestTurnOutput(unittest.TestCase):
             with self.assertRaises(ValidationError):
                 TurnOutput.model_validate(bad)
 
-    def test_strength_never_accepted_from_llm(self):
+    def test_add_node_requires_strength(self):
         bad = copy.deepcopy(VALID_TURN)
-        bad["node_updates"][1]["node"]["strength"] = 2.5
+        del bad["node_updates"][1]["node"]["strength"]
         with self.assertRaises(ValidationError):
             TurnOutput.model_validate(bad)
 
@@ -70,7 +70,7 @@ class TestTurnOutput(unittest.TestCase):
 
     def test_update_requires_node_id_and_signal(self):
         bad = copy.deepcopy(VALID_TURN)
-        bad["node_updates"][0] = {"op": "update", "level_probs": [0.1, 0.2, 0.3, 0.2, 0.2]}
+        bad["node_updates"][0] = {"op": "update", "strength": 3.0}
         with self.assertRaises(ValidationError):
             TurnOutput.model_validate(bad)
         bad = copy.deepcopy(VALID_TURN)
@@ -78,9 +78,9 @@ class TestTurnOutput(unittest.TestCase):
         with self.assertRaises(ValidationError):
             TurnOutput.model_validate(bad)
 
-    def test_level_probs_must_be_5(self):
+    def test_strength_out_of_range_rejected(self):
         bad = copy.deepcopy(VALID_TURN)
-        bad["node_updates"][0]["level_probs"] = [0.2, 0.8]
+        bad["node_updates"][0]["strength"] = 4.5
         with self.assertRaises(ValidationError):
             TurnOutput.model_validate(bad)
 
@@ -124,7 +124,7 @@ class TestInitOutput(unittest.TestCase):
     def test_valid_init(self):
         i = InitOutput.model_validate({
             "nodes": [{"id": "B1", "type": "belief", "content": "job is stressful",
-                       "level_probs": [0, 0.1, 0.2, 0.4, 0.3]}],
+                       "strength": 3.0}],
             "edges": [],
         })
         self.assertEqual(len(i.nodes), 1)
@@ -133,7 +133,7 @@ class TestInitOutput(unittest.TestCase):
         with self.assertRaises(ValidationError):
             InitOutput.model_validate({
                 "nodes": [{"id": "D1", "type": "belief", "content": "x",
-                           "level_probs": [0.2, 0.2, 0.2, 0.2, 0.2]}],
+                           "strength": 3.0}],
                 "edges": [],
             })
 

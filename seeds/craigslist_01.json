@@ -79,7 +79,6 @@
   "cognitive_style": "I hold my position unless the evidence is overwhelming — only new facts about the item move me; flattery, repetition or pressure does not. Once I commit to a price, I stick with it until the deal clearly fails.",
   "cognitive_profile": {
     "commitment": "persistent",
-    "reactance": "normal",
-    "inertia": "resistant"
+    "reactance": "normal"
   }
 }

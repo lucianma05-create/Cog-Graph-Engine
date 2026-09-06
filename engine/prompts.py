@@ -66,11 +66,9 @@ inferring a belief from an intention is wishful thinking.
 - conflicts_with: desire <-> desire only (symmetric goal conflict).
 NO other relations exist. Do not invent relation kinds and do not add extra fields.
 
-Strength model: every node has a hidden 0..4 level. You output level_probs =
-[P(level0), P(level1), P(level2), P(level3), P(level4)]; the engine normalizes it and
-computes strength = sum_k P(k)*k deterministically. You NEVER output strength numbers.
-Put probability mass where the user actually is: mass at level 0/1 = weak or absent,
-level 3/4 = strong.
+Strength model: every node carries a strength you emit DIRECTLY as a 0-4 float:
+0-1 = weak/tentative, 2-3 = clearly present, >=3.5 = strong/core. Pick one number
+that reflects where the user actually is.
 
 Update discipline: per turn you emit deltas, never a full graph.
 - add: a brand-new node with evidence. id = the prefix letter of its type + a number
@@ -78,8 +76,8 @@ Update discipline: per turn you emit deltas, never a full graph.
   Prefer updating an existing node over adding a near-duplicate.
 - update: an existing ACTIVE node; new level_probs and/or revised content.
   Updating a deactivated node revives it.
-  Strength changes smaller than ±0.5 in expectation are REJECTED by the engine as
-  noise — do not emit them; a reply must genuinely justify a move of at least ±0.5.
+  Strength changes smaller than ±0.5 are REJECTED by the engine as noise — do not
+  emit them; a reply must genuinely justify a move of at least ±0.5.
   Exception: a small move accompanied by a real content revision is accepted
   (revising the thought is evidence the change is genuine, not jitter).
 - deactivate: the user no longer holds this thought; its id is kept. USE IT when
@@ -156,13 +154,9 @@ Typical graph size: 3-10 nodes (Tier 1 may add a few).
 Nothing from AFTER the prefix may be used, ever.
 
 Step 3 — set strengths. strength = how strongly the evidence supports the proposition
-NOW, encoded as level_probs over levels 0..4:
-  level 0-1: tentative/weakly present; 2: clearly present but not dominant;
-  3: strong and clearly influencing the user; 4: core/stable commitment.
-Put most of the probability mass on ONE level — do not hedge with flat distributions
-unless the evidence is genuinely ambiguous. For P-sourced nodes, the strength should
-match how strongly P states it; for H0-sourced nodes, match how emphatically the user
-said it.
+NOW, emitted directly as a 0-4 float: 0-1 tentative/weakly present, 2-3 clearly
+present, 3.5-4 core/stable commitment. For P-sourced nodes match how strongly P
+states it; for H0-sourced nodes match how emphatically the user said it.
 
 Step 4 — add edges following the edge ontology in the system prompt (B->D
 desirability, D->I deliberation, B->I means evaluation, I -means_for-> D purpose,
@@ -178,8 +172,8 @@ connects to nothing is irrelevant to this decision space — drop it instead of
 keeping it isolated.
 Add an edge ONLY when the connection is clear in the evidence.
 
-Step 5 — output. Emit the initialize_cognitive_state tool call with nodes and edges
-only. Never output strength numbers (level_probs only), never add extra fields.
+Step 5 — output. Emit the initialize_cognitive_state tool call with nodes and
+edges only; each node carries its strength as a 0-4 float. Never add extra fields.
 """
 
 TURN_SYSTEM_EXTRA = """\
