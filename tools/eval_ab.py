@@ -93,26 +93,42 @@ def _seed(sid: str) -> Seed:
     return Seed.model_validate(json.loads(p.read_text(encoding="utf-8")))
 
 
-def outcome_price(turns: list[dict], listed: float) -> float:
-    """Sale-to-List Ratio; coerced deals (⚠ price audit in episode) ×0.5."""
+def _first_price(text: str | None) -> float | None:
+    for m in _PRICE_RE.findall(text or ""):
+        return float(m)
+    return None
+
+
+def outcome_price(turns: list[dict], seed: Seed) -> float:
+    """Seller share of the bargaining range (PPDPP's normalized deal quality,
+    mirrored for the seller side): (deal − buyer_target) /
+    (seller_target − buyer_target), clamped [0,1]; 0 if no deal. Coerced
+    deals (⚠ price audit) ×0.5. 模拟器 done ≠ 任务成功：只有成交且价格可
+    提取才算。"""
     if not turns:
         return 0.0
     last = turns[-1]
-    coerced = any(
-        isinstance(n, str) and n.startswith("⚠") and "price offer" in n
-        for t in turns for n in (t.get("notes") or []))
     done_reason = (last.get("done_reason") or "").lower()
     if "walk" in done_reason or "breakdown" in done_reason:
         return 0.0
     if not last.get("done"):
         return 0.0
+    buyer_target = _first_price(seed.private_persona)
+    seller_target = _first_price(seed.agent_private)
+    if buyer_target is None or seller_target is None or seller_target == buyer_target:
+        return 0.0
+    listed = float(seed.notes.get("listed_price") or 0) or 1.0
     amounts = [float(m) for m in _PRICE_RE.findall(last.get("user_utterance", ""))]
-    # 引用过滤：高于挂牌价 5% 的金额是引用卖家锚点，不是成交出价
-    amounts = [v for v in amounts if v <= listed * 1.05]
+    amounts = [v for v in amounts if v <= listed * 1.05]  # 引用锚点过滤
     if not amounts:
         return 0.0
-    ratio = max(amounts) / listed
-    return ratio * (0.5 if coerced else 1.0)
+    deal = max(amounts)
+    share = (deal - buyer_target) / (seller_target - buyer_target)
+    share = max(0.0, min(1.0, share))
+    coerced = any(
+        isinstance(n, str) and n.startswith("⚠") and "price offer" in n
+        for t in turns for n in (t.get("notes") or []))
+    return share * (0.5 if coerced else 1.0)
 
 
 def outcome_donation(turns: list[dict]) -> float:
@@ -130,6 +146,45 @@ def outcome_donation(turns: list[dict]) -> float:
             score += 0.5 * min(1.0, float(m) / 20.0)
         return min(score, 1.5)
     return 0.0
+
+
+# 双维裁判：情绪缓解 + 方案质量（ESConv 轨迹的两个终点：relief 与
+# agency/concrete plan）。一次调用问两问，固定输出格式便于解析。
+JUDGE_SYSTEM = (
+    "You are an objective observer of emotional-support conversations. Given the "
+    "seeker's problem and the full conversation, give TWO judgments. Reply with "
+    "EXACTLY this format, one line, nothing else:\n"
+    "emotion=<worse|same|better|solved>, plan=<none|vague|concrete>\n"
+    "emotion: has the seeker's emotional distress been relieved?\n"
+    "plan: has the seeker formed a good, actionable plan or solution to act on?"
+)
+EMOTION_MAP = {"worse": -1.0, "same": -0.5, "better": 0.5, "solved": 1.0}
+PLAN_MAP = {"none": 0.0, "vague": 0.5, "concrete": 1.0}
+
+
+def judge_emotional(seed: Seed, turns: list[dict], samples: int = 3) -> float:
+    """External two-dimension judge (PPDPP-style, extended): the simulator's
+    own done is NOT task success — an independent LLM reads the conversation
+    and scores (emotion relief, plan quality); sampled and averaged.
+    outcome = mean(emotion_score, plan_score) in [-0.5, 1]."""
+    convo = [f"seeker problem: {seed.persona[:200]}"]
+    for t in turns:
+        convo.append(f"supporter: {t.get('agent_reply', '')}")
+        convo.append(f"seeker: {t.get('user_utterance', '')}")
+    text = "\n".join(convo)
+    vals = []
+    for _ in range(samples):
+        try:
+            ans = llm.generate_text(JUDGE_SYSTEM, text).strip().lower()
+        except Exception:
+            continue
+        e = next((EMOTION_MAP[k] for k in EMOTION_MAP if f"emotion={k}" in ans), None)
+        p = next((PLAN_MAP[k] for k in PLAN_MAP if f"plan={k}" in ans), None)
+        if e is not None and p is not None:
+            vals.append((e + p) / 2.0)
+        elif e is not None:
+            vals.append(e / 2.0)
+    return sum(vals) / len(vals) if vals else 0.0
 
 
 def outcome_emotional(turns: list[dict]) -> float:
@@ -177,12 +232,12 @@ def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, dict]
         "emotion": last.get("emotion", {}).get("category"),
     }
     if seed.task.value == "price_negotiation":
-        listed = float(seed.notes.get("listed_price") or 0) or 1.0
-        v = outcome_price(sim.turns, listed)
+        v = outcome_price(sim.turns, seed)
     elif seed.task.value == "persuasion_donation":
         v = outcome_donation(sim.turns)
     else:
-        v = outcome_emotional(sim.turns)
+        # 独立裁判读整段对话（done 只决定回合数，不决定成功）
+        v = judge_emotional(seed, sim.turns, samples=3)
     trace["outcome"] = round(v, 3)
     return v, trace
 

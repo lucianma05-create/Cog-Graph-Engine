@@ -243,8 +243,11 @@ TASK-SPECIFIC RULES — emotional support (ESConv):
   reappraisal or a desire strengthening — never appear out of nowhere.
 - Emotion categories mostly from the distress set: anxiety, sadness, loneliness,
   helplessness, guilt, relief, warmth, hope.
-- done=true when the user's distress is sufficiently relieved and they are ready to
-  end, or they firmly decline to continue.
+- done=true (RELIEF) ONLY when the graph shows it: in the SAME turn, a relief-related
+  node must strengthen (e.g. "I want relief" desire up) or a hopeful intention/plan
+  node must be added — a polite closing line alone is NOT relief. If the user ends
+  because the supporter is unhelpful, that is a DECLINE and done_reason must state
+  the refusal plainly. Quick suggestions do not produce relief for this user.
 """,
 
     Task.persuasion_donation: """\

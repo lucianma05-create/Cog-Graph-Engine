@@ -1,145 +1,145 @@
 {
-  "seed_id": "esconv_02",
-  "task": "emotional_support",
-  "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Not sure how to explain that I want out of marriage Presenting problem: breakup with partner (predominant emotion: depression). The seeker self-reported an initial emotional intensity of 5 out of 5 (pre-dialogue).",
-  "private_persona": null,
-  "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: breakup with partner.",
-  "u0": "Hi",
-  "pre_context": [
-    {
-      "role": "seeker",
-      "text": "Hi"
-    },
-    {
-      "role": "supporter",
-      "text": "Hello! How are you today?"
-    },
-    {
-      "role": "seeker",
-      "text": "Ok I guess"
-    },
-    {
-      "role": "seeker",
-      "text": "I do not know how to tell my husband that I am lonely and I want out of the marriage"
-    }
-  ],
-  "reference_transcript": [
-    {
-      "role": "seeker",
-      "text": "Hi"
-    },
-    {
-      "role": "supporter",
-      "text": "Hello! How are you today?"
-    },
-    {
-      "role": "seeker",
-      "text": "Ok I guess"
-    },
-    {
-      "role": "seeker",
-      "text": "I do not know how to tell my husband that I am lonely and I want out of the marriage"
-    },
-    {
-      "role": "supporter",
-      "text": "Oh, that sure is a heavy subject and a heavy thing to be on your mind."
-    },
-    {
-      "role": "seeker",
-      "text": "He is not one you can talk to he usually just brushes things off"
-    },
-    {
-      "role": "supporter",
-      "text": "So you have tried to discuss your loneliness with your husband before?"
-    },
-    {
-      "role": "seeker",
-      "text": "Yes he tells me it’s just in my head and I could just go out with him, but he drinks then to much so I do not like going out with him"
-    },
-    {
-      "role": "supporter",
-      "text": "I am sure that is frustrating! Does he drink at home as well or just when you go out?"
-    },
-    {
-      "role": "seeker",
-      "text": "Just when he goes out I do not go with him I do not drink and drive"
-    },
-    {
-      "role": "seeker",
-      "text": "And he hangs with some obnoxious people"
-    },
-    {
-      "role": "supporter",
-      "text": "Would a date night at home with take-out and a movie just the two of you be an option?"
-    },
-    {
-      "role": "seeker",
-      "text": "He would go to sleep , and then he thinks I am crazy he says we are no kids anymore that need to go on a date we are married"
-    },
-    {
-      "role": "supporter",
-      "text": "Do you think you both might be open to talking to a marriage counselor?"
-    },
-    {
-      "role": "seeker",
-      "text": "I want that but I doubt he will talk he tells me he has no problems I have them, and all it does is I doubt myself"
-    },
-    {
-      "role": "seeker",
-      "text": "I turned this situation in every direction and I just am not able to find a solution"
-    },
-    {
-      "role": "supporter",
-      "text": "Well, what about you finding a counselor for yourself who could help you with your own self-care? Perhaps it could be a start and then he/she could help you end your marriage if you still want to."
-    },
-    {
-      "role": "supporter",
-      "text": "It took me awhile to learn my own value and how important self-care is."
-    },
-    {
-      "role": "seeker",
-      "text": "You know what I like that idea"
-    },
-    {
-      "role": "seeker",
-      "text": "Maybe you are right  I might get then some self esteem as well again"
-    },
-    {
-      "role": "supporter",
-      "text": "I know from experience that our self esteem suffers when we're in an unhappy marriage. It takes a lot of courage to seek help so I applaud you!"
-    },
-    {
-      "role": "seeker",
-      "text": "Thank you you are very kind"
-    },
-    {
-      "role": "supporter",
-      "text": "I'm glad I could help and I wish you the best of luck!"
-    },
-    {
-      "role": "seeker",
-      "text": "I always think when he acts these ways it’s me because I am not pretty enough or have few pounds to muc"
-    },
-    {
-      "role": "seeker",
-      "text": "Thank stay safe"
-    }
-  ],
-  "notes": {
-    "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
-    "source_record_id": "esconv_00012",
-    "split": "train",
-    "problem_type": "breakup with partner",
-    "emotion_type": "depression",
-    "n_messages": 25,
-    "contentful_turn_count": 8,
-    "u0_message_index": 0,
-    "first_contentful_turn_id": 3,
-    "prefix_end_index": 4
+ "seed_id": "esconv_02",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Not sure how to explain that I want out of marriage Presenting problem: breakup with partner (predominant emotion: depression). The seeker self-reported an initial emotional intensity of 5 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: breakup with partner.",
+ "u0": "Hi",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hi"
   },
-  "cognitive_style": "I hold my position unless the evidence is overwhelming — and when I am low, even hopeful claims barely reach me. I move only gradually, through small felt steps rather than persuasion.",
-  "cognitive_profile": {
-    "commitment": "persistent",
-    "reactance": "normal"
+  {
+   "role": "supporter",
+   "text": "Hello! How are you today?"
+  },
+  {
+   "role": "seeker",
+   "text": "Ok I guess"
+  },
+  {
+   "role": "seeker",
+   "text": "I do not know how to tell my husband that I am lonely and I want out of the marriage"
   }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hi"
+  },
+  {
+   "role": "supporter",
+   "text": "Hello! How are you today?"
+  },
+  {
+   "role": "seeker",
+   "text": "Ok I guess"
+  },
+  {
+   "role": "seeker",
+   "text": "I do not know how to tell my husband that I am lonely and I want out of the marriage"
+  },
+  {
+   "role": "supporter",
+   "text": "Oh, that sure is a heavy subject and a heavy thing to be on your mind."
+  },
+  {
+   "role": "seeker",
+   "text": "He is not one you can talk to he usually just brushes things off"
+  },
+  {
+   "role": "supporter",
+   "text": "So you have tried to discuss your loneliness with your husband before?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes he tells me it’s just in my head and I could just go out with him, but he drinks then to much so I do not like going out with him"
+  },
+  {
+   "role": "supporter",
+   "text": "I am sure that is frustrating! Does he drink at home as well or just when you go out?"
+  },
+  {
+   "role": "seeker",
+   "text": "Just when he goes out I do not go with him I do not drink and drive"
+  },
+  {
+   "role": "seeker",
+   "text": "And he hangs with some obnoxious people"
+  },
+  {
+   "role": "supporter",
+   "text": "Would a date night at home with take-out and a movie just the two of you be an option?"
+  },
+  {
+   "role": "seeker",
+   "text": "He would go to sleep , and then he thinks I am crazy he says we are no kids anymore that need to go on a date we are married"
+  },
+  {
+   "role": "supporter",
+   "text": "Do you think you both might be open to talking to a marriage counselor?"
+  },
+  {
+   "role": "seeker",
+   "text": "I want that but I doubt he will talk he tells me he has no problems I have them, and all it does is I doubt myself"
+  },
+  {
+   "role": "seeker",
+   "text": "I turned this situation in every direction and I just am not able to find a solution"
+  },
+  {
+   "role": "supporter",
+   "text": "Well, what about you finding a counselor for yourself who could help you with your own self-care? Perhaps it could be a start and then he/she could help you end your marriage if you still want to."
+  },
+  {
+   "role": "supporter",
+   "text": "It took me awhile to learn my own value and how important self-care is."
+  },
+  {
+   "role": "seeker",
+   "text": "You know what I like that idea"
+  },
+  {
+   "role": "seeker",
+   "text": "Maybe you are right  I might get then some self esteem as well again"
+  },
+  {
+   "role": "supporter",
+   "text": "I know from experience that our self esteem suffers when we're in an unhappy marriage. It takes a lot of courage to seek help so I applaud you!"
+  },
+  {
+   "role": "seeker",
+   "text": "Thank you you are very kind"
+  },
+  {
+   "role": "supporter",
+   "text": "I'm glad I could help and I wish you the best of luck!"
+  },
+  {
+   "role": "seeker",
+   "text": "I always think when he acts these ways it’s me because I am not pretty enough or have few pounds to muc"
+  },
+  {
+   "role": "seeker",
+   "text": "Thank stay safe"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00012",
+  "split": "train",
+  "problem_type": "breakup with partner",
+  "emotion_type": "depression",
+  "n_messages": 25,
+  "contentful_turn_count": 8,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 3,
+  "prefix_end_index": 4
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — and when I am low, even hopeful claims barely reach me. Unsolicited advice makes me withdraw further; I do not easily believe anything has changed. Relief, if it comes at all, comes slowly and only from being truly heard, not from suggestions.",
+ "cognitive_profile": {
+  "commitment": "persistent",
+  "reactance": "normal"
+ }
 }
