@@ -79,13 +79,57 @@ sim.step(agent_reply)
 
 ## 5. 认知风格（3 维，文献支撑，LLM 只见 NL）
 
-| 维度 | 档位 | 理论依据 | 实现 |
-|---|---|---|---|
-| ① 更新阻抗 | malleable / normal / resistant（触发可以是事实或情感确认，NL 中写明） | ELM 双路径 + Need for Cognition（Haugtvedt & Petty 1992）、态度强度（Krosnick & Petty 1995）、Edwards 保守主义 | **仅 NL 风格块**（实测 esconv 对区分度干净）；profile 中 `inertia` 档位仅作标注，机械实现（收缩系数）待定 |
-| ② 反向敏感性 | reactant / non-reactant | Brehm 1966 心理阻抗（量表 Hong & Faedda 1996，效度有争议，仅限有量表证据的种子） | NL + reactance ⚠ 审计（引擎） |
-| ③ 承诺粘性 | persistent / flexible | Bratman 1987；R&G 承诺策略 | NL + **承诺持久守卫**（引擎，persistent 档） |
+**认知风格 = 用户认知"怎么变"的习惯**（不是"想什么"——那是图的内容）。3 个维度 × 2~3 档，组合即用户类型。**LLM 只看到第一人称 NL 块**（种子里的 `cognitive_style` 字段），**引擎只读枚举档位**（`cognitive_profile` 字段）——维度名和档位名从不进 LLM 上下文。
 
-种子字段：`cognitive_style`（第一人称 NL 块，simulator-only）、`cognitive_profile`（引擎只读枚举：`commitment/reactance/inertia`，LLM 永不看到）。6 种子当前配置：craigslist_01=resistant/non/persistent、craigslist_02=malleable/non/persistent、p4g_01=normal/non/persistent、p4g_02=resistant/reactant/persistent、esconv_01=normal(情感确认触发)/non/persistent、esconv_02=resistant(低落时门槛更高)/non/persistent。
+### 维度 ① 更新阻抗：同样的证据，认知动多快、被什么触发
+
+| 档位 | 种子里的 NL 示例（真实文本） | 行为含义 |
+|---|---|---|
+| **malleable** | "I shift my view fairly easily — a friendly manner, a sense that others want the item, or an easy way to pay is enough to move me beyond my original number."（craigslist_02） | 奉承/稀缺/社会线索就能推动信念；小步移动频繁 |
+| **normal** | "I move when the evidence is solid: concrete facts about where money goes persuade me, flattery does not."（p4g_01） | 需要实质证据才动 |
+| **resistant** | "I hold my position unless the evidence is overwhelming — only new facts about the item move me; flattery, repetition or pressure does not."（craigslist_01） | 只有压倒性证据才动，且一步一格（esconv_02："when I am low, even hopeful claims barely reach me. I move only gradually, through small felt steps"） |
+
+触发方式在 NL 里写明：谈判/捐赠任务多是**事实触发**，情感支持任务可以是**情感确认触发**（esconv_01："being genuinely listened to opens me up to see my situation differently"）。理论：ELM 双路径与 Need for Cognition（高 NC 者只认论据质量、态度持久抗反驳）、态度强度、Edwards 信念保守主义。
+
+### 维度 ② 反向敏感性：被施压时，认知顺向还是反向
+
+| 档位 | 种子里的 NL 示例（真实文本） | 行为含义 |
+|---|---|---|
+| **reactant** | "pushy or guilt-tripping appeals make me dig in rather than move me."（p4g_02） | 压力让立场**反向强化**（boomerang）；实测话语："Whoa, hold on... guilt-tripping me is not how you ask" |
+| **non-reactant** | （无此句，即缺省） | 压力不引发反向；正常档用户对压力的回应是"要证据"而非"反弹"（p4g_01："That's pressure, not information"） |
+
+引擎挂钩：reactant 用户 + 施压措辞 + goal_conflict≥0.6 + 意向上升 → ⚠ 审计标记。理论：Brehm 心理阻抗（trait 量表效度有争议，**此档只给有量表证据的种子**——目前仅 p4g_02，freedom=6.0/6）。
+
+### 维度 ③ 承诺粘性：意向一旦形成，多难被放弃
+
+| 档位 | 种子里的 NL 示例（真实文本） | 行为含义 |
+|---|---|---|
+| **persistent** | "Once I commit to a price, I stick with it until the deal clearly fails."（craigslist_01） | 意向存续到目的失败/欲望消亡；当前 6 种子全是此档 |
+| **flexible** | "I readily revisit my plans when the situation shifts."（无种子使用，预留） | 情境变化即重新考虑（R&G 承诺策略之 open-minded） |
+
+引擎挂钩：**承诺持久守卫**（persistent 档）——挂着活跃 means_for 的意向不得被 deactivate/清零。理论：Bratman 承诺持久性、Rao & Georgeff 承诺策略（blind/single/open-minded）。
+
+### 种子里的实际写法
+
+```json
+{
+  "cognitive_style": "I hold my position unless the evidence is overwhelming — only new facts about the item move me; flattery, repetition or pressure does not. Once I commit to a price, I stick with it until the deal clearly fails.",
+  "cognitive_profile": { "inertia": "resistant", "reactance": "normal", "commitment": "persistent" }
+}
+```
+
+`cognitive_style` 只进模拟器上下文（Init/Turn），**永不进 agent 上下文**（有防泄漏测试）；`cognitive_profile` 只被引擎读取。
+
+### 6 种子当前配置
+
+| 种子 | ① 更新阻抗 | ② 反向敏感性 | ③ 承诺粘性 |
+|---|---|---|---|
+| craigslist_01 | resistant（事实触发） | non-reactant | persistent |
+| craigslist_02 | malleable | non-reactant | persistent |
+| p4g_01 | normal（事实触发） | non-reactant | persistent |
+| p4g_02 | resistant | **reactant** | persistent |
+| esconv_01 | normal（情感确认触发） | non-reactant | persistent |
+| esconv_02 | resistant（低落时门槛更高） | non-reactant | persistent |
 
 ## 6. 守卫与审计（引擎兜底，确定性）
 
