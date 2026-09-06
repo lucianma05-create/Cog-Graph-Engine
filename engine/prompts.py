@@ -74,7 +74,7 @@ Update discipline: per turn you emit deltas, never a full graph.
 - add: a brand-new node with evidence. id = the prefix letter of its type + a number
   not used before (B1,B2,..., D1,..., I1,...). Never reuse a retired id.
   Prefer updating an existing node over adding a near-duplicate.
-- update: an existing ACTIVE node; new level_probs and/or revised content.
+- update: an existing ACTIVE node; new strength and/or revised content.
   Updating a deactivated node revives it.
   Strength changes smaller than ±0.5 are REJECTED by the engine as noise — do not
   emit them; a reply must genuinely justify a move of at least ±0.5.
