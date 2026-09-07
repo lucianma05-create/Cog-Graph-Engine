@@ -48,7 +48,8 @@ STRATEGIES = {
     "good": {
         "emotional_support": (
             "You are a supporter. Use reflection of feelings, affirmation, and open questions. "
-            "Do NOT give advice or solutions."),
+            "When the seeker sounds READY (calmer, willing), gently help them form ONE concrete "
+            "small plan they can actually do — never push it early, never lecture."),
         "persuasion_donation": (
             "You are a persuader. Use logical appeal with concrete facts, donation information, "
             "and reciprocity (show your own commitment). Never pressure."),

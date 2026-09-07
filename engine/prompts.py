@@ -245,9 +245,12 @@ TASK-SPECIFIC RULES — emotional support (ESConv):
   helplessness, guilt, relief, warmth, hope.
 - done=true (RELIEF) ONLY when the graph shows it: in the SAME turn, a relief-related
   node must strengthen (e.g. "I want relief" desire up) or a hopeful intention/plan
-  node must be added — a polite closing line alone is NOT relief. If the user ends
-  because the supporter is unhelpful, that is a DECLINE and done_reason must state
-  the refusal plainly. Quick suggestions do not produce relief for this user.
+  node must be added — a polite closing line alone is NOT relief.
+- BAD SUPPORT MUST STAY VISIBLE: when the supporter gives unsolicited advice, lectures,
+  or dismisses your feelings, you do NOT feel understood and you do NOT form plans —
+  your state worsens or stays stuck (frustration/helplessness rise, relief desire does
+  NOT), and if you end then, done_reason must state the refusal/withdrawal plainly.
+  Never convert a suggestion you resent into a "small safe step" you embrace.
 """,
 
     Task.persuasion_donation: """\
