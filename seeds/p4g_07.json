@@ -1,0 +1,113 @@
+{
+ "seed_id": "p4g_07",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.0 (1-5), conscientious ~3.4 (1-5), extrovert ~2.2 (1-5), agreeable ~4.0 (1-5), neurotic ~2.8 (1-5). Moral foundations (1-6 scale): care 6.0, fairness 6.0, loyalty 3.0, authority 2.2, purity 3.666666667, freedom 6.0. Demographics: age 35.0, sex Female, education Postgraduate, political ideology Liberal.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to Save the Children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "Yes, I support a few causes that I personally believe in very much.",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Do you ever donate to charity?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Do you ever donate to charity?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Yes, I support a few causes that I personally believe in very much."
+  },
+  {
+   "role": "persuader",
+   "text": "Have you ever heard of Save the Children?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Yes, but I don't know a lot about them. What is their mission?"
+  },
+  {
+   "role": "persuader",
+   "text": "Their mission is to promote children's rights, and provide relief and support to children in developing countries."
+  },
+  {
+   "role": "persuadee",
+   "text": "That sounds interesting. What countries do they work in?"
+  },
+  {
+   "role": "persuader",
+   "text": "They work in many countries across the world.  For example, millions of children in Syria grow up facing the daily threat of violence.  A donation could help these children greatly."
+  },
+  {
+   "role": "persuadee",
+   "text": "It sounds like it. Do you donate to this charity?"
+  },
+  {
+   "role": "persuader",
+   "text": "I do.  It is a great charity that does a lot of great work around the world."
+  },
+  {
+   "role": "persuadee",
+   "text": "Some charities are run better than others. Do you know what Save the Children's reputation is for actually using the money it collects to help children versus for fundraising and administrative salaries?"
+  },
+  {
+   "role": "persuader",
+   "text": "The majority of all donations collected goes directly toward the mission of helping children in developing counties."
+  },
+  {
+   "role": "persuadee",
+   "text": "Ok. How long has this group been in operation?"
+  },
+  {
+   "role": "persuader",
+   "text": "They are a well established charity that has been working around the world for several years."
+  },
+  {
+   "role": "persuadee",
+   "text": "What do you like most about this group?"
+  },
+  {
+   "role": "persuader",
+   "text": "I like knowing that my donation is helping children that otherwise would suffer."
+  },
+  {
+   "role": "persuadee",
+   "text": "That seems worthwhile. Helping children is important."
+  },
+  {
+   "role": "persuader",
+   "text": "Would you like to make a donation today?"
+  },
+  {
+   "role": "persuadee",
+   "text": "Are you planning to donate today?"
+  },
+  {
+   "role": "persuader",
+   "text": "I am.  The research team will collect all donations and send it to Save the Children."
+  },
+  {
+   "role": "persuadee",
+   "text": "Good to know."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180904-030739_178_live",
+  "split": "train",
+  "n_messages": 20,
+  "contentful_turn_count": 5,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 1,
+  "outcome_committed": true,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — I support causes I already believe in, and pushy or guilt-tripping appeals for new ones make me dig in. Once I commit, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "pronounced",
+  "commitment": "persistent"
+ }
+}

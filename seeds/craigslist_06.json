@@ -1,0 +1,92 @@
+{
+ "seed_id": "craigslist_06",
+ "task": "price_negotiation",
+ "persona": "The user is the BUYER, negotiating to buy a second-hand item from a private seller.",
+ "private_persona": "The buyer's private negotiation position: target price ~$1288; no hard bottom line set.",
+ "agent_private": "Your listed price is $1400; your target price is ~$1400; no hard bottom line set.",
+ "scenario": "The SELLER has listed a housing item: \"~~~STUDIO CHARM~~~\" for $1400. Listing description: *Private bath *Fresh new look * very near to Emeryville Bay Street * West MAcArthur Bart 8 - 10 blocks away *good amount of closet space *Tiled floors Granite counters Tiled bath *Water & Pg&e payed by Tennant Please email for viewing The buyer opens the negotiation over the price.",
+ "u0": "I'm interested in this item, but I had some questions",
+ "pre_context": [
+  {
+   "role": "buyer",
+   "text": "I'm interested in this item, but I had some questions"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "buyer",
+   "text": "I'm interested in this item, but I had some questions"
+  },
+  {
+   "role": "seller",
+   "text": "Geat, ask away."
+  },
+  {
+   "role": "buyer",
+   "text": "Do I have to remove it myself?"
+  },
+  {
+   "role": "seller",
+   "text": "I am renting out the appartment, you \"Don't Remove Anything\""
+  },
+  {
+   "role": "buyer",
+   "text": "Nice. Is it fully furnished?"
+  },
+  {
+   "role": "seller",
+   "text": "No, you will need your own \"basic\" furnishing"
+  },
+  {
+   "role": "buyer",
+   "text": "How much is the security deposit, is there one?"
+  },
+  {
+   "role": "seller",
+   "text": "Just first and last month rent"
+  },
+  {
+   "role": "buyer",
+   "text": "It's a bit pricy, I'm not sure if I can afford it..."
+  },
+  {
+   "role": "seller",
+   "text": "I'm only asking $140, that is really cheap for the area"
+  },
+  {
+   "role": "buyer",
+   "text": "I'd totally take 140!!!   but how about 1300 instead?"
+  },
+  {
+   "role": "seller",
+   "text": "Oops, I ment $1400, how about we meet in the middle at $1350?"
+  },
+  {
+   "role": "buyer",
+   "text": "1325, and I'll accept"
+  },
+  {
+   "role": "seller",
+   "text": "How about $1337.50"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/Cog-Graph-Engine/seeds/raw/craigslist_train_parsed.json",
+  "source_record_id": "C_3f66419e9b4c43ff9fdafb052f0e2848",
+  "category": "housing",
+  "title": "~~~STUDIO CHARM~~~",
+  "listed_price": 1400,
+  "buyer_target": 1288,
+  "buyer_bottomline": null,
+  "seller_target": 1400,
+  "seller_bottomline": null,
+  "n_utterances": 14,
+  "price_changes": 3,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when the evidence is solid: concrete details about the item persuade me, sales talk does not. Once I agree on a price, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

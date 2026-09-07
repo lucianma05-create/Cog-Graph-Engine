@@ -1,0 +1,113 @@
+{
+ "seed_id": "p4g_09",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~2.6 (1-5), conscientious ~3.0 (1-5), extrovert ~4.2 (1-5), agreeable ~3.4 (1-5), neurotic ~3.2 (1-5). Moral foundations (1-6 scale): care 3.4, fairness 3.25, loyalty 3.0, authority 3.2, purity 3.0, freedom 4.0. Demographics: age 33.0, sex Female, education Less than four-year college, political ideology Moderate.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to Save the Children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "sure that sounds like a good great thing to do",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Hello. I would like for you to donate some money to Save the Children, please. Will you help them out, please?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Hello. I would like for you to donate some money to Save the Children, please. Will you help them out, please?"
+  },
+  {
+   "role": "persuadee",
+   "text": "sure that sounds like a good great thing to do"
+  },
+  {
+   "role": "persuader",
+   "text": "Save the Children is an NGO that works across the world, for the rights of children, and they help them a lot."
+  },
+  {
+   "role": "persuadee",
+   "text": "Yes I agree i think there wonderful. how much are you donating?"
+  },
+  {
+   "role": "persuader",
+   "text": "I don't know yet. But I know that it's an important cause. 1,000 children were killed or injured in the first two months of 2018, alone."
+  },
+  {
+   "role": "persuadee",
+   "text": "Wow that is so sad Im going to donate 1"
+  },
+  {
+   "role": "persuader",
+   "text": "Thank you so much. I would like to make sure that they get all of the help that they can. This is a very meaningful use of money. Is there any chance that you would consider $1.25?"
+  },
+  {
+   "role": "persuadee",
+   "text": "maybe im not sure if i can"
+  },
+  {
+   "role": "persuader",
+   "text": "Okay. I can tell you that it is a highly-respected organization, with wide international impact. I imagine that your donation will go a long way!"
+  },
+  {
+   "role": "persuadee",
+   "text": "I hope it will for the childrens sake"
+  },
+  {
+   "role": "persuader",
+   "text": "That's great, thanks so much! I'm so happy to put you down for $1.25."
+  },
+  {
+   "role": "persuadee",
+   "text": "sounds good to me"
+  },
+  {
+   "role": "persuader",
+   "text": "Awesome, it's much appreciated! Did you know that the research team will collect the donations and send them straight to the charity?"
+  },
+  {
+   "role": "persuadee",
+   "text": "no i didnt"
+  },
+  {
+   "role": "persuader",
+   "text": "It's very nice of them. Furthermore, you should feel very good about your decision to donate. Children die from hunger all over the world, and your donation will help them out."
+  },
+  {
+   "role": "persuadee",
+   "text": "I agree. i feel that we are doing a great thing for them"
+  },
+  {
+   "role": "persuader",
+   "text": "Do you have any questions that I can answer before I submit your donation?"
+  },
+  {
+   "role": "persuadee",
+   "text": "no i do not have any questions at the time"
+  },
+  {
+   "role": "persuader",
+   "text": "Okay. Well, please accept my sincere thanks. And I know that the children that you are helping so appreciate it...have a wonderful day!"
+  },
+  {
+   "role": "persuadee",
+   "text": "thank you .. same to you"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180904-093015_67_live",
+  "split": "train",
+  "n_messages": 20,
+  "contentful_turn_count": 5,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 1,
+  "outcome_committed": true,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I shift my view fairly easily — I already think donating is a good thing, and a friendly, factual appeal moves me quickly. Once I commit, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

@@ -1,0 +1,113 @@
+{
+ "seed_id": "esconv_10",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Just can't shake my sadness Presenting problem: ongoing depression (predominant emotion: sadness). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: ongoing depression.",
+ "u0": "Hi",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hi"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hi"
+  },
+  {
+   "role": "supporter",
+   "text": "Helo, how are you?"
+  },
+  {
+   "role": "seeker",
+   "text": "Can't seem to shake this overall sadness I feel."
+  },
+  {
+   "role": "supporter",
+   "text": "Are you feeling sort of depressed? I am sorry"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes I am"
+  },
+  {
+   "role": "supporter",
+   "text": "Would you feel happy if you think about after Covid, maybe next year?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am hoping I will. I just have such a hopeless feeling."
+  },
+  {
+   "role": "supporter",
+   "text": "have you been sleeping enough?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, probably too much."
+  },
+  {
+   "role": "supporter",
+   "text": "Do you like morning or night?"
+  },
+  {
+   "role": "seeker",
+   "text": "Probably morning."
+  },
+  {
+   "role": "supporter",
+   "text": "Me too. I like morning too. Air feels fresh, although it is little contaminated here. At night time, I feel a little bit anxiety more."
+  },
+  {
+   "role": "supporter",
+   "text": "So I sleep really early. Sleeping feels good anyway? Do you feel ok while you're sleeping?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes. I just feel sad during the day and can't make it go away."
+  },
+  {
+   "role": "supporter",
+   "text": "I suggest listening to sad yet beautiful music. It sometimes helps me. Do you like classical music?"
+  },
+  {
+   "role": "seeker",
+   "text": "I haven't really tried it."
+  },
+  {
+   "role": "supporter",
+   "text": "When you are sad, listening to upbeat music may disturb you. Listening to instrumental music maybe good for you."
+  },
+  {
+   "role": "seeker",
+   "text": "Ok, I will give that a try."
+  },
+  {
+   "role": "supporter",
+   "text": "I just checked YouTube and searched for some music. Good, I hope it will soothe your mind."
+  },
+  {
+   "role": "seeker",
+   "text": "Thank you, I am willing to try that."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00019",
+  "split": "train",
+  "problem_type": "ongoing depression",
+  "emotion_type": "sadness",
+  "n_messages": 20,
+  "contentful_turn_count": 5,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 2,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — my sadness does not lift from suggestions or optimism. I form plans only when someone truly sits with how I feel; relief comes slowly, if at all.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

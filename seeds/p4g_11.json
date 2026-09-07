@@ -1,0 +1,113 @@
+{
+ "seed_id": "p4g_11",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.8 (1-5), conscientious ~3.8 (1-5), extrovert ~1.6 (1-5), agreeable ~3.6 (1-5), neurotic ~3.0 (1-5). Moral foundations (1-6 scale): care 4.4, fairness 4.5, loyalty 4.666666667, authority 4.6, purity 3.666666667, freedom 3.0. Demographics: age 21.0, sex Male, education Less than four-year college, political ideology Liberal.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to Save the Children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "Good morning",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Good morning"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Good morning"
+  },
+  {
+   "role": "persuadee",
+   "text": "Good morning"
+  },
+  {
+   "role": "persuader",
+   "text": "We are seeking donations for the \"Save the Children\" foundation which helps support children rights to health, education, safety"
+  },
+  {
+   "role": "persuadee",
+   "text": "that is good job i really appreciated you and i am proud of those who do such a things"
+  },
+  {
+   "role": "persuader",
+   "text": "The support will be going to developing countries to also provide relief , would you be interstedin making a donation? We accept from $ .01 to $2.00. Any little will help"
+  },
+  {
+   "role": "persuadee",
+   "text": "yes i am ready to help for humanity becouse that my duty to help them"
+  },
+  {
+   "role": "persuader",
+   "text": "How much would you like to donate? The minimum is $.01 and our goal is the max of $2.00"
+  },
+  {
+   "role": "persuadee",
+   "text": "i will give you know 0.25$"
+  },
+  {
+   "role": "persuader",
+   "text": "Thank you very much for your donation!!"
+  },
+  {
+   "role": "persuadee",
+   "text": "you welcome as human that is my duty"
+  },
+  {
+   "role": "persuader",
+   "text": "You are helping many children with this donation, have a great day and THANK YOU again!!"
+  },
+  {
+   "role": "persuadee",
+   "text": "thanks from you that get me such chance to help others"
+  },
+  {
+   "role": "persuader",
+   "text": "Absolutly, ever bit helps"
+  },
+  {
+   "role": "persuadee",
+   "text": "thanks i am proud of people who do such things"
+  },
+  {
+   "role": "persuader",
+   "text": "Save the Children would like to thank you for your donation"
+  },
+  {
+   "role": "persuadee",
+   "text": "thanks from you to and i want from you to continue such action and never stop helping others"
+  },
+  {
+   "role": "persuader",
+   "text": "Yes, there is much lack of support in these countries and we need to help as mucha as possible"
+  },
+  {
+   "role": "persuadee",
+   "text": "i want for you more energy to do such things and help others when we help some one then other will help us"
+  },
+  {
+   "role": "persuader",
+   "text": "Yes, I agree as well, there needs to be more help from everybody"
+  },
+  {
+   "role": "persuadee",
+   "text": "yes i am thank full from you and if i can i will help a more and more with them"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180831-063536_532_live",
+  "split": "train",
+  "n_messages": 20,
+  "contentful_turn_count": 4,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 3,
+  "outcome_committed": false,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when the evidence is solid: concrete facts persuade me, flattery does not. Once I commit, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

@@ -1,0 +1,157 @@
+{
+ "seed_id": "esconv_14",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Hello. My baby of 11 years had passed away last week. This would be my pomeranian and I am devastated. I am fearful now of getting another puppy during Corona. Presenting problem: ongoing depression (predominant emotion: sadness). The seeker self-reported an initial emotional intensity of 5 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: ongoing depression.",
+ "u0": "Hi!",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hi!"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hi!"
+  },
+  {
+   "role": "supporter",
+   "text": "Good Afternoon.  How are you doing today?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am having a sad day today. My mothers new husband passed 3 weeks ago because of Corona, Now, yesterday my best friend passed of old age. This is the worst time for all of this. I am reeling with grief!"
+  },
+  {
+   "role": "supporter",
+   "text": "That sounds terrible.  I can understand why you're sad today.  That's a lot to take in around the holidays."
+  },
+  {
+   "role": "seeker",
+   "text": "I am afraid to get another puppy. Yes you are right it is TOO much! I do not know how to deal. It seems everyone I talk to is going through a horrendous time with this virus and all the horrible predicaments it is putting people in. I am trying not to be selfish with my feelings knowing everyone else is having a bad time too...but DAMN! It almost is too much to take...."
+  },
+  {
+   "role": "seeker",
+   "text": "Should I get another puppy riht away?"
+  },
+  {
+   "role": "seeker",
+   "text": "I feel very lonely without him."
+  },
+  {
+   "role": "supporter",
+   "text": "Getting a new puppy might be a way to make you feel happy during this dark time in your life."
+  },
+  {
+   "role": "seeker",
+   "text": "I work at home now and I have a husband who does the same. Also my two kids got o school online. They are sad as well, but everyone knows he was my bestie,"
+  },
+  {
+   "role": "supporter",
+   "text": "It might be just what you need to have something to wake up and look forward to each day.  Especially during times like now when everyone is spending so much time alone inside."
+  },
+  {
+   "role": "seeker",
+   "text": "It is a spot not filled by humans."
+  },
+  {
+   "role": "seeker",
+   "text": "Yes. I suppose. Maybe even two would be better."
+  },
+  {
+   "role": "supporter",
+   "text": "I completely agree.  Having a dog as a companion has been a life saver to me in so many situations."
+  },
+  {
+   "role": "seeker",
+   "text": "I would want him to have a friend this time."
+  },
+  {
+   "role": "seeker",
+   "text": "What kind of dog do you have?"
+  },
+  {
+   "role": "supporter",
+   "text": "Having a playmate for the dog will make it easier to justify leaving when you do need to go back to work in the office.  The puppy won't be lonely."
+  },
+  {
+   "role": "supporter",
+   "text": "I have a yellow lab!  He's great!"
+  },
+  {
+   "role": "seeker",
+   "text": "I hope to get a dog who enjoys working out with me like he did."
+  },
+  {
+   "role": "seeker",
+   "text": "Oh and I am not going back into an office!"
+  },
+  {
+   "role": "seeker",
+   "text": "Not for awhile...probably not forever."
+  },
+  {
+   "role": "seeker",
+   "text": "I do have the option of staying home and working indefinetly so I am grateful for that."
+  },
+  {
+   "role": "supporter",
+   "text": "I'd suggest a dog with a lot of energy if you like to workout!  What kind of dog did you have previously?"
+  },
+  {
+   "role": "seeker",
+   "text": "I like being here watching over my kids and pets. I think I will stay working at home."
+  },
+  {
+   "role": "supporter",
+   "text": "Just from talking to you, it sounds like working from home is a great fit for you!"
+  },
+  {
+   "role": "seeker",
+   "text": "Pomeranian....he really didn't work out with me:), just running, jumping , and keeping up with my energy....doing what doggies do."
+  },
+  {
+   "role": "seeker",
+   "text": "His energy was happiness to me."
+  },
+  {
+   "role": "supporter",
+   "text": "Pomeranians are such cute dogs!  They always look like they're smiling!  And they're small enough that having two won't be crowded!"
+  },
+  {
+   "role": "seeker",
+   "text": "I appreciate your feedback. I think that having two pomeranians this time is a good idea....and you are right they are always smiling! You have boosted my mood and made me feel hopeful. I thank you!"
+  },
+  {
+   "role": "supporter",
+   "text": "I'm glad that I could help you!  I hope your new puppies bring you much happiness!  I think they will boost your spirits a lot!"
+  },
+  {
+   "role": "seeker",
+   "text": "I am also going to stay at home while working for peace of mind. I hope you have a great new year. Stay safe! Goodbye!"
+  },
+  {
+   "role": "supporter",
+   "text": "Have a great new year!  Bye!!"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00030",
+  "split": "train",
+  "problem_type": "ongoing depression",
+  "emotion_type": "sadness",
+  "n_messages": 31,
+  "contentful_turn_count": 12,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 2,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — my grief is deep and no words make it lift quickly. I form no plans from suggestions; relief comes only slowly, from being truly accompanied in the loss.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

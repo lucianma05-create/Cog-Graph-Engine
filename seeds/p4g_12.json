@@ -1,0 +1,137 @@
+{
+ "seed_id": "p4g_12",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.6 (1-5), conscientious ~2.8 (1-5), extrovert ~4.0 (1-5), agreeable ~3.2 (1-5), neurotic ~2.4 (1-5). Moral foundations (1-6 scale): care 4.0, fairness 3.5, loyalty 3.333333333, authority 3.4, purity 2.666666667, freedom 3.5. Demographics: age 56.0, sex Female, education Less than four-year college, political ideology Liberal.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to Save the Children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "no? tell me about it?",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Have you ever heard of a Charity called Save the Children?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Have you ever heard of a Charity called Save the Children?"
+  },
+  {
+   "role": "persuadee",
+   "text": "no? tell me about it?"
+  },
+  {
+   "role": "persuader",
+   "text": "Save the Children promotes childrens rights to health and education in developing countries."
+  },
+  {
+   "role": "persuadee",
+   "text": "that's cool. do you know what they do specifically?"
+  },
+  {
+   "role": "persuader",
+   "text": "They give chldren access to the healthcare and food that they need to thrive."
+  },
+  {
+   "role": "persuadee",
+   "text": "ok but by 'access'? do they actually give them food?"
+  },
+  {
+   "role": "persuader",
+   "text": "They do actuallly provide them with food, they also reunite families that are torn apart by war. Its pretty cool."
+  },
+  {
+   "role": "persuadee",
+   "text": "very cool, i know politics is a big problem with hunger? how do they raise money?"
+  },
+  {
+   "role": "persuader",
+   "text": "They raise money through donations, many of the donations are from independant people like you and me. You can even donate a portion of the money earned on this task today to help Save the Children."
+  },
+  {
+   "role": "persuadee",
+   "text": "yeah, no. i'm poor. wish i could"
+  },
+  {
+   "role": "persuader",
+   "text": "I am as well, even one cent could help a child in a war torn country with the food and medical care that they desperately need."
+  },
+  {
+   "role": "persuadee",
+   "text": "in the 80's i was part of something called 'the hunger project'. ever heart of it?"
+  },
+  {
+   "role": "persuader",
+   "text": "I have not heard of that one"
+  },
+  {
+   "role": "persuadee",
+   "text": "well i was poor then too. but the idea was just to put the idea out there to end hunger by the 21st century"
+  },
+  {
+   "role": "persuader",
+   "text": "I guess that failed. I wish it had been more successful, there ar many charities that fail, thats why I believe in mine so much."
+  },
+  {
+   "role": "persuadee",
+   "text": "yeah, but we're so much closer then we were"
+  },
+  {
+   "role": "persuader",
+   "text": "That is very true. At least we are making some progress toward a common goal."
+  },
+  {
+   "role": "persuadee",
+   "text": "seriouly, does a penny really make a difference? it was the un that really changed things when it comes to hunger"
+  },
+  {
+   "role": "persuader",
+   "text": "If every person out there donated just one cent imagine all of meals that could be provided to a hungry child."
+  },
+  {
+   "role": "persuadee",
+   "text": "yeah, and that child would have 10 more children, birth-control is what starving regions need"
+  },
+  {
+   "role": "persuader",
+   "text": "That may be true, but I feel that feeding the existing children is a moral obligation. I cannot imagine doing nothing and watching innocent children starve."
+  },
+  {
+   "role": "persuadee",
+   "text": "hold my beer"
+  },
+  {
+   "role": "persuader",
+   "text": "Well, if you can find it in your heart to donate at least a portion of your earnings you would be a big part of the solution. Is a penny or a dime really too much to spare to help a poor child who will never have the advantages we have in life"
+  },
+  {
+   "role": "persuadee",
+   "text": "'if you can find it in your heart' is a great line. i've used it myself. but no"
+  },
+  {
+   "role": "persuader",
+   "text": "Well then, I have tried my best. Thank you for your time. Maybe in the future you will reconsider and help save the life of a child in need."
+  },
+  {
+   "role": "persuadee",
+   "text": "is there anything else?"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180828-155952_523_live",
+  "split": "train",
+  "n_messages": 26,
+  "contentful_turn_count": 7,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 1,
+  "outcome_committed": false,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when the evidence is solid: I want to hear the case before deciding, and clear facts persuade me. Once I commit, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

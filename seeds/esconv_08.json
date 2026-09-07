@@ -1,0 +1,153 @@
+{
+ "seed_id": "esconv_08",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: General depression made worse by the severity of the pandemic. Presenting problem: ongoing depression (predominant emotion: depression). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: ongoing depression.",
+ "u0": "Hey there",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hey there"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hey there"
+  },
+  {
+   "role": "seeker",
+   "text": "How are you?"
+  },
+  {
+   "role": "supporter",
+   "text": "I AM FINE"
+  },
+  {
+   "role": "supporter",
+   "text": "HOW IS YOUR SIDE ?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am ok, I'm having a hard time dealing with the pandemic though."
+  },
+  {
+   "role": "supporter",
+   "text": "Please how may i be of help"
+  },
+  {
+   "role": "seeker",
+   "text": "I am having a hard time being motivated to do anything."
+  },
+  {
+   "role": "supporter",
+   "text": "okay"
+  },
+  {
+   "role": "seeker",
+   "text": "Do you have any suggestions that might help me feel better?"
+  },
+  {
+   "role": "supporter",
+   "text": "I could see how bad you feel because of that"
+  },
+  {
+   "role": "seeker",
+   "text": "What do you like to do for yourself when you feel bad?"
+  },
+  {
+   "role": "supporter",
+   "text": "It happens anyway, but not all the time"
+  },
+  {
+   "role": "supporter",
+   "text": "when did it start and what do you think that can cause that"
+  },
+  {
+   "role": "seeker",
+   "text": "It started with the pandemic."
+  },
+  {
+   "role": "seeker",
+   "text": "I think it is because we have to stay home to be safe but other people don't listen and more people are dying because of it"
+  },
+  {
+   "role": "supporter",
+   "text": "I am like that sometime,  I switch to what I love doing most"
+  },
+  {
+   "role": "supporter",
+   "text": "it good to be safe, pandemic has caused my hoodlums"
+  },
+  {
+   "role": "seeker",
+   "text": "What do you love doing most?"
+  },
+  {
+   "role": "supporter",
+   "text": "do you have anything?, that you love doing most"
+  },
+  {
+   "role": "seeker",
+   "text": "I like to read"
+  },
+  {
+   "role": "supporter",
+   "text": "I love playing soccer game, anytime I am not motivated to work or do anything in office or home, I pick my phone play soccer game. I will laugh, enjoy myself, within 5 minutes , I do gain my morale"
+  },
+  {
+   "role": "seeker",
+   "text": "I like that suggestion, thank you"
+  },
+  {
+   "role": "supporter",
+   "text": "that is good, reading is a good hobby"
+  },
+  {
+   "role": "seeker",
+   "text": "I should try soccer, that sounds like fun"
+  },
+  {
+   "role": "supporter",
+   "text": "It seems you like reading novel"
+  },
+  {
+   "role": "seeker",
+   "text": "I do. I like many books"
+  },
+  {
+   "role": "supporter",
+   "text": "very fun, within some minutes , you will be alive back and motivated"
+  },
+  {
+   "role": "supporter",
+   "text": "that is good, you can have soft copies on your phone, open it anytime your are bored"
+  },
+  {
+   "role": "seeker",
+   "text": "That is a good idea too, I will use my phone to read too"
+  },
+  {
+   "role": "supporter",
+   "text": "it is a nice time chatting with you, if your are okay with that you can end the chat."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00007",
+  "split": "train",
+  "problem_type": "ongoing depression",
+  "emotion_type": "depression",
+  "n_messages": 30,
+  "contentful_turn_count": 5,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 4,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — and when I am low, even hopeful claims barely reach me. Advice makes me withdraw further; I do NOT form plans or feel relief from being told what to do. Relief comes slowly, only from being truly heard.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

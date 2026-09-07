@@ -1,0 +1,113 @@
+{
+ "seed_id": "p4g_08",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.6 (1-5), conscientious ~4.0 (1-5), extrovert ~3.4 (1-5), agreeable ~4.0 (1-5), neurotic ~3.8 (1-5). Moral foundations (1-6 scale): care 5.2, fairness 5.25, loyalty 2.0, authority 3.2, purity 1.0, freedom 4.0. Demographics: age 36.0, sex Female, education Less than four-year college, political ideology Liberal.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to Save the Children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "I am well today thank you. I would be happy to listen.",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "Hello. How are you today? If you have the time, I would like to talk with you about a charity."
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "Hello. How are you today? If you have the time, I would like to talk with you about a charity."
+  },
+  {
+   "role": "persuadee",
+   "text": "I am well today thank you. I would be happy to listen."
+  },
+  {
+   "role": "persuader",
+   "text": "Thank you. Do you know the organization Save the Children?"
+  },
+  {
+   "role": "persuadee",
+   "text": "I do not. What do they do?"
+  },
+  {
+   "role": "persuader",
+   "text": "Save the Children is an international non-governmental organization. They work for children's rights, helps support children in developing countries."
+  },
+  {
+   "role": "persuadee",
+   "text": "That sounds like a great cause."
+  },
+  {
+   "role": "persuader",
+   "text": "It really is. They work so the chieldren can have access to health, education, safety. In developing countries like Syria, millions of children have grown up facing the daily threat of violence."
+  },
+  {
+   "role": "persuadee",
+   "text": "I feel very bad for the children in Syria. I can't imagine what they are going through. Helping them is very important as is helping our children here."
+  },
+  {
+   "role": "persuader",
+   "text": "I agree. And sometimes even a small help is a lot, thinking many others will do the same."
+  },
+  {
+   "role": "persuadee",
+   "text": "I agree with that. Does this organization spend the majority of their donations on the cause or are the higher ups lining their pockets?"
+  },
+  {
+   "role": "persuader",
+   "text": "Ah, a rightful question. This really is a trustworthy organization and they do work for the children. Actually, you can get more information about the organization from their website:  URL"
+  },
+  {
+   "role": "persuadee",
+   "text": "The website says that 86% of funds go to the cause. That's a really good number considering the overhead that must be required for international relief."
+  },
+  {
+   "role": "persuader",
+   "text": "You are right. This is a trustable fund. Would you care to donate a little bit for the children?"
+  },
+  {
+   "role": "persuadee",
+   "text": "What are my options for donation? How can I donate and how much?"
+  },
+  {
+   "role": "persuader",
+   "text": "How much do you like to donate to the charity now? Your donation will be directly deducted from your task payment. You can choose any amount from $0 to all your payment ($2)."
+  },
+  {
+   "role": "persuadee",
+   "text": "Thank you. I would like to donate $0.30 today."
+  },
+  {
+   "role": "persuader",
+   "text": "Thank you very much! The children from around the world will surely be thankful as well."
+  },
+  {
+   "role": "persuadee",
+   "text": "You are very welcome. Thank you for telling me about this organization."
+  },
+  {
+   "role": "persuader",
+   "text": "Have a great day!"
+  },
+  {
+   "role": "persuadee",
+   "text": "You as well."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180904-025026_901_live",
+  "split": "train",
+  "n_messages": 20,
+  "contentful_turn_count": 4,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 3,
+  "outcome_committed": true,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I shift my view fairly easily — I am happy to listen, and a warm, sincere appeal with concrete examples moves me further. Once I commit, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

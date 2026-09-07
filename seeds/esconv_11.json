@@ -1,0 +1,149 @@
+{
+ "seed_id": "esconv_11",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: I had a huge fight with my girlfriend and she left me.  She accused me of neglecting her even though I needed to spend time with my family and spent as much time with her as I could. Presenting problem: breakup with partner (predominant emotion: sadness). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: breakup with partner.",
+ "u0": "Hi I am feeling blue, things aren't going well at all",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hi I am feeling blue, things aren't going well at all"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hi I am feeling blue, things aren't going well at all"
+  },
+  {
+   "role": "supporter",
+   "text": "Hello, hello. I am so sorry to hear. Can I ask you more about it?"
+  },
+  {
+   "role": "seeker",
+   "text": "my girlfriend and I split after 4 years!"
+  },
+  {
+   "role": "supporter",
+   "text": "Oh no\n!!!"
+  },
+  {
+   "role": "supporter",
+   "text": "I am sorry, how do you feel? sad? joyful?"
+  },
+  {
+   "role": "seeker",
+   "text": "Ver sad and lonely.  I loved her"
+  },
+  {
+   "role": "seeker",
+   "text": "Very*"
+  },
+  {
+   "role": "seeker",
+   "text": "What should I do?"
+  },
+  {
+   "role": "supporter",
+   "text": "oh no. I can totally understand that feeling. 4 years is a long time."
+  },
+  {
+   "role": "seeker",
+   "text": "Thanks it is.  She said I was neglecting her and we had a big fight.  haven't talked to her in a month"
+  },
+  {
+   "role": "supporter",
+   "text": "I would recommend doing your own thing, for example, devote into your hobby or do some other jobs."
+  },
+  {
+   "role": "seeker",
+   "text": "Do you think drinking alcohol will help?"
+  },
+  {
+   "role": "supporter",
+   "text": "Ohhhh. well. I never ditch my partner, always my partner ditch me, so I do not know why they do that."
+  },
+  {
+   "role": "supporter",
+   "text": "I think it will worsen."
+  },
+  {
+   "role": "seeker",
+   "text": "You had a similar experience?"
+  },
+  {
+   "role": "seeker",
+   "text": "I want to drink till I forget about her."
+  },
+  {
+   "role": "supporter",
+   "text": "yes, I quit alcohol 3 years ago. it took me 20 years"
+  },
+  {
+   "role": "seeker",
+   "text": "How did you do it?"
+  },
+  {
+   "role": "supporter",
+   "text": "It took me 1 whole year to forget about my ex"
+  },
+  {
+   "role": "supporter",
+   "text": "It took me 1 whole year to forget about my ex"
+  },
+  {
+   "role": "supporter",
+   "text": "my ex told me I am a partygirl because I drink too much, so I stopped. Trying to get him like me more. Since then I have not been drinking."
+  },
+  {
+   "role": "seeker",
+   "text": "Did you find someone else?"
+  },
+  {
+   "role": "supporter",
+   "text": "nope. I am cool without man"
+  },
+  {
+   "role": "seeker",
+   "text": "that's the way to be.  but I am too lonely."
+  },
+  {
+   "role": "seeker",
+   "text": "I have a secret account so I can still see her on facebook do you think that's a good idea?"
+  },
+  {
+   "role": "supporter",
+   "text": "haha, smart, yes. No need to force yourself to forget about her."
+  },
+  {
+   "role": "supporter",
+   "text": "I heard men cannot do without a woman but women don't really need a man"
+  },
+  {
+   "role": "seeker",
+   "text": "Ya that way maybe I can get her back at the right time"
+  },
+  {
+   "role": "seeker",
+   "text": "I feel a little better- thanks.  it was nice chatting"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00020",
+  "split": "train",
+  "problem_type": "breakup with partner",
+  "emotion_type": "sadness",
+  "n_messages": 29,
+  "contentful_turn_count": 6,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 2,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — I am stuck in loss and advice about moving on feels like judgment. I only begin to shift when someone accepts my pain without judging it, and even then only slowly.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

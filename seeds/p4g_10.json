@@ -1,0 +1,121 @@
+{
+ "seed_id": "p4g_10",
+ "task": "persuasion_donation",
+ "persona": "The persuadee's INHERENT pre-dialogue state (self-report survey): Big Five: open ~3.8 (1-5), conscientious ~5.0 (1-5), extrovert ~3.2 (1-5), agreeable ~4.4 (1-5), neurotic ~1.2 (1-5). Moral foundations (1-6 scale): care 5.2, fairness 4.5, loyalty 3.333333333, authority 4.6, purity 5.0, freedom 5.0. Demographics: age 28.0, sex Female, education Four-year college, political ideology Moderate.",
+ "private_persona": null,
+ "scenario": "A one-on-one text chat in which the persuader asks the persuadee to donate to Save the Children. The persuadee starts out neutral — not committed to donating.",
+ "u0": "What organization will it go towards",
+ "pre_context": [
+  {
+   "role": "persuader",
+   "text": "I encourage you to donate part of your income from this hit to Save the Children."
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "persuader",
+   "text": "I encourage you to donate part of your income from this hit to Save the Children."
+  },
+  {
+   "role": "persuadee",
+   "text": "What organization will it go towards"
+  },
+  {
+   "role": "persuader",
+   "text": "Save the Children. At least that's what the info from the HIT says."
+  },
+  {
+   "role": "persuadee",
+   "text": "I can donate towards that"
+  },
+  {
+   "role": "persuader",
+   "text": "That would be great."
+  },
+  {
+   "role": "persuadee",
+   "text": "Will you be donating to save the children"
+  },
+  {
+   "role": "persuader",
+   "text": "Sure, I'll give at least half."
+  },
+  {
+   "role": "persuadee",
+   "text": "that is awesome"
+  },
+  {
+   "role": "persuader",
+   "text": "Yeah, I hope this is real and not just part of their test."
+  },
+  {
+   "role": "persuadee",
+   "text": "what social issue should we discuss"
+  },
+  {
+   "role": "persuader",
+   "text": "I'm good with anything"
+  },
+  {
+   "role": "persuadee",
+   "text": "any ideas to suggest?"
+  },
+  {
+   "role": "persuader",
+   "text": "I'm drawing a blank TBH."
+  },
+  {
+   "role": "persuadee",
+   "text": "do you find it to be socially acceptable to breastfeed in public>"
+  },
+  {
+   "role": "persuader",
+   "text": "Sure. It's a natural function. You?"
+  },
+  {
+   "role": "persuadee",
+   "text": "i agree. do you think there should be rules and regulations on it or free to however the mother decides. (age limit, coverage, specific areas designated)"
+  },
+  {
+   "role": "persuader",
+   "text": "I don't think there should be any legal rules, although people would probably follow customary standards. I doubt most mothers are interested in drawing attention to it anyway. How about you?"
+  },
+  {
+   "role": "persuadee",
+   "text": "i agree that there should not be any legal matters taken on this. though some regulation/guidance may be respected for the ones who might be against the public view of breastfeeding. I agree it should be a \"natural\" thing meaning attention should not be drawn to a mother feeding."
+  },
+  {
+   "role": "persuader",
+   "text": "Yeah, if anything the danger of issues arising probably comes from creeper dudes trying to get a look. BTW, I think we're getting close to the ten chat turns each that are required for payment."
+  },
+  {
+   "role": "persuadee",
+   "text": "yes, that would rise problems having creepy people bothering or harassing or violating a breastfeeding mother. awful, i would say that is where legal matters could come into play."
+  },
+  {
+   "role": "persuader",
+   "text": "Nice talking to you."
+  },
+  {
+   "role": "persuadee",
+   "text": "you as well. I will donate $1 to save the children"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/persuasionforgood.jsonl",
+  "source_record_id": "persuasionforgood_20180831-100313_532_live",
+  "split": "train",
+  "n_messages": 22,
+  "contentful_turn_count": 6,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 1,
+  "outcome_committed": true,
+  "outcome_amount": null,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when the evidence is solid: I ask exactly where the money goes, and clear answers persuade me. Once I commit, I keep my word.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

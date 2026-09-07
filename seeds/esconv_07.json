@@ -1,0 +1,161 @@
+{
+ "seed_id": "esconv_07",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: I am looking for more online jobs. but it is hard to find. Presenting problem: job crisis (predominant emotion: anxiety). The seeker self-reported an initial emotional intensity of 3 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: job crisis.",
+ "u0": "hi! I am good. you?",
+ "pre_context": [
+  {
+   "role": "supporter",
+   "text": "Hello, how are you feeling at the moment?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "supporter",
+   "text": "Hello, how are you feeling at the moment?"
+  },
+  {
+   "role": "seeker",
+   "text": "hi! I am good. you?"
+  },
+  {
+   "role": "supporter",
+   "text": "I am not so bad thanks. Is there anything on your mind right now?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes I have been wanting to find online jobs like this but it is so competitive"
+  },
+  {
+   "role": "supporter",
+   "text": "I hear you! I do gig work online too but it can be very difficult to find any. I think a lot more people are working online due to the pandemic."
+  },
+  {
+   "role": "seeker",
+   "text": "totally\n1"
+  },
+  {
+   "role": "supporter",
+   "text": "Are you struggling financially at the moment, then?"
+  },
+  {
+   "role": "seeker",
+   "text": "Have you heard of Appen? They are similar to Mturk but they pay more"
+  },
+  {
+   "role": "seeker",
+   "text": "I still have a main job but due to big increase of my house expense, I need to work more, way more"
+  },
+  {
+   "role": "supporter",
+   "text": "I have not but I appreciate the recommendation! I think that we all need to come together and help each other at this time."
+  },
+  {
+   "role": "seeker",
+   "text": "anytime, true true"
+  },
+  {
+   "role": "seeker",
+   "text": "i have applied to Appen a few times, and they always say there is no position available now"
+  },
+  {
+   "role": "supporter",
+   "text": "Are you aware that there are organisations that can offer a little help at this time? Food banks for instance, though I know some people feel awkward about accepting such help."
+  },
+  {
+   "role": "seeker",
+   "text": "ah yes, food banks, yeah I never thought about it but free food always helps."
+  },
+  {
+   "role": "supporter",
+   "text": "I have had to use foodbanks once or twice this year and I did feel a bit bad about it but everyone there was very kind and no-one judged us."
+  },
+  {
+   "role": "seeker",
+   "text": "If i lose my main job I will use it"
+  },
+  {
+   "role": "supporter",
+   "text": "There is nothing to be ashamed of in doing so and when you get to a better position you can give back to them."
+  },
+  {
+   "role": "seeker",
+   "text": "sorry about that, but that's good, people help each other"
+  },
+  {
+   "role": "seeker",
+   "text": "Absolutely! Volunteering is a great spirit."
+  },
+  {
+   "role": "supporter",
+   "text": "Do you feel you will be getting the vaccine when it is rolled out where you are?"
+  },
+  {
+   "role": "seeker",
+   "text": "yes"
+  },
+  {
+   "role": "seeker",
+   "text": "how about you"
+  },
+  {
+   "role": "supporter",
+   "text": "That is a good idea - yes, I will get it. I think and hope it will help 2021 to be a better year than 2020 has been!"
+  },
+  {
+   "role": "seeker",
+   "text": "Great, I agree with you completely."
+  },
+  {
+   "role": "supporter",
+   "text": "So, you feel that the New Year might be a turning point for us all?"
+  },
+  {
+   "role": "seeker",
+   "text": "I guess summer next year would be"
+  },
+  {
+   "role": "supporter",
+   "text": "Yes it might take a little while - we are definitely not out of the woods yet and people do need to stick to the regulations to try to mitigate the situation."
+  },
+  {
+   "role": "seeker",
+   "text": "totally!"
+  },
+  {
+   "role": "supporter",
+   "text": "I sincerely hope that things pick up for you and for all of us. And that online work remains plentiful :D"
+  },
+  {
+   "role": "supporter",
+   "text": "Anyway it has been lovely to talk to you, enjoy the rest of your Christmas Day!"
+  },
+  {
+   "role": "supporter",
+   "text": "(I can't end it from my end, you have to :))"
+  },
+  {
+   "role": "supporter",
+   "text": "Please? :D"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00006",
+  "split": "train",
+  "problem_type": "job crisis",
+  "emotion_type": "anxiety",
+  "n_messages": 32,
+  "contentful_turn_count": 8,
+  "u0_message_index": 1,
+  "first_contentful_turn_id": 3,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when I feel GENUINELY understood: real listening calms my stress about work, while being pushed or dismissed shuts me down. I form plans only when I truly feel heard. Change comes from my own slow reappraisal.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

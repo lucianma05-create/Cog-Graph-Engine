@@ -276,6 +276,7 @@ def main() -> None:
     from concurrent.futures import ThreadPoolExecutor
     results: dict[str, list[float]] = {}
     traces_path = ROOT / "sessions" / "ab_traces.jsonl"
+    term_stats: dict[str, list[tuple[int, bool]]] = {}
     lock = threading.Lock()
 
     def one(sid: str, strategy: str) -> None:
@@ -293,6 +294,8 @@ def main() -> None:
             with lock:
                 with open(traces_path, "a", encoding="utf-8") as f:
                     f.write(json.dumps(trace, ensure_ascii=False) + "\n")
+                term_stats.setdefault(f"{sid}|{strategy}", []).append(
+                    (trace["turns"], trace["done"]))
         with lock:
             results[f"{sid}|{strategy}"] = vals
             checkpoint(results)
@@ -319,6 +322,25 @@ def main() -> None:
         sd = statistics.stdev(allv) if len(allv) > 1 else 0.0
         print(f"{task:<20} {strategy:<8} n={len(allv):>3}  mean={mu:+.3f}  sd={sd:.3f}  "
               f"snr={mu / (sd + 1e-9):+.2f}")
+    # 自发结束统计：done 且未跑满窗口的局 = 自发结束
+    print("\n===== 自发结束（done 且 turns < 窗口） =====")
+    from collections import defaultdict as _dd
+    term_by = _dd(list)
+    for k, rows in term_stats.items():
+        sid, strategy = k.split("|")
+        term_by[(task_of(sid), strategy)].extend(rows)
+    def task_of(sid):
+        return "price_negotiation" if sid.startswith("craigslist") else (
+            "persuasion_donation" if sid.startswith("p4g") else "emotional_support")
+    for (task, strategy), rows in sorted(term_by.items()):
+        valid = [r for r in rows if r[0] > 0]
+        if not valid:
+            continue
+        self_end = [r for r in valid if r[1]]
+        avg_turns = sum(r[0] for r in valid) / len(valid)
+        print(f"  {task:<20} {strategy:<8} 自发结束率={len(self_end)/len(valid):>5.0%}  "
+              f"平均轮数={avg_turns:.1f}（窗口内完成 {len(self_end)}/{len(valid)}）")
+
     # 效应量：good − bad（按种子配对后跨种子均值）
     print("\n===== 效应量 good−bad（按种子配对） =====")
     for task in ("price_negotiation", "persuasion_donation", "emotional_support"):

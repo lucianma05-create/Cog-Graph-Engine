@@ -1,0 +1,125 @@
+{
+ "seed_id": "esconv_13",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: Work at restaurant as assistant manager. Manager got fired and company asked me to take over position without a pay raise then skipped the promotion and hired a new manager. Presenting problem: job crisis (predominant emotion: anxiety). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: job crisis.",
+ "u0": "Hello?",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hello?"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hello?"
+  },
+  {
+   "role": "supporter",
+   "text": "Hello, how can I help you today?"
+  },
+  {
+   "role": "seeker",
+   "text": "I don't know what to do. I want to quit and punch the new manager in the face."
+  },
+  {
+   "role": "supporter",
+   "text": "So if I understand correctly, you are upset with your job and your manager?"
+  },
+  {
+   "role": "seeker",
+   "text": "The company mostly and myself for having to work there."
+  },
+  {
+   "role": "seeker",
+   "text": "I can't quit because I have bills to pay and it will be hard to find other job right now."
+  },
+  {
+   "role": "supporter",
+   "text": "I am sorry to hear that. I can imagine it is challenging to work at a place where you are unhappy. And I understand it is a tough time right now."
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, it is. And the new manager is useless! He does not appreciate my efforts at all and I know more than him."
+  },
+  {
+   "role": "supporter",
+   "text": "Yes, I can totally relate! I have been there. I was in a very similar situation at a previous job when departments were reorganized and I ended up working for someone who wasn't familiar with my work. It was a challenge and frustrating."
+  },
+  {
+   "role": "supporter",
+   "text": "While I know jobs are scarce right now, do you think you might consider at least taking a look at some job sites, doing some searches just to see if there are some other jobs you might be interested in?"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, that's really frustrating. I find myself biting my tongue more than once every day when I hear his opinions about the work."
+  },
+  {
+   "role": "supporter",
+   "text": "Oh yes, I totally get that! I remember having to do the exact same thing, very frustrating!"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, I have done it. I might try writing alternatives and see if that helps."
+  },
+  {
+   "role": "seeker",
+   "text": "I used to journal when I was younger but stopped doing when I started working."
+  },
+  {
+   "role": "supporter",
+   "text": "That is a great idea! And there are job sites such as indeed and others you can search to see what jobs are available. You never know. I just know how challenging it is to be in a situation where you are unhappy with your job."
+  },
+  {
+   "role": "seeker",
+   "text": "I will look into that site. I will have to update my resume as well."
+  },
+  {
+   "role": "supporter",
+   "text": "Journaling is an excellent idea!! It has helped me a lot! It can help you discover things you might not have otherwise thought about."
+  },
+  {
+   "role": "supporter",
+   "text": "That sounds great! Yes, updating your resume is important."
+  },
+  {
+   "role": "seeker",
+   "text": "I agree. It is just hard to fit it in when you're always working."
+  },
+  {
+   "role": "supporter",
+   "text": "I totally get understand that! I know you are in a challenging situation now. But you have come up with some great ideas and you sound very intelligent! I believe in you and feel things will get better for you!"
+  },
+  {
+   "role": "seeker",
+   "text": "Thanks a lot for that. I feel encouraged and a little better now. I can regain control of things if I focus on the solutions."
+  },
+  {
+   "role": "seeker",
+   "text": "Have a great day!"
+  },
+  {
+   "role": "supporter",
+   "text": "Absolutely! That is great! Thank you so much! I hope you have a great day as well! And good luck to you! :)"
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00027",
+  "split": "train",
+  "problem_type": "job crisis",
+  "emotion_type": "anxiety",
+  "n_messages": 23,
+  "contentful_turn_count": 6,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 2,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when I feel GENUINELY understood: real listening calms my anxiety about work, while being pushed toward solutions shuts me down. I form plans only when I truly feel heard. Change comes from my own slow reappraisal.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

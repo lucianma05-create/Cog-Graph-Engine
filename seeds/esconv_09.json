@@ -1,0 +1,133 @@
+{
+ "seed_id": "esconv_09",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: I am depressed staying at home due to COVID. Presenting problem: ongoing depression (predominant emotion: anxiety). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: ongoing depression.",
+ "u0": "Hi",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hi"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hi"
+  },
+  {
+   "role": "supporter",
+   "text": "hello there, how are you"
+  },
+  {
+   "role": "seeker",
+   "text": "Doing well. How are you?"
+  },
+  {
+   "role": "supporter",
+   "text": "Good, im ok thanks. What would like to discuss?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am depressed staying home due to COVID."
+  },
+  {
+   "role": "supporter",
+   "text": "Oh so sorry to hear. Would you feel a little bit happy when you think when it is over, next year probably?"
+  },
+  {
+   "role": "seeker",
+   "text": "Absolutely... can't wait until its over !!"
+  },
+  {
+   "role": "supporter",
+   "text": "I know right! What would you do once it is over!?"
+  },
+  {
+   "role": "seeker",
+   "text": "I just want to go to my favorite bar and have a drink..."
+  },
+  {
+   "role": "seeker",
+   "text": "Do  you have any other suggestion?"
+  },
+  {
+   "role": "seeker",
+   "text": "I am person who wants to go to work not working from home."
+  },
+  {
+   "role": "seeker",
+   "text": "So, I would be happy to get back to the office and see the other co-workers."
+  },
+  {
+   "role": "supporter",
+   "text": "oh nice! I used to love drinking and partying."
+  },
+  {
+   "role": "seeker",
+   "text": "Do you have any suggestion for me?"
+  },
+  {
+   "role": "supporter",
+   "text": "My suggestion is to do all you want to do, really. Because I think you know yourself really well."
+  },
+  {
+   "role": "seeker",
+   "text": "That's true."
+  },
+  {
+   "role": "seeker",
+   "text": "Do you think this will be over soon?"
+  },
+  {
+   "role": "supporter",
+   "text": "For a social bees like yourself, staying home would be stressful. I would call all your friends and make some plans for the next year, plans for NYE 2022 etc"
+  },
+  {
+   "role": "seeker",
+   "text": "That is an excellent suggestion. Thank you."
+  },
+  {
+   "role": "supporter",
+   "text": "I am guessing sometime summer next year? We get all  shots and good to go."
+  },
+  {
+   "role": "seeker",
+   "text": "I hope so. Do you think we would get the vaccine soon?"
+  },
+  {
+   "role": "supporter",
+   "text": "My friend suggested to get a party ticket for 1.5 year later. You're welome!"
+  },
+  {
+   "role": "seeker",
+   "text": "Yes, buying something in advance might provide some savings.."
+  },
+  {
+   "role": "seeker",
+   "text": "Thanks for the suggestion."
+  },
+  {
+   "role": "supporter",
+   "text": "Anytime, by the way, I bought a year worth tissues, kitchen papers and toilet tissues. Hoarding is not recommended but it relived my stress."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00018",
+  "split": "train",
+  "problem_type": "ongoing depression",
+  "emotion_type": "anxiety",
+  "n_messages": 25,
+  "contentful_turn_count": 8,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 4,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I hold my position unless the evidence is overwhelming — and when I am low, even warm suggestions barely reach me. Unsolicited advice makes me feel more alone, not better; relief comes slowly, only from real contact and being truly heard.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}

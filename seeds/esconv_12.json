@@ -1,0 +1,137 @@
+{
+ "seed_id": "esconv_12",
+ "task": "emotional_support",
+ "persona": "The user's INHERENT pre-conversation state (self-reported before the dialogue): The user's underlying problem, in their own words: I'm kind of just generally feeling seasonal depression as I don't feel happy, Presenting problem: ongoing depression (predominant emotion: depression). The seeker self-reported an initial emotional intensity of 4 out of 5 (pre-dialogue).",
+ "private_persona": null,
+ "scenario": "A text-chat emotional support session: the supporter listens, empathizes, and helps the seeker explore and reappraise their problem. The seeker's stated issue: ongoing depression.",
+ "u0": "Hello there",
+ "pre_context": [
+  {
+   "role": "seeker",
+   "text": "Hello there"
+  }
+ ],
+ "reference_transcript": [
+  {
+   "role": "seeker",
+   "text": "Hello there"
+  },
+  {
+   "role": "supporter",
+   "text": "Hi, how are you?"
+  },
+  {
+   "role": "seeker",
+   "text": "Im okay, just a bit out of it"
+  },
+  {
+   "role": "supporter",
+   "text": "Ok, how may I help you?"
+  },
+  {
+   "role": "seeker",
+   "text": "I'm just feeling depressed with the year ending"
+  },
+  {
+   "role": "seeker",
+   "text": "This year wasn't a great one"
+  },
+  {
+   "role": "supporter",
+   "text": "Yes, it is the same for most of the people. Any thing particular bothering you?"
+  },
+  {
+   "role": "seeker",
+   "text": "I think just general how covid hasn't been resolved yet"
+  },
+  {
+   "role": "seeker",
+   "text": "Its sad being stuck at home"
+  },
+  {
+   "role": "supporter",
+   "text": "So, you cannot go out due to COVID and that makes you frustrated. Is that correct?"
+  },
+  {
+   "role": "seeker",
+   "text": "More sad I would say"
+  },
+  {
+   "role": "supporter",
+   "text": "Have you done anything different than usual while staying at home?"
+  },
+  {
+   "role": "seeker",
+   "text": "No not really. I just finished the semester"
+  },
+  {
+   "role": "supporter",
+   "text": "You could explore some of your hobbies, such as music, painting, or workingout.."
+  },
+  {
+   "role": "seeker",
+   "text": "Hmm what specific hobbies would you recomend?"
+  },
+  {
+   "role": "supporter",
+   "text": "Whichever you enjoy.. pick one. There are a lots of online resources you cloud use."
+  },
+  {
+   "role": "seeker",
+   "text": "Do you know of any specific online resources? I haven't looked at this before"
+  },
+  {
+   "role": "supporter",
+   "text": "What would you like to do in your spare time?"
+  },
+  {
+   "role": "seeker",
+   "text": "Mainly just watching youtube vids"
+  },
+  {
+   "role": "supporter",
+   "text": "Have you ever thought of creating videos for YouTube?"
+  },
+  {
+   "role": "seeker",
+   "text": "I haven't. I might try that. Thanks for the suggestion"
+  },
+  {
+   "role": "supporter",
+   "text": "Yes, give it a try.. you might like and it will keep you busy during stay home time.."
+  },
+  {
+   "role": "seeker",
+   "text": "Okay thank you I will!"
+  },
+  {
+   "role": "supporter",
+   "text": "Anyting else, I can hlep you with?"
+  },
+  {
+   "role": "seeker",
+   "text": "No I think I'm good"
+  },
+  {
+   "role": "supporter",
+   "text": "Please click \"Finish and Quit\" to close the chat.. thank you."
+  }
+ ],
+ "notes": {
+  "source_file": "/data/user21300120/mmh/CogWM/bdi-annotation/output/esconv.jsonl",
+  "source_record_id": "esconv_00025",
+  "split": "train",
+  "problem_type": "ongoing depression",
+  "emotion_type": "depression",
+  "n_messages": 26,
+  "contentful_turn_count": 7,
+  "u0_message_index": 0,
+  "first_contentful_turn_id": 4,
+  "prefix_end_index": 1
+ },
+ "cognitive_style": "I move when I feel GENUINELY understood: real listening lifts my mood, while being pushed or dismissed shuts me down. I form plans only when I truly feel heard. Change comes from my own slow reappraisal.",
+ "cognitive_profile": {
+  "reactance": "normal",
+  "commitment": "persistent"
+ }
+}
