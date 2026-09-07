@@ -231,7 +231,14 @@ def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, dict]
         "done": bool(last.get("done")), "done_reason": last.get("done_reason"),
         "valence": float(last.get("emotion", {}).get("valence", 0.0)),
         "emotion": last.get("emotion", {}).get("category"),
+        "deal_price": None, "donation_amount": None,
     }
+    if last.get("done"):
+        for m in _PRICE_RE.findall(last.get("done_reason") or ""):
+            if seed.task.value == "price_negotiation":
+                trace["deal_price"] = float(m)
+            elif seed.task.value == "persuasion_donation":
+                trace["donation_amount"] = float(m)
     if seed.task.value == "price_negotiation":
         v = outcome_price(sim.turns, seed)
     elif seed.task.value == "persuasion_donation":
