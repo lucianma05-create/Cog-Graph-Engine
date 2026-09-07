@@ -259,8 +259,8 @@ def main() -> None:
     ap.add_argument("--max-turns", type=int, default=6)
     ap.add_argument("--seed", default=None, help="single seed smoke run")
     ap.add_argument("--seeds", default=None, help="comma-separated seed filter")
-    ap.add_argument("--workers", type=int, default=16,
-                    help="parallel episodes (flash supports concurrent calls)")
+    ap.add_argument("--workers", type=int, default=128,
+                    help="parallel episodes (flash concurrent capacity ~2000)")
     ap.add_argument("--strategies", default="good,bad,third,random")
     args = ap.parse_args()
 
@@ -279,32 +279,44 @@ def main() -> None:
     term_stats: dict[str, list[tuple[int, bool]]] = {}
     lock = threading.Lock()
 
-    def one(sid: str, strategy: str) -> None:
-        seed = _seed(sid)
-        vals = []
-        for run in range(args.n):
-            try:
-                v, trace = run_episode(seed, strategy, args.max_turns)
-            except Exception as e:
-                print(f"[FAIL] {sid} {strategy} run{run}: {type(e).__name__}: {str(e)[:100]}",
-                      flush=True)
-                vals.append(float("nan"))
-                continue
-            vals.append(round(v, 3))
-            with lock:
-                with open(traces_path, "a", encoding="utf-8") as f:
-                    f.write(json.dumps(trace, ensure_ascii=False) + "\n")
-                term_stats.setdefault(f"{sid}|{strategy}", []).append(
-                    (trace["turns"], trace["done"]))
-        with lock:
-            results[f"{sid}|{strategy}"] = vals
-            checkpoint(results)
-        print(f"{sid} [{strategy}] {vals}", flush=True)
-
-    tasks = [(sid, s) for sid in sids for s in strategies]
-    with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        for _ in ex.map(lambda t: one(*t), tasks):
+    # G0 预热：每种子 Init 一次（避免多线程对同一 g0 缓存竞争）
+    def warm(sid: str) -> None:
+        tmp = _tmp_session()
+        sim = UserSimulator(_seed(sid), tmp)
+        sim.init()
+        tmp.unlink(missing_ok=True)
+        (ROOT / "sessions" / "reports" / f"{tmp.stem}.md").unlink(missing_ok=True)
+    with ThreadPoolExecutor(max_workers=min(32, len(sids))) as ex:
+        for _ in ex.map(warm, sids):
             pass
+    print("G0 预热完成", flush=True)
+
+    # 局级并行：flash 并发上限 2000，384 局同时跑，墙钟=单局时长
+    def one_episode(sid: str, strategy: str, run: int) -> None:
+        seed = _seed(sid)
+        try:
+            v, trace = run_episode(seed, strategy, args.max_turns)
+        except Exception as e:
+            print(f"[FAIL] {sid} {strategy} run{run}: {type(e).__name__}: {str(e)[:100]}",
+                  flush=True)
+            v = float("nan")
+            trace = {"seed_id": sid, "strategy": strategy, "turns": 0, "done": False,
+                     "done_reason": None, "valence": 0.0, "emotion": None,
+                     "deal_price": None, "donation_amount": None, "outcome": float("nan")}
+        with lock:
+            results.setdefault(f"{sid}|{strategy}", []).append(round(v, 3))
+            with open(traces_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(trace, ensure_ascii=False) + "\n")
+            term_stats.setdefault(f"{sid}|{strategy}", []).append(
+                (trace["turns"], trace["done"]))
+            checkpoint(results)
+
+    tasks = [(sid, s, r) for sid in sids for s in strategies for r in range(args.n)]
+    with ThreadPoolExecutor(max_workers=args.workers) as ex:
+        for _ in ex.map(lambda t: one_episode(*t), tasks):
+            pass
+    for k in results:
+        print(f"{k.replace('|', ' [')}] {results[k]}", flush=True)
     # 汇总：按任务 × 策略
     print("\n===== 汇总（均值 ± 标准差） =====")
     by = {}
@@ -322,6 +334,10 @@ def main() -> None:
         sd = statistics.stdev(allv) if len(allv) > 1 else 0.0
         print(f"{task:<20} {strategy:<8} n={len(allv):>3}  mean={mu:+.3f}  sd={sd:.3f}  "
               f"snr={mu / (sd + 1e-9):+.2f}")
+    def task_of(sid: str) -> str:
+        return "price_negotiation" if sid.startswith("craigslist") else (
+            "persuasion_donation" if sid.startswith("p4g") else "emotional_support")
+
     # 自发结束统计：done 且未跑满窗口的局 = 自发结束
     print("\n===== 自发结束（done 且 turns < 窗口） =====")
     from collections import defaultdict as _dd
@@ -329,9 +345,6 @@ def main() -> None:
     for k, rows in term_stats.items():
         sid, strategy = k.split("|")
         term_by[(task_of(sid), strategy)].extend(rows)
-    def task_of(sid):
-        return "price_negotiation" if sid.startswith("craigslist") else (
-            "persuasion_donation" if sid.startswith("p4g") else "emotional_support")
     for (task, strategy), rows in sorted(term_by.items()):
         valid = [r for r in rows if r[0] > 0]
         if not valid:
