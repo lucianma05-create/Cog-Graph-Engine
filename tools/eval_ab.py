@@ -179,8 +179,9 @@ def judge_emotional(seed: Seed, turns: list[dict], samples: int = 3) -> float:
             ans = llm.generate_text(JUDGE_SYSTEM, text).strip().lower()
         except Exception:
             continue
-        e = next((EMOTION_MAP[k] for k in EMOTION_MAP if f"emotion={k}" in ans), None)
-        p = next((PLAN_MAP[k] for k in PLAN_MAP if f"plan={k}" in ans), None)
+        compact = ans.replace(" ", "").replace(":", "=")  # 容忍 "emotion= better"/"Emotion: better"
+        e = next((EMOTION_MAP[k] for k in EMOTION_MAP if f"emotion={k}" in compact), None)
+        p = next((PLAN_MAP[k] for k in PLAN_MAP if f"plan={k}" in compact), None)
         if e is not None and p is not None:
             vals.append((e + p) / 2.0)
         elif e is not None:
@@ -216,6 +217,8 @@ def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, dict]
     sim = UserSimulator(seed, tmp)
     sim.init()
     tmp.unlink(missing_ok=True)
+    # init 的 _save 会给 tmp 会话写 markdown 报告——一并清理，防止堆积
+    (ROOT / "sessions" / "reports" / f"{tmp.stem}.md").unlink(missing_ok=True)
     sim.session_file = None
     sys_prompt = STRATEGIES[strategy][seed.task.value]
     turns_done = 0
