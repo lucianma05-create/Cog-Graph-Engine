@@ -74,7 +74,8 @@
   "seller_bottomline": null,
   "n_utterances": 12,
   "price_changes": 3,
-  "prefix_end_index": 1
+  "prefix_end_index": 1,
+  "turn_model": "deepseek-v4-pro"
  },
  "cognitive_style": "I shift my view fairly easily — for a big purchase I ask many questions first, but once the answers satisfy me I am flexible on price: I will go above my initial number when the price is fair and the condition is right. Once I agree to a price, I keep my word.",
  "cognitive_profile": {

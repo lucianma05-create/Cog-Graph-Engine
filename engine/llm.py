@@ -133,8 +133,10 @@ def call_structured(
     raise SchemaError("; ".join(errors))
 
 
-def generate_turn(system: str, user_text: str) -> tuple[TurnOutput, dict[str, Any]]:
-    out, raw = call_structured("simulate_user_turn", TurnOutput, system, user_text)
+def generate_turn(system: str, user_text: str,
+                  model: str | None = None) -> tuple[TurnOutput, dict[str, Any]]:
+    out, raw = call_structured("simulate_user_turn", TurnOutput, system, user_text,
+                               model=model)
     return out, raw  # type: ignore[return-value]
 
 

@@ -376,7 +376,8 @@ class UserSimulator:
             self.seed, self.graph, self.appraisal, self.emotion, self.history, agent_reply,
             feedback=self._engine_feedback(),
         )
-        out, raw = llm.generate_turn(system, user_text)
+        out, raw = llm.generate_turn(system, user_text,
+                                     model=self.seed.notes.get("turn_model"))
         appraisal, a_notes = _clamp_appraisal(out.appraisal)
         emotion, e_notes = _clamp_emotion(out.emotion)
         # normalize the completion flag: empty reason => None when not done
