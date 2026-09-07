@@ -76,8 +76,8 @@ Update discipline: per turn you emit deltas, never a full graph.
   Prefer updating an existing node over adding a near-duplicate.
 - update: an existing ACTIVE node; new strength and/or revised content.
   Updating a deactivated node revives it.
-  Strength changes smaller than ±0.5 are REJECTED by the engine as noise — do not
-  emit them; a reply must genuinely justify a move of at least ±0.5.
+  Strength changes smaller than ±0.4 are REJECTED by the engine as noise — do not
+  emit them; a reply must genuinely justify a move of at least ±0.4.
   Exception: a small move accompanied by a real content revision is accepted
   (revising the thought is evidence the change is genuine, not jitter).
 - deactivate: the user no longer holds this thought; its id is kept. USE IT when

@@ -381,7 +381,6 @@ class UserSimulator:
         appraisal, a_notes = _clamp_appraisal(out.appraisal)
         emotion, e_notes = _clamp_emotion(out.emotion)
         # normalize the completion flag: empty reason => None when not done
-        done_reason = (out.done_reason or "").strip() or None
         profile = self.seed.cognitive_profile or {}
         result = apply_updates(self.graph, out.node_updates, out.edge_updates,
                                done=bool(out.done),
@@ -439,7 +438,7 @@ class UserSimulator:
             "emotion": emotion,
             "user_utterance": out.user_utterance,
             "done": bool(out.done),
-            "done_reason": done_reason,
+            "done_reason": (out.done_reason or "").strip() or None,
             "graph_after": result.graph.snapshot(),   # graph_before = previous turn's graph_after (redundant)
             "strengths_after": {i: result.graph.nodes[i].strength for i in sorted(result.graph.nodes)},
             "deactivated_after": result.graph.deactivated_info(),

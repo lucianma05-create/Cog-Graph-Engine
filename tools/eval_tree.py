@@ -158,6 +158,8 @@ def classify_outcome(rec: dict) -> str:
     if not rec.get("done"):
         return "undetermined"
     reason = (rec.get("done_reason") or "").lower()
+    if reason.startswith("llm_failure"):
+        return "failed"
     if any(k in reason for k in ("walk away", "walking away", "breakdown", "refuse")):
         return "walk_away"
     return "deal"
