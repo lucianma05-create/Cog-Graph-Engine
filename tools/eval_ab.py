@@ -86,7 +86,7 @@ STRATEGIES = {
     },
 }
 
-_PRICE_RE = re.compile(r"\$\s?(\d+(?:\.\d+)?)")
+_PRICE_RE = re.compile(r"\$\s?([\d,]+(?:\.\d+)?)")
 
 
 def _seed(sid: str) -> Seed:
@@ -96,7 +96,7 @@ def _seed(sid: str) -> Seed:
 
 def _first_price(text: str | None) -> float | None:
     for m in _PRICE_RE.findall(text or ""):
-        return float(m)
+        return float(m.replace(",", ""))
     return None
 
 
@@ -119,7 +119,7 @@ def outcome_price(turns: list[dict], seed: Seed) -> float:
     if buyer_target is None or seller_target is None or seller_target == buyer_target:
         return 0.0
     listed = float(seed.notes.get("listed_price") or 0) or 1.0
-    amounts = [float(m) for m in _PRICE_RE.findall(last.get("user_utterance", ""))]
+    amounts = [float(m.replace(",", "")) for m in _PRICE_RE.findall(last.get("user_utterance", ""))]
     amounts = [v for v in amounts if v <= listed * 1.05]  # 引用锚点过滤
     if not amounts:
         return 0.0
@@ -144,7 +144,7 @@ def outcome_donation(turns: list[dict]) -> float:
     if any(k in reason for k in ("donate", "commit", "give", "pledge")):
         score = 1.0
         for m in _PRICE_RE.findall(last.get("user_utterance", "")):
-            score += 0.5 * min(1.0, float(m) / 20.0)
+            score += 0.5 * min(1.0, float(m.replace(",", "")) / 20.0)
         return min(score, 1.5)
     return 0.0
 

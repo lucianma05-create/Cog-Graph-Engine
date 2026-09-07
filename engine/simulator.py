@@ -30,7 +30,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-_PRICE_RE = re.compile(r"\$\s?(\d+(?:\.\d+)?)")
+_PRICE_RE = re.compile(r"\$\s?([\d,]+(?:\.\d+)?)")
 
 # Concession language in the user's own offer: a nominal price rise qualified
 # by asking the seller to add something is not a real rise (the concession has
@@ -60,7 +60,7 @@ def price_audit_note(task: str, user_utterance: str, prev_max_offer: float | Non
         return None
     if prev_max_offer is None:
         return None  # first offer: no baseline to audit against
-    amounts = [float(m) for m in _PRICE_RE.findall(user_utterance)]
+    amounts = [float(m.replace(",", "")) for m in _PRICE_RE.findall(user_utterance)]
     if listed_price is not None:
         amounts = [v for v in amounts if v <= listed_price * 1.05]
     if not amounts:
@@ -176,7 +176,7 @@ def _prev_max_offer(task: str, history: list[dict]) -> float | None:
         if h["role"] != "user":
             continue
         for m in _PRICE_RE.findall(h["text"]):
-            v = float(m)
+            v = float(m.replace(",", ""))
             best = v if best is None or v > best else best
     return best
 
