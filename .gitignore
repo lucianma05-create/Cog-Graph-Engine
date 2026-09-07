@@ -8,3 +8,7 @@ __pycache__/
 *.pyc
 nohup.out
 *.tmp
+
+# 论文与设计文档、实验数据：仅本地保留
+shared_work_space/
+data/

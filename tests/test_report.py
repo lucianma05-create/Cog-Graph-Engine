@@ -10,14 +10,13 @@ ROOT = Path(__file__).parent.parent
 
 def _fake_log() -> dict:
     return {
-        "schema_version": 1,
+        "schema_version": 3,
         "seed_id": "t_01",
         "task": "emotional_support",
         "created_at": "2026-09-04T00:00:00Z",
         "initial": {
             "graph": {"nodes": [{"id": "B1", "type": "belief", "content": "job is stressful", "strength": 3.0}],
                       "edges": []},
-            "node_distributions": {"B1": [0, 0, 0, 1, 0]},
             "deactivated": [],
             "appraisal": {"goal_congruence": 0, "controllability": 0.5, "goal_conflict": 0},
             "emotion": {"category": "neutral", "valence": 0, "arousal": 0.2,
@@ -32,10 +31,10 @@ def _fake_log() -> dict:
             "done": True, "done_reason": "the user felt relieved and said goodbye",
             "graph_after": {"nodes": [{"id": "B1", "type": "belief", "content": "job is stressful",
                                        "strength": 3.2}], "edges": []},
-            "node_distributions_after": {"B1": [0, 0, 0, 0.8, 0.2]},
             "deactivated_after": [], "deltas": {"B1": 0.2},
             "ops_applied": [{"op": "update", "node_id": "B1", "auto": False}],
-            "ops_rejected": [], "notes": [], "validation": {"schema_ok": True, "retries": 0},
+            "ops_rejected": [], "notes": [], "retries": 0, "retry_raw": None,
+            "validation": {"schema_ok": True, "retries": 0},
         }],
     }
 
