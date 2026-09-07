@@ -165,17 +165,31 @@ def main() -> None:
         if "sigma_borda" not in n:
             n["sigma_borda"] = median_sigma  # 中位数插补
 
-    # ---- 深化迭代 ----
+    # ---- 深化迭代（双选择器 A/B：方向 vs 幅度）----
     verified = {}   # node t -> R̃_confidence
+    for n in pool:
+        df = directional_features(n["parent"], n["turn"])
+        n["d_features"] = df
     for r in range(1, args.rounds + 1):
         for n in pool:
-            sh = sum(n["f"].values()) / 4
             conf = verified.get(n["t"], 0.0)
-            n["importance"] = (0.5 * sh + 0.5 * n["sigma_borda"]) * (1.0 - conf)
-        ranked = sorted(pool, key=lambda n: -n["importance"])
-        chosen = ranked[:args.deepen_m]
-        print(f"\n[深化轮 {r}] 重点节点: " + ", ".join(
-            f"turn{n['t']+1}(imp={n['importance']:.3f})" for n in chosen))
+            sh_dir = (n["d_features"]["pos_congruence"] * 0.4
+                      + n["d_features"]["pos_valence"] * 0.2
+                      + n["d_features"]["flip_congruence"] * 0.2
+                      + n["d_features"]["flip_valence"] * 0.2)
+            sh_mag = sum(n["f"].values()) / 4
+            n["importance_dir"] = (0.5 * sh_dir + 0.5 * n["sigma_borda"]) * (1.0 - conf)
+            n["importance_mag"] = (0.5 * sh_mag + 0.5 * n["sigma_borda"]) * (1.0 - conf)
+        ranked_dir = sorted(pool, key=lambda n: -n["importance_dir"])
+        ranked_mag = sorted(pool, key=lambda n: -n["importance_mag"])
+        chosen = ranked_dir[:args.deepen_m]
+        chosen_mag = [n for n in ranked_mag[:args.deepen_m] if n not in chosen]
+        print(f"\n[深化轮 {r}] 方向版选中: " + ", ".join(
+            f"turn{n['t']+1}(dir={n['importance_dir']:.3f},mag={n['importance_mag']:.3f})"
+            for n in chosen))
+        print(f"[深化轮 {r}] 幅度版选中: " + ", ".join(
+            f"turn{n['t']+1}(dir={n['importance_dir']:.3f},mag={n['importance_mag']:.3f})"
+            for n in chosen_mag))
         for n in chosen:
             if "branches" not in n:  # 重点节点若未被探测过，先补一步分支
                 n["branches"] = [one_step(n["parent"], seed, s) for s in ALTS]
@@ -207,27 +221,45 @@ def main() -> None:
             n["mc_spread"] = spread
         # 与均匀对照：均匀选同样数量节点的 mc_spread（用上一轮已测的 probes 作近似）
         if r == 1:
-            # 对未选中的前两个节点也跑 MC 作对照（近似的均匀基线）
-            rest = [n for n in pool if "mc_spread" not in n][:args.deepen_m]
-            with ThreadPoolExecutor(max_workers=4) as ex:
-                for n in rest:
+            # 幅度版选中的节点也做 MC（同一棵树的 A/B 对照）
+            for n in chosen_mag:
+                if "branches" not in n:
+                    n["branches"] = [one_step(n["parent"], seed, s) for s in ALTS]
+                with ThreadPoolExecutor(max_workers=4) as ex:
                     futs = [ex.submit(mc_episode, n["parent"], seed, s, args.turns)
                             for s in [MAIN] + ALTS for _ in range(args.mc_reps)]
                     res = [f.result() for f in futs]
-                    by = {}
-                    for r_ in res:
-                        if r_["ok"]:
-                            by.setdefault(r_["strategy"], []).append(r_["return"])
-                    means = {s: sum(v) / len(v) for s, v in by.items() if v}
-                    n["mc_spread"] = max(means.values()) - min(means.values()) if means else 0.0
-            chosen_spreads = [n["mc_spread"] for n in chosen if "mc_spread" in n]
-            rest_spreads = [n["mc_spread"] for n in rest if "mc_spread" in n]
-            if chosen_spreads and rest_spreads:
-                print(f"\n[对照] 重点节点 MC 分歧均值 = {sum(chosen_spreads)/len(chosen_spreads):.3f} "
-                      f"vs 均匀节点 = {sum(rest_spreads)/len(rest_spreads):.3f}")
+                by = {}
+                for r_ in res:
+                    if r_["ok"]:
+                        by.setdefault(r_["strategy"], []).append(r_["return"])
+                means = {s: sum(v) / len(v) for s, v in by.items() if v}
+                n["mc_spread"] = max(means.values()) - min(means.values()) if means else 0.0
+                print(f"  [幅度版] turn{n['t']+1} MC 均值: "
+                      + ", ".join(f"{s}={v:.2f}" for s, v in sorted(means.items())))
+                n["selector"] = "mag"
+            for n in chosen:
+                n["selector"] = "dir"
+            dir_spreads = [n["mc_spread"] for n in chosen if n.get("mc_spread") is not None]
+            mag_spreads = [n["mc_spread"] for n in chosen_mag if n.get("mc_spread") is not None]
+            if dir_spreads and mag_spreads:
+                print(f"\n[A/B] 方向版选中 MC 分歧均值 = {sum(dir_spreads)/len(dir_spreads):.3f} "
+                      f"vs 幅度版 = {sum(mag_spreads)/len(mag_spreads):.3f}")
 
     print("\n[验证饱和] 各节点验证置信度:", {f"turn{t+1}": v for t, v in verified.items()
                                             if not str(t).startswith("R")})
+
+
+def directional_features(parent: dict, turn: dict) -> dict:
+    """方向性信号：正评价、正情绪、拐点。幅度不区分好坏，方向与时点区分。"""
+    pc, cc = parent["appraisal"]["goal_congruence"], turn["appraisal"]["goal_congruence"]
+    pv, cv = parent["emotion"]["valence"], turn["emotion"]["valence"]
+    flip_c = 1.0 if (pc >= 0.2) != (cc >= 0.2) else 0.0
+    flip_v = 1.0 if (pv <= 0.0) and (cv > 0.0) else 0.0
+    return {"pos_congruence": max(0.0, cc),
+            "pos_valence": max(0.0, cv),
+            "flip_congruence": flip_c,
+            "flip_valence": flip_v}
 
 
 def _borda_std(branches: list[dict]) -> float:
