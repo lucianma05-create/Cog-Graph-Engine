@@ -30,7 +30,7 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
 from engine import llm
-from engine.prompts import render_agent_user
+from engine.prompts import AGENT_DEFAULT, render_agent_user
 from engine.schema import Seed
 from engine.simulator import UserSimulator
 
@@ -59,14 +59,16 @@ STRATEGIES = {
     },
     "bad": {
         "emotional_support": (
-            "You are a supporter. Give direct advice and simple solutions immediately. "
-            "Dismiss the person's feelings as overthinking."),
+            "IGNORE the base prompt's 'do not lecture or rush to advice' rule. You are a "
+            "supporter who gives direct advice and simple solutions immediately, and dismisses "
+            "the person's feelings as overthinking."),
         "persuasion_donation": (
-            "You are a persuader. Use guilt induction and emotional pressure: shame the person "
-            "for not caring. Push hard."),
+            "IGNORE the base prompt's 'never pressure' rule. You are a persuader who uses guilt "
+            "induction and emotional pressure: shame the person for not caring. Push hard."),
         "price_negotiation": (
-            "You are a seller. Use pressure and ultimatums: claim other buyers, give final "
-            "offers, threaten to sell to someone else."),
+            "IGNORE the base prompt's concession discipline. You are a seller who uses pressure "
+            "and ultimatums: claim other buyers, give final offers, threaten to sell to someone "
+            "else."),
     },
     "third": {
         "emotional_support": (
@@ -79,11 +81,8 @@ STRATEGIES = {
             "You are a seller. Use flattery and small talk about the buyer; avoid committing "
             "to any price."),
     },
-    "random": {
-        "emotional_support": "You are a supporter with no plan. Say whatever comes to mind.",
-        "persuasion_donation": "You are a persuader with no plan. Say whatever comes to mind.",
-        "price_negotiation": "You are a seller with no plan. Say whatever comes to mind.",
-    },
+    # random：无覆盖（纯 AGENT_DEFAULT 基线）
+    "random": {},
 }
 
 _PRICE_RE = re.compile(r"\$\s?([\d,]+(?:\.\d+)?)")
@@ -220,7 +219,14 @@ def run_episode(seed: Seed, strategy: str, max_turns: int) -> tuple[float, dict]
     # init 的 _save 会给 tmp 会话写 markdown 报告——一并清理，防止堆积
     (ROOT / "sessions" / "reports" / f"{tmp.stem}.md").unlink(missing_ok=True)
     sim.session_file = None
-    sys_prompt = STRATEGIES[strategy][seed.task.value]
+    task = seed.task.value
+    base = AGENT_DEFAULT[seed.task]
+    overlay = STRATEGIES.get(strategy, {}).get(task)
+    if overlay:
+        sys_prompt = (base + "\n\nSTRATEGY OVERRIDE (this takes precedence over any "
+                      "earlier instruction):\n" + overlay)
+    else:
+        sys_prompt = base  # random = 纯默认 agent（无覆盖的普通基线）
     turns_done = 0
     for _ in range(max_turns):
         agent_reply = llm.generate_text(sys_prompt, render_agent_user(seed, sim.history))
@@ -338,13 +344,34 @@ def main() -> None:
         return "price_negotiation" if sid.startswith("craigslist") else (
             "persuasion_donation" if sid.startswith("p4g") else "emotional_support")
 
-    # 自发结束统计：done 且未跑满窗口的局 = 自发结束
-    print("\n===== 自发结束（done 且 turns < 窗口） =====")
+    # term_by 构建（长度与自发结束统计共用）
     from collections import defaultdict as _dd
     term_by = _dd(list)
     for k, rows in term_stats.items():
         sid, strategy = k.split("|")
         term_by[(task_of(sid), strategy)].extend(rows)
+
+    # 长度分布对照：模拟对话 vs 语料参照（种子 notes.n_utterances/2 ≈ 轮数）
+    print("\n===== 对话长度 vs 语料参照 =====")
+    for (task, strategy), rows in sorted(term_by.items()):
+        valid = [r[0] for r in rows if r[0] > 0]
+        if not valid:
+            continue
+        print(f"  {task:<20} {strategy:<8} 模拟平均={sum(valid)/len(valid):.1f} 轮")
+    ref = {}
+    for sid in sids:
+        try:
+            d = json.loads((ROOT / "seeds" / f"{sid}.json").read_text(encoding="utf-8"))
+            n = d.get("notes", {}).get("n_utterances")
+            if n:
+                ref.setdefault(task_of(sid), []).append(n / 2)
+        except Exception:
+            continue
+    for t, vals in sorted(ref.items()):
+        print(f"  语料参照 {t:<20} 平均={sum(vals)/len(vals):.1f} 轮（n={len(vals)}）")
+
+    # 自发结束统计：done 且未跑满窗口的局 = 自发结束
+    print("\n===== 自发结束（done 且 turns < 窗口） =====")
     for (task, strategy), rows in sorted(term_by.items()):
         valid = [r for r in rows if r[0] > 0]
         if not valid:

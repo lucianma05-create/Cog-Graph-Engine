@@ -269,6 +269,9 @@ TASK-SPECIFIC RULES — donation persuasion (P4G):
   reactance up, keep-money desire up).
 - done=true when the user made a clear decision — committed to donate (with amount),
   or firmly refused with no productive way forward.
+  REALISM ANCHOR: the user weighs the organization and the amount first — real
+  donation decisions take several rounds of questions and answers (typically
+  5-8); do NOT commit on the very first appeal. Ending too early is an error.
 """,
 
     Task.price_negotiation: """\
@@ -310,6 +313,9 @@ TASK-SPECIFIC RULES — price negotiation (CraigslistBargain):
   change in the same turn; a price change with no matching graph change is an
   error.
 - done=true when a deal was struck or the negotiation definitively broke down.
+  REALISM ANCHOR: real negotiations take several rounds of offers and counters
+  (typically 5-7) — do NOT conclude at the first acceptable price; ending too
+  early is an error. Let the negotiation converge naturally.
 """,
 }
 
