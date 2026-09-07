@@ -1,5 +1,7 @@
 # Cog-Graph-Engine
 
+![UI 截图](ui_case.png)
+
 可解释因果用户模拟器：**BDI 图结构用户心智** + 可视化交互窗口，面向主动对话（情感支持 / 劝说捐赠 / 讨价还价）。设计文档：[shared_work_space/insight.md](shared_work_space/insight.md)。
 
 ```

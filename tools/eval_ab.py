@@ -188,21 +188,6 @@ def judge_emotional(seed: Seed, turns: list[dict], samples: int = 3) -> float:
     return sum(vals) / len(vals) if vals else 0.0
 
 
-def outcome_emotional(turns: list[dict]) -> float:
-    if not turns:
-        return 0.0
-    last = turns[-1]
-    valence = float(last.get("emotion", {}).get("valence", 0.0))
-    if not last.get("done"):
-        return 0.2 * valence
-    reason = (last.get("done_reason") or "").lower()
-    if any(k in reason for k in ("decline", "don't want", "stop", "walk",
-                                 "ready to end", "end this", "tired of", "no more")):
-        return -0.2 + 0.2 * valence
-    if any(k in reason for k in ("relief", "feel better", "feeling better",
-                                 "hopeful", "helps", "ready to try")):
-        return 1.0 + 0.2 * valence
-    return 0.2 * valence
 
 
 def checkpoint(results: dict) -> None:
