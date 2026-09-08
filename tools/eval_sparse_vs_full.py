@@ -33,8 +33,34 @@ from tools.eval_hicsrl import (MAIN, ALTS, _borda_std, agent_reply,
                                directional_features, mc_episode, one_step,
                                snap_state)
 from tools.eval_hcsrl import features, _snapshot_to_graph
+from tools.eval_ab import judge_emotional
 
 K = 4          # 候选策略数（含主边）
+
+
+def _es_judge_out(out, n, seed, max_turns):
+    """ES 回报：对每个成功候选，从 child 快照续走到终局，再用外生双维
+    裁判打整局分（samples=3 取均值）。"""
+    from engine.simulator import UserSimulator as _U
+    for r in out:
+        if not r["ok"] or not r.get("child"):
+            r["return"] = 0.0
+            continue
+        sim = _U(seed, None)
+        sim.graph = _snapshot_to_graph(r["child"]["graph"])
+        sim.appraisal = dict(r["child"]["appraisal"])
+        sim.emotion = dict(r["child"]["emotion"])
+        sim.history = list(r["child"]["history"])
+        for _ in range(max_turns):
+            reply = agent_reply(seed, MAIN, sim.history)
+            try:
+                turn = sim.step(reply, mode="manual")
+            except Exception:
+                break
+            if turn.get("done"):
+                break
+        r["return"] = judge_emotional(seed, sim.turns, samples=3)
+    return out
 B = 2          # 探测节点数
 M = 2          # 每轮深化节点数
 R = 2          # 深化轮数
@@ -45,7 +71,14 @@ def _seed(sid: str) -> Seed:
     return Seed.model_validate(json.loads(p.read_text(encoding="utf-8")))
 
 
-def run_seed(sid: str, reps: int, max_turns: int, workers: int) -> dict:
+def es_return(turn, seed):
+    """ES 整局回报：外生双维裁判（仅终局调用，samples=3）。turn 形参兼容
+    mc_episode 的 return_fn 接口（此处忽略单轮、由调用方传入整局时使用）。"""
+    return 0.0  # 占位；实际在 run_seed 内用 judge_episode
+
+
+def run_seed(sid: str, reps: int, max_turns: int, workers: int,
+             return_mode: str = "price") -> dict:
     seed = _seed(sid)
     tmp = ROOT / "sessions" / f"_svf_tmp_{sid}.json"
     sim = UserSimulator(seed, tmp)
@@ -70,7 +103,12 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int) -> dict:
         with ThreadPoolExecutor(max_workers=4) as ex:
             futs = [ex.submit(mc_episode, n["parent"], seed, s, max_turns)
                     for s in [MAIN] + ALTS for _ in range(reps)]
-            return [f.result() for f in futs]
+            out = [f.result() for f in futs]
+        if return_mode == "es":
+            # ES 回报=外生双维裁判读整局（mc_episode 未存 turns，此处对
+            # 每个候选重跑一次以取 turns——原型简化：直接对 child 快照续走）
+            out = _es_judge_out(out, n, seed, max_turns)
+        return out
     full = {}
     for n in pool:
         res = run_mc(n)
@@ -150,11 +188,20 @@ def main() -> None:
     ap.add_argument("--reps", type=int, default=2)
     ap.add_argument("--max-turns", type=int, default=8)
     ap.add_argument("--workers", type=int, default=48)
+    ap.add_argument("--task", default="price", choices=["price", "es"])
+    ap.add_argument("--seeds", default=None,
+                    help="comma-separated seed ids（默认按任务取全部）")
     args = ap.parse_args()
-    sids = [f"craigslist_{i:02d}" for i in range(1, 7)]
+    if args.seeds:
+        sids = [s.strip() for s in args.seeds.split(",") if s.strip()]
+    elif args.task == "es":
+        sids = [f"esconv_{i:02d}" for i in range(1, 15)]
+    else:
+        sids = [f"craigslist_{i:02d}" for i in range(1, 7)]
     results = []
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = {ex.submit(run_seed, sid, args.reps, args.max_turns, 4): sid
+        futs = {ex.submit(run_seed, sid, args.reps, args.max_turns, 4,
+                          "es" if args.task == "es" else "price"): sid
                 for sid in sids}
         for f in futs:
             try:

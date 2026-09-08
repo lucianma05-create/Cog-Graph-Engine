@@ -77,34 +77,42 @@ def one_step(parent: dict, seed: Seed, strategy: str) -> dict:
             "borda": borda_score(turn, seed)}
 
 
-def mc_episode(parent: dict, seed: Seed, strategy: str, max_turns: int) -> dict:
-    """从父快照出发：第一步=候选策略，之后=主策略续采样到终局。"""
+def mc_episode(parent: dict, seed: Seed, strategy: str, max_turns: int,
+               return_fn=None) -> dict:
+    """从父快照出发：第一步=候选策略，之后=主策略续采样到终局。
+    return_fn(seed, turns) 按任务计算整局回报（默认谈判终局份额）。"""
     sim = UserSimulator(seed, None)
     sim.graph = _snapshot_to_graph(parent["graph"])
     sim.appraisal = dict(parent["appraisal"])
     sim.emotion = dict(parent["emotion"])
     sim.history = list(parent["history"])
+    turns = []
     reply = agent_reply(seed, strategy, sim.history)
     try:
         turn = sim.step(reply, mode="manual")
+        turns.append(turn)
     except Exception as e:
         return {"strategy": strategy, "ok": False, "err": type(e).__name__}
     child_snap = {"graph": sim.graph.snapshot(), "appraisal": dict(sim.appraisal),
                    "emotion": dict(sim.emotion), "history": list(sim.history)}
     if turn.get("done"):
-        return {"strategy": strategy, "ok": True, "return": _terminal_return(turn, seed),
+        fn = return_fn or _terminal_return
+        return {"strategy": strategy, "ok": True, "return": fn(turn, seed),
                 "done": True, "child": child_snap}
     for _ in range(max_turns - 1):
         reply = agent_reply(seed, MAIN, sim.history)
         try:
             turn = sim.step(reply, mode="manual")
+            turns.append(turn)
         except Exception:
             return {"strategy": strategy, "ok": False, "err": "schema"}
         if turn.get("done"):
+            fn = return_fn or _terminal_return
             return {"strategy": strategy, "ok": True,
-                    "return": _terminal_return(turn, seed), "done": True, "child": child_snap}
-    return {"strategy": strategy, "ok": True, "return": 0.0, "done": False,
-            "child": child_snap}
+                    "return": fn(turn, seed), "done": True, "child": child_snap}
+    fn = return_fn or _terminal_return
+    return {"strategy": strategy, "ok": True,
+            "return": fn(turn, seed), "done": False, "child": child_snap}
 
 
 def _terminal_return(turn: dict, seed: Seed) -> float:
