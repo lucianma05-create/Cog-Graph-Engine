@@ -135,6 +135,18 @@ def _terminal_return(turn: dict, seed: Seed) -> float:
     return 0.5 + 0.5 * share
 
 
+def run_mc_wrapped(parent: dict, seed: Seed, max_turns: int, reps: int = 2) -> list:
+    """任务感知 MC：谈判用终局份额，ES 用外生双维裁判（续走到终局）。"""
+    from tools.eval_sparse_vs_full import _es_judge_out
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        futs = [ex.submit(mc_episode, parent, seed, s, max_turns)
+                for s in [MAIN] + ALTS for _ in range(reps)]
+        out = [f.result() for f in futs]
+    if seed.task.value == "emotional_support":
+        out = _es_judge_out(out, {"parent": parent}, seed, max_turns)
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--seed", default="craigslist_01")
@@ -181,10 +193,7 @@ def main() -> None:
     full_mc = {}
 
     def run_full(n):
-        with ThreadPoolExecutor(max_workers=4) as ex:
-            futs = [ex.submit(mc_episode, n["parent"], seed, s, args.turns)
-                    for s in [MAIN] + ALTS for _ in range(args.mc_reps)]
-            return [f.result() for f in futs]
+        return run_mc_wrapped(n["parent"], seed, args.turns, args.mc_reps)
     for n in pool:
         res = run_full(n)
         by = {}
@@ -237,10 +246,7 @@ def main() -> None:
                 n["branches"] = [one_step(n["parent"], seed, s) for s in ALTS]
                 n["sigma_borda"] = _borda_std(n["branches"])
                 print(f"  [补探测] {n['t']} σ_Borda={n['sigma_borda']:.3f}")
-            with ThreadPoolExecutor(max_workers=4) as ex:
-                futs = [ex.submit(mc_episode, n["parent"], seed, s, args.turns)
-                        for s in [MAIN] + ALTS for _ in range(args.mc_reps)]
-                res = [f.result() for f in futs]
+            res = run_mc_wrapped(n["parent"], seed, args.turns, args.mc_reps)
             by_strat = {}
             for r_ in res:
                 if r_["ok"]:
@@ -290,10 +296,7 @@ def main() -> None:
             for n in chosen_mag:
                 if "branches" not in n:
                     n["branches"] = [one_step(n["parent"], seed, s) for s in ALTS]
-                with ThreadPoolExecutor(max_workers=4) as ex:
-                    futs = [ex.submit(mc_episode, n["parent"], seed, s, args.turns)
-                            for s in [MAIN] + ALTS for _ in range(args.mc_reps)]
-                    res = [f.result() for f in futs]
+                res = run_mc_wrapped(n["parent"], seed, args.turns, args.mc_reps)
                 by = {}
                 for r_ in res:
                     if r_["ok"]:

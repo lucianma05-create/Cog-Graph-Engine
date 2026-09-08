@@ -107,7 +107,9 @@ def donation_wrap_mc(parent, seed, strategy, max_turns):
 
 
 def run_seed(sid: str, reps: int, max_turns: int, workers: int,
-             return_mode: str = "price") -> dict:
+             return_mode: str = "price", selector: str = "dir") -> dict:
+    import random as _random
+    assert selector in ("dir", "mag", "uniform")
     seed = _seed(sid)
     tmp = ROOT / "sessions" / f"_svf_tmp_{sid}.json"
     sim = UserSimulator(seed, tmp)
@@ -134,6 +136,16 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int,
             futs = [ex.submit(fn, n["parent"], seed, s, max_turns)
                     for s in [MAIN] + ALTS for _ in range(reps)]
             out = [f.result() for f in futs]
+        # episode 级重试：flash 结构失败率 ~20%，失败一次再试一次
+        strats = [MAIN] + ALTS
+        for i, r_ in enumerate(out):
+            if not r_["ok"]:
+                try:
+                    retry = fn(n["parent"], seed, strats[i // reps], max_turns)
+                    if retry["ok"]:
+                        out[i] = retry
+                except Exception:
+                    pass
         if return_mode == "es":
             out = _es_judge_out(out, n, seed, max_turns)
         return out
@@ -166,15 +178,21 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int,
     verified, node_seq = {}, 0
     sparse_picks, sparse_cost = set(), 0
     for r in range(R):
-        for n in pool:
-            conf = verified.get(n["node_id"], 0.0)
-            df = n["d_features"]
-            sh = (df["pos_congruence"] * 0.4 + df["pos_valence"] * 0.2
-                  + df["flip_congruence"] * 0.2 + df["flip_valence"] * 0.2)
-            n["imp"] = (0.5 * sh + 0.5 * n["sigma_borda"]) * (1.0 - conf) \
-                + 0.3 * n.get("rtilde", 0.0)
-        ranked = sorted(pool, key=lambda n: -n["imp"])
-        chosen = ranked[:M]
+        if selector == "uniform":
+            chosen = _random.sample(pool, min(M, len(pool)))
+        else:
+            for n in pool:
+                conf = verified.get(n["node_id"], 0.0)
+                if selector == "dir":
+                    df = n["d_features"]
+                    sh = (df["pos_congruence"] * 0.4 + df["pos_valence"] * 0.2
+                          + df["flip_congruence"] * 0.2 + df["flip_valence"] * 0.2)
+                else:
+                    sh = sum(n["f"].values()) / 4 if n["f"] else 0.0
+                n["imp"] = (0.5 * sh + 0.5 * n["sigma_borda"]) * (1.0 - conf) \
+                    + 0.3 * n.get("rtilde", 0.0)
+            ranked = sorted(pool, key=lambda n: -n["imp"])
+            chosen = ranked[:M]
         for n in chosen:
             if n["node_id"].startswith("main"):
                 sparse_picks.add(n["t"])
@@ -228,30 +246,47 @@ def main() -> None:
         sids = [f"p4g_{i:02d}" for i in range(1, 13)]
     else:
         sids = [f"craigslist_{i:02d}" for i in range(1, 7)]
-    results = []
-    with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = {ex.submit(run_seed, sid, args.reps, args.max_turns, 4,
-                          args.task): sid
-                for sid in sids}
-        for f in futs:
-            try:
-                results.append(f.result())
-            except Exception as e:
-                print(f"[FAIL] {futs[f]}: {type(e).__name__}: {str(e)[:80]}")
+    selectors = ["dir", "mag", "uniform"]
+    all_results = {}
+    for sel in selectors:
+        results = []
+        with ThreadPoolExecutor(max_workers=args.workers) as ex:
+            futs = {ex.submit(run_seed, sid, args.reps, args.max_turns, 4,
+                              args.task, sel): sid for sid in sids}
+            for f in futs:
+                for attempt in range(3):  # seed 级重试：flash 结构失败
+                    try:
+                        results.append(f.result())
+                        break
+                    except Exception as e:
+                        if attempt == 2:
+                            print(f"[FAIL] {futs[f]} [{sel}]: {type(e).__name__}: {str(e)[:80]}")
+        all_results[sel] = results
+        hits = [r["hit"] for r in results]
+        br = [r["sparse_best"] / r["full_best"] for r in results if r["full_best"] > 0]
+        cr = [r["sparse_cost"] / r["full_cost"] for r in results]
+        vpc_s = [r["sparse_best"] / r["sparse_cost"] for r in results]
+        vpc_f = [r["full_best"] / r["full_cost"] for r in results]
+        print(f"\n[{sel}] 完成 {len(results)}/{len(sids)} 种子")
+        print(f"  高回报节点命中率: {statistics.mean(hits):.2f}/2（{sum(hits)}/{2*len(results)}）")
+        print(f"  最优回报比（稀疏/全量）: {statistics.mean(br):.2f}")
+        print(f"  成本比（稀疏/全量）: {statistics.mean(cr):.2f}")
+        print(f"  单位成本价值 稀疏={statistics.mean(vpc_s):.4f} vs 全量={statistics.mean(vpc_f):.4f} "
+              f"（比值 {statistics.mean([s/f for s, f in zip(vpc_s, vpc_f) if f > 0]):.2f}×）")
 
-    print("\n===== 聚合（跨种子） =====")
-    hits = [r["hit"] for r in results]
-    br = [r["sparse_best"] / r["full_best"] for r in results if r["full_best"] > 0]
-    cr = [r["sparse_cost"] / r["full_cost"] for r in results]
-    vpc_s = [r["sparse_best"] / r["sparse_cost"] for r in results]
-    vpc_f = [r["full_best"] / r["full_cost"] for r in results]
-    print(f"  高回报节点命中率: {statistics.mean(hits):.2f}/2（{sum(hits)}/{2*len(results)}）")
-    print(f"  最优回报比（稀疏/全量）: {statistics.mean(br):.2f}")
-    print(f"  成本比（稀疏/全量）: {statistics.mean(cr):.2f}")
-    print(f"  单位成本价值 稀疏={statistics.mean(vpc_s):.4f} vs 全量={statistics.mean(vpc_f):.4f} "
-          f"（比值 {statistics.mean([s/f for s, f in zip(vpc_s, vpc_f) if f > 0]):.2f}×）")
-    json.dump(results, open("sessions/ab_sparse_vs_full.json", "w"),
-              ensure_ascii=False, indent=1)
+    print("\n===== 三臂消融总表 =====")
+    print(f"{'选择器':<10} {'命中率':>8} {'回报比':>8} {'成本比':>8} {'价值/成本比':>10}")
+    for sel in selectors:
+        rs = all_results[sel]
+        hits = statistics.mean([r["hit"] for r in rs]) / 2
+        br = statistics.mean([r["sparse_best"] / r["full_best"] for r in rs if r["full_best"] > 0])
+        cr = statistics.mean([r["sparse_cost"] / r["full_cost"] for r in rs])
+        v = statistics.mean([(r["sparse_best"] / r["sparse_cost"]) / (r["full_best"] / r["full_cost"])
+                             for r in rs if r["full_best"] > 0])
+        print(f"{sel:<10} {hits:>8.0%} {br:>8.2f} {cr:>8.2f} {v:>9.2f}×")
+    json.dump({k: v for k, v in all_results.items()},
+              open("sessions/ab_sparse_vs_full.json", "w"),
+              ensure_ascii=False, indent=1, default=str)
 
 
 if __name__ == "__main__":
