@@ -33,7 +33,7 @@ from tools.eval_hicsrl import (MAIN, ALTS, _borda_std, agent_reply,
                                directional_features, mc_episode, one_step,
                                snap_state)
 from tools.eval_hcsrl import features, _snapshot_to_graph
-from tools.eval_ab import judge_emotional
+from tools.eval_ab import judge_emotional, outcome_donation
 
 K = 4          # 候选策略数（含主边）
 
@@ -77,6 +77,35 @@ def es_return(turn, seed):
     return 0.0  # 占位；实际在 run_seed 内用 judge_episode
 
 
+def donation_wrap_mc(parent, seed, strategy, max_turns):
+    """捐赠模式：复用 mc_episode 但记录最后一轮（outcome_donation 只需
+    最后一轮，且 mc_episode 已走到终局/上限）。"""
+    from engine.simulator import UserSimulator as _U
+    sim = _U(seed, None)
+    sim.graph = _snapshot_to_graph(parent["graph"])
+    sim.appraisal = dict(parent["appraisal"])
+    sim.emotion = dict(parent["emotion"])
+    sim.history = list(parent["history"])
+    reply = agent_reply(seed, strategy, sim.history)
+    try:
+        turn = sim.step(reply, mode="manual")
+    except Exception as e:
+        return {"strategy": strategy, "ok": False, "err": type(e).__name__}
+    child_snap = {"graph": sim.graph.snapshot(), "appraisal": dict(sim.appraisal),
+                   "emotion": dict(sim.emotion), "history": list(sim.history)}
+    for _ in range(max_turns - 1):
+        if turn.get("done"):
+            break
+        reply = agent_reply(seed, MAIN, sim.history)
+        try:
+            turn = sim.step(reply, mode="manual")
+        except Exception:
+            return {"strategy": strategy, "ok": False, "err": "schema"}
+    return {"strategy": strategy, "ok": True,
+            "return": outcome_donation([turn]), "done": bool(turn.get("done")),
+            "child": child_snap}
+
+
 def run_seed(sid: str, reps: int, max_turns: int, workers: int,
              return_mode: str = "price") -> dict:
     seed = _seed(sid)
@@ -100,13 +129,12 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int,
 
     # ---- 全量 MC ----
     def run_mc(n):
+        fn = donation_wrap_mc if return_mode == "donation" else mc_episode
         with ThreadPoolExecutor(max_workers=4) as ex:
-            futs = [ex.submit(mc_episode, n["parent"], seed, s, max_turns)
+            futs = [ex.submit(fn, n["parent"], seed, s, max_turns)
                     for s in [MAIN] + ALTS for _ in range(reps)]
             out = [f.result() for f in futs]
         if return_mode == "es":
-            # ES 回报=外生双维裁判读整局（mc_episode 未存 turns，此处对
-            # 每个候选重跑一次以取 turns——原型简化：直接对 child 快照续走）
             out = _es_judge_out(out, n, seed, max_turns)
         return out
     full = {}
@@ -188,7 +216,7 @@ def main() -> None:
     ap.add_argument("--reps", type=int, default=2)
     ap.add_argument("--max-turns", type=int, default=8)
     ap.add_argument("--workers", type=int, default=48)
-    ap.add_argument("--task", default="price", choices=["price", "es"])
+    ap.add_argument("--task", default="price", choices=["price", "es", "donation"])
     ap.add_argument("--seeds", default=None,
                     help="comma-separated seed ids（默认按任务取全部）")
     args = ap.parse_args()
@@ -196,12 +224,14 @@ def main() -> None:
         sids = [s.strip() for s in args.seeds.split(",") if s.strip()]
     elif args.task == "es":
         sids = [f"esconv_{i:02d}" for i in range(1, 15)]
+    elif args.task == "donation":
+        sids = [f"p4g_{i:02d}" for i in range(1, 13)]
     else:
         sids = [f"craigslist_{i:02d}" for i in range(1, 7)]
     results = []
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
         futs = {ex.submit(run_seed, sid, args.reps, args.max_turns, 4,
-                          "es" if args.task == "es" else "price"): sid
+                          args.task): sid
                 for sid in sids}
         for f in futs:
             try:
