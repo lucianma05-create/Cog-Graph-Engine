@@ -175,6 +175,7 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int,
     for n in pool:
         n.setdefault("sigma_borda", med)
         n["node_id"] = f"main{n['t']}"
+        n["depth"] = int(n["t"])
     verified, node_seq = {}, 0
     sparse_picks, sparse_cost = set(), 0
     for r in range(R):
@@ -189,8 +190,10 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int,
                           + df["flip_congruence"] * 0.2 + df["flip_valence"] * 0.2)
                 else:
                     sh = sum(n["f"].values()) / 4 if n["f"] else 0.0
-                n["imp"] = (0.5 * sh + 0.5 * n["sigma_borda"]) * (1.0 - conf) \
-                    + 0.3 * n.get("rtilde", 0.0)
+                rem = max(0.0, (max_turns - n.get("depth", 0)) / max_turns)
+                depth_factor = max(0.2, rem)
+                n["imp"] = ((0.5 * sh + 0.5 * n["sigma_borda"]) * (1.0 - conf)
+                            * depth_factor + 0.3 * n.get("rtilde", 0.0))
             ranked = sorted(pool, key=lambda n: -n["imp"])
             chosen = ranked[:M]
         for n in chosen:
@@ -208,7 +211,7 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int,
             children = [r_ for r_ in res if r_["ok"] and r_.get("child")]
             if children:
                 n["rtilde"] = sum(r_["return"] for r_ in children) / len(children)
-            for r_ in children[:3]:
+            for r_ in children[:2]:  # 每父节点最多 2 个子节点入池（成本控制）
                 node_seq += 1
                 p = {"appraisal": n["parent"]["appraisal"],
                      "emotion": n["parent"]["emotion"]}
@@ -218,7 +221,8 @@ def run_seed(sid: str, reps: int, max_turns: int, workers: int,
                              "parent": r_["child"], "turn": {},
                              "f": {}, "d_features": directional_features(p, t_),
                              "sigma_borda": n["sigma_borda"],
-                             "rtilde": r_["return"], "node_id": f"c{node_seq}"})
+                             "rtilde": r_["return"], "node_id": f"c{node_seq}",
+                             "depth": n.get("depth", 0) + 1})
             verified[n["node_id"]] = min(1.0, verified.get(n["node_id"], 0.0) + 0.5)
     sparse_best = max(full[t]["best"] for t in sparse_picks) if sparse_picks else 0.0
     hit = len(sparse_picks & set(top2))
@@ -254,13 +258,17 @@ def main() -> None:
             futs = {ex.submit(run_seed, sid, args.reps, args.max_turns, 4,
                               args.task, sel): sid for sid in sids}
             for f in futs:
-                for attempt in range(3):  # seed 级重试：flash 结构失败
+                sid = futs[f]
+                for attempt in range(3):  # seed 级重试：失败即重新提交
                     try:
                         results.append(f.result())
                         break
                     except Exception as e:
                         if attempt == 2:
-                            print(f"[FAIL] {futs[f]} [{sel}]: {type(e).__name__}: {str(e)[:80]}")
+                            print(f"[FAIL] {sid} [{sel}]: {type(e).__name__}: {str(e)[:80]}")
+                        else:
+                            f = ex.submit(run_seed, sid, args.reps, args.max_turns,
+                                          4, args.task, sel)
         all_results[sel] = results
         hits = [r["hit"] for r in results]
         br = [r["sparse_best"] / r["full_best"] for r in results if r["full_best"] > 0]

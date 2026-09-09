@@ -101,16 +101,16 @@ sim.step(agent_reply)
 
 | 档位 | 种子里的 NL 示例（真实文本） | 行为含义 |
 |---|---|---|
-| **reactant** | "pushy or guilt-tripping appeals make me dig in rather than move me."（p4g_02） | 压力让立场**反向强化**（boomerang）；实测话语："Whoa, hold on... guilt-tripping me is not how you ask" |
-| **non-reactant** | （无此句，即缺省） | 压力不引发反向；正常档用户对压力的回应是"要证据"而非"反弹"（p4g_01："That's pressure, not information"） |
+| **pronounced** | "pushy or guilt-tripping appeals make me dig in rather than move me."（p4g_02） | 压力让立场**反向强化**（boomerang）；实测话语："Whoa, hold on... guilt-tripping me is not how you ask" |
+| **normal** | （无此句，即缺省） | 压力不引发反向；正常档用户对压力的回应是"要证据"而非"反弹"（p4g_01："That's pressure, not information"） |
 
-引擎挂钩：reactant 用户 + 施压措辞 + goal_conflict≥0.6 + 意向上升 → ⚠ 审计标记。理论：Brehm 心理阻抗（trait 量表效度有争议，**此档只给有量表证据的种子**——目前仅 p4g_02，freedom=6.0/6）。
+引擎挂钩：pronounced 用户 + 施压措辞 + goal_conflict≥0.6 + 意向上升 → ⚠ 审计标记。理论：Brehm 心理阻抗（trait 量表效度有争议，**此档只给有量表证据的种子**——目前 p4g_02、p4g_07）。
 
 ### 维度 ③ 承诺粘性：意向一旦形成，多难被放弃
 
 | 档位 | 种子里的 NL 示例（真实文本） | 行为含义 |
 |---|---|---|
-| **persistent** | "Once I commit to a price, I stick with it until the deal clearly fails."（craigslist_01） | 意向存续到目的失败/欲望消亡；当前 6 种子全是此档 |
+| **persistent** | "Once I commit to a price, I stick with it until the deal clearly fails."（craigslist_01） | 意向存续到目的失败/欲望消亡；当前 32 种子全是此档 |
 | **flexible** | "I readily revisit my plans when the situation shifts."（无种子使用，预留） | 情境变化即重新考虑（R&G 承诺策略之 open-minded） |
 
 引擎挂钩：**承诺持久守卫**（persistent 档）——挂着活跃 means_for 的意向不得被 deactivate/清零。理论：Bratman 承诺持久性、Rao & Georgeff 承诺策略（blind/single/open-minded）。
@@ -126,16 +126,11 @@ sim.step(agent_reply)
 
 `cognitive_style` 只进模拟器上下文（Init/Turn），**永不进 agent 上下文**（有防泄漏测试）；`cognitive_profile` 只被引擎读取（阻抗维度 ① 无机械实现，只由 NL 承担——建模审查结论：噪声过滤与人格阻抗是两个因果角色，不得共用阈值）。
 
-### 6 种子当前配置
+### 32 种子当前配置
 
-| 种子 | ① 更新阻抗 | ② 反向敏感性 | ③ 承诺粘性 |
-|---|---|---|---|
-| craigslist_01 | resistant（事实触发） | non-reactant | persistent |
-| craigslist_02 | malleable | non-reactant | persistent |
-| p4g_01 | normal（事实触发） | non-reactant | persistent |
-| p4g_02 | resistant | **reactant** | persistent |
-| esconv_01 | normal（情感确认触发） | non-reactant | persistent |
-| esconv_02 | resistant（低落时门槛更高） | non-reactant | persistent |
+- **① 更新阻抗**：无机械实现，只由 NL 承担（建模审查结论：噪声过滤与人格阻抗是两个因果角色，不得共用阈值）；档位分布见各种子 `cognitive_style` 文本。
+- **② 反向敏感性**：`normal` × 30、`pronounced` × 2（p4g_02、p4g_07）。
+- **③ 承诺粘性**：`persistent` × 32（`flexible` 档位预留，无种子使用）。
 
 ## 6. 守卫与审计（引擎兜底，确定性）
 
@@ -159,7 +154,6 @@ python replay_cli.py --seed p4g_01 --turns 6   # 真实 agent 回复回放，对
 python tests/smoke_e2e.py --live --turns 3      # 冒烟（6 种子 × Init+3 轮）
 python tools/eval_session.py --all          # 确定性日志指标（schema 拒绝/⚠ 审计/噪声计数）
 python tools/eval_probes.py                 # 风格探针（reactance/facts-first/commitment，3/3 断言）
-python tools/eval_tree.py --runs 3          # 共享前缀树 rollout（因果性/区分度聚合）
 python tools/eval_dims.py                   # 3 维风格符合度对照审查
 ```
 
@@ -180,8 +174,8 @@ ANTHROPIC_INIT_MODEL=...   # G0 种子图（一次性、缓存复用，用最强
 engine/   schema（pydantic + LLM tool schema）、updater（确定性图引擎+守卫）、prompts、
           llm（anthropic 封装+模型分层）、agent（auto 模式）、simulator（会话编排+审计）
 server/   stdlib HTTP 服务 + 可视化前端（vis-network 本地化，无 CDN）
-seeds/    6 种子（真实对话；persona/私有立场/前缀/风格块/风格 profile）
-tools/    种子提取 + 评估工具（eval_session/eval_probes/eval_tree/eval_dims）
+seeds/    32 种子（ESConv 14 + P4G 12 + Craigslist 6；persona/私有立场/前缀/风格块/风格 profile）
+tools/    种子提取 + 评估工具（eval_session/eval_probes/eval_dims；A/B 与树搜索见 eval_ab/eval_sparse_vs_full/eval_tree_fixed）
 sessions/ 会话日志（JSON 机器日志 + g0 缓存 + markdown 报告）
 tests/    单元测试 + 冒烟测试
 ```
@@ -191,4 +185,4 @@ tests/    单元测试 + 冒烟测试
 - 价格审计的文本正则读不懂让步语义的全貌（引用报价/条件句存在已知盲点）
 - ⚠ 协议为字符串前缀约定（"⚠" 前缀 + 关键词匹配），改措辞会破坏路由
 - ENGINE FEEDBACK 措辞把 ⚠ 警告与拒绝混称"rejected proposals"
-- 历史会话日志含旧格式字段（读兼容，无害）；SCHEMA_VERSION=2
+- 历史会话日志含旧格式字段（读兼容，无害）；SCHEMA_VERSION=3

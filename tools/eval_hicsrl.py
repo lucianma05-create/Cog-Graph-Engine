@@ -220,7 +220,7 @@ def main() -> None:
         n["node_id"] = f"main{n['t']}"
     for r in range(1, args.rounds + 1):
         for n in pool:
-            conf = verified.get(n["node_id"], 0.0)
+            conf = verified.get(str(n["t"]), 0.0)
             rtilde = n.get("rtilde", 0.0)
             sh_dir = (n["d_features"]["pos_congruence"] * 0.4
                       + n["d_features"]["pos_valence"] * 0.2
@@ -287,7 +287,7 @@ def main() -> None:
                 print(f"  Borda-MC Spearman = {rho:+.2f}（{len(common)} 个共同候选）")
             # 验证饱和：该节点置信度上升
             spread = max(mc_mean.values()) - min(mc_mean.values()) if mc_mean else 0.0
-            verified[n["t"]] = min(1.0, verified.get(n["t"], 0.0) + 0.5)
+            verified[str(n["t"])] = min(1.0, verified.get(str(n["t"]), 0.0) + 0.5)
             verified["R" + str(n["t"])] = spread
             n["mc_spread"] = spread
         # 与均匀对照：均匀选同样数量节点的 mc_spread（用上一轮已测的 probes 作近似）
